@@ -62,6 +62,7 @@ if(ANDROID)
     "${PYTHON_LIB_DIR}/libcrypto.so"
     "${PYTHON_LIB_DIR}/libssl.so"
     "${PYTHON_LIB_DIR}/libsqlite3.so"
+    "${CMAKE_CURRENT_SOURCE_DIR}/platform/android/libs/libqjs.so"
   )
 
 else()
