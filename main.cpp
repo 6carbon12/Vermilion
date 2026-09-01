@@ -17,7 +17,6 @@
 #include <qtenvironmentvariables.h>
 #include <QLoggingCategory>
 #include <string>
-#include <vector>
 
 namespace py = pybind11;
 using namespace py::literals;
