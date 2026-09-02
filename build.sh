@@ -21,6 +21,7 @@ shift
 CLEAN=0
 CLEAR=0
 OPEN=0
+INSTALL=0
 
 for arg in "$@"; do
   case "$arg" in
@@ -36,7 +37,7 @@ for arg in "$@"; do
 done
 
 if [ "$TARGET" = "android" ]; then
-  BUILD_DIR="build-android"
+  BUILD_DIR="build/android"
 
   if [ "$CLEAN" -eq 1 ]; then
     echo "Starting clean configuration for Android..."
@@ -58,8 +59,10 @@ if [ "$TARGET" = "android" ]; then
     adb shell pm clear "$PACKAGE_NAME" 2>/dev/null || true
   fi
 
-  echo "Installing APK..."
-  adb install -r "$BUILD_DIR/android-build/build/outputs/apk/debug/android-build-debug.apk"
+  if [ "$INSTALL" -eq 1 ]; then
+    echo "Installing APK..."
+    adb install -r "$BUILD_DIR/android-build/build/outputs/apk/debug/android-build-debug.apk"
+  fi
 
   if [ "$OPEN" -eq 1 ]; then
     echo "Launching $PACKAGE_NAME..."
@@ -71,7 +74,7 @@ if [ "$TARGET" = "android" ]; then
   fi
 
 elif [ "$TARGET" = "linux" ]; then
-  BUILD_DIR="build-linux"
+  BUILD_DIR="build/linux"
 
   if [ "$CLEAN" -eq 1 ]; then
     echo "Starting clean configuration for Linux..."
