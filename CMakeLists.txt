@@ -21,10 +21,21 @@ qt_standard_project_setup(REQUIRES 6.11)
 set(APP_NAME vermilion)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Source Files
-qt_add_executable(${APP_NAME} main.cpp)
+set(CPP_SOURCES
+  src/main.cpp
+)
+
+# CPP Files
+qt_add_executable(${APP_NAME} ${CPP_SOURCES})
+
 # QML Files
-qt_add_qml_module(${APP_NAME} URI ${PROJECT_NAME} VERSION 1.0 QML_FILES Main.qml)
+qt_add_qml_module(
+  ${APP_NAME}
+  URI ${PROJECT_NAME}
+  VERSION 1.0
+  QML_FILES
+  src/qml/Main.qml
+)
 
 # `slots` is a macro used by QT
 # but `slots` is used as a variable in Python C API
