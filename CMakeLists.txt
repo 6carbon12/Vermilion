@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(Vermilion VERSION 0.0 LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(FetchContent)
 
@@ -23,6 +25,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CPP_SOURCES
   src/main.cpp
+  src/bindings/PyHelper.cpp
+  src/bindings/PyHelper.h
+  src/bindings/YtDLPWorker.cpp
+  src/bindings/YtDLPWorker.h
+  src/core/FileSystem.cpp
+  src/core/FileSystem.h
 )
 
 # CPP Files
