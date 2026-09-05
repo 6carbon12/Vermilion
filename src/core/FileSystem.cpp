@@ -1,29 +1,22 @@
 #include "FileSystem.h"
 #include <expected>
 
-namespace Core::FileSystem
-{
+namespace Core::FileSystem {
 
-std::expected<void, Error> copyDirectoryRecursively(const QString &sourceDir,
-                                                    const QString &targetDir)
-{
+std::expected<void, Error> copyDirectoryRecursively(const QString &sourceDir, const QString &targetDir) {
   QDir srcDir(sourceDir);
   if (!srcDir.exists()) {
-    return std::unexpected(Error{ErrorReason::NotFound, sourceDir,
-                                 "Source directory doesn't exist."});
+    return std::unexpected(Error{ErrorReason::NotFound, sourceDir, "Source directory doesn't exist."});
   }
 
   QDir tgtDir(targetDir);
   if (!tgtDir.exists()) {
     if (!tgtDir.mkpath(".")) {
-      return std::unexpected(Error{ErrorReason::CreationFailed, targetDir,
-                                   "Target directory could not be created."});
+      return std::unexpected(Error{ErrorReason::CreationFailed, targetDir, "Target directory could not be created."});
     }
   }
 
-  const QDir::Filters allFilesFilter = QDir::Files | QDir::Dirs |
-                                       QDir::NoDotAndDotDot | QDir::Hidden |
-                                       QDir::System;
+  const QDir::Filters allFilesFilter = QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System;
   const QFileInfoList entries = srcDir.entryInfoList(allFilesFilter);
 
   for (const QFileInfo &entryInfo : entries) {
@@ -40,16 +33,12 @@ std::expected<void, Error> copyDirectoryRecursively(const QString &sourceDir,
 
     if (QFile::exists(tgtPath)) {
       if (!QFile::remove(tgtPath)) {
-        return std::unexpected(Error{ErrorReason::DeletionFailed, tgtPath,
-                                     "The given file couldn't be deleted."});
+        return std::unexpected(Error{ErrorReason::DeletionFailed, tgtPath, "The given file couldn't be deleted."});
       }
     }
 
-    // Copy individual file
     if (!QFile::copy(srcPath, tgtPath)) {
-      return std::unexpected(
-          Error{ErrorReason::CopyFailed, tgtPath,
-                "Failed to copy a file to the given target."});
+      return std::unexpected(Error{ErrorReason::CopyFailed, tgtPath, "Failed to copy a file to the given target."});
     }
   }
 

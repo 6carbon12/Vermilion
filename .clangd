@@ -1,0 +1,6 @@
+CompileFlags:
+  Add: [-Wall, -Wextra, -Wpedantic, -Wshadow]
+  Remove: [-mno-direct-extern-access]
+
+Diagnostics:
+  UnusedIncludes: Strict

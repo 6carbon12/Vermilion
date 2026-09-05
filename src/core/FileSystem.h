@@ -4,26 +4,16 @@
 #include <expected>
 #include <source_location>
 
-namespace Core::FileSystem
-{
+namespace Core::FileSystem {
 
-enum class ErrorReason
-{
-  CreationFailed,
-  DeletionFailed,
-  CopyFailed,
-  NotFound,
-  Permission
-};
+enum class ErrorReason { CreationFailed, DeletionFailed, CopyFailed, NotFound, Permission };
 
-struct Error
-{
+struct Error {
   ErrorReason reason;
   QString problematicPath;
   QString debugContext;
   std::source_location location = std::source_location::current();
 };
 
-std::expected<void, Error> copyDirectoryRecursively(const QString &sourceDir,
-                                                    const QString &targetDir);
+std::expected<void, Error> copyDirectoryRecursively(const QString &sourceDir, const QString &targetDir);
 }; // namespace Core::FileSystem

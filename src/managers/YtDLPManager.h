@@ -7,8 +7,7 @@
 #include <QThread>
 #include <qtmetamacros.h>
 
-class YtDLPManager : public QObject
-{
+class YtDLPManager : public QObject {
   Q_OBJECT
   QML_SINGLETON
   QML_NAMED_ELEMENT(YtDLP)
