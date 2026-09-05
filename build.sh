@@ -1,17 +1,16 @@
 #!/bin/bash
 
-# Exit immediately if a command exits with a non-zero status
 set -e
 
-# Configuration Variables
 PACKAGE_NAME="io.github.x6carbon12.vermilion"
 QT_CMAKE="$HOME/Qt/6.11.2/android_arm64_v8a/bin/qt-cmake"
-ANDROID_SDK="$HOME/android/sdk"
-ANDROID_NDK="$HOME/android/sdk/ndk/26.1.10909125"
+ANDROID_SDK="${ANDROID_SDK:-$HOME/android/sdk}"
+ANDROID_NDK="${ANDROID_NDK:-$HOME/android/sdk/ndk}"
 
-# Ensure at least a target is provided
+USEAGE="Usage: $0 <android|linux> [clean] [clear] [install] [open]"
+
 if [ "$#" -lt 1 ]; then
-  echo "Usage: $0 <android|linux> [clean] [clear] [open]"
+  echo $USEAGE
   exit 1
 fi
 
@@ -28,45 +27,54 @@ for arg in "$@"; do
     clean) CLEAN=1 ;;
     clear) CLEAR=1 ;;
     open)  OPEN=1 ;;
-    *) 
+    install)  INSTALL=1 ;;
+    *)
       echo "Error: Unknown argument '$arg'"
-      echo "Usage: $0 <android|linux> [clean] [clear] [open]"
-      exit 1 
+      echo $USEAGE
+      exit 1
       ;;
   esac
 done
 
 if [ "$TARGET" = "android" ]; then
   BUILD_DIR="build/android"
+  LOGFILE="$BUILD_DIR/build.log"
+
+  rm $LOGFILE >/dev/null 2>&1 || true
+  mkdir -p $BUILD_DIR
+  touch $LOGFILE
 
   if [ "$CLEAN" -eq 1 ]; then
-    echo "Starting clean configuration for Android..."
+    echo "Cleaning build directory."
     rm -rf $BUILD_DIR
+    mkdir -p $BUILD_DIR
+    touch $LOGFILE
+    echo "Writing new build files."
     "$QT_CMAKE" \
       -DANDROID_SDK_ROOT="$ANDROID_SDK" \
-      -DANDROID_NDK_ROOT="$ANDROID_NDK" \
+      -DANDROID_NDK_ROOT="$ANDROID_NDK/27.2.12479018" \
       -DCMAKE_BUILD_TYPE=Debug \
       -S . \
       -B "$BUILD_DIR" \
-      -GNinja
+      -GNinja >> $LOGFILE
   fi
 
   echo "Building Android target..."
-  cmake --build "$BUILD_DIR"
+  cmake --build "$BUILD_DIR" 2>&1 | tee -a "$LOGFILE" | grep --line-buffered -E '^\['
 
   if [ "$CLEAR" -eq 1 ]; then
     echo "Clearing application data..."
-    adb shell pm clear "$PACKAGE_NAME" 2>/dev/null || true
+    adb shell pm clear "$PACKAGE_NAME" >> $LOGFILE 2>/dev/null || true
   fi
 
-  if [ "$INSTALL" -eq 1 ]; then
+  if [ "$INSTALL" -eq 1 ] || [ "$OPEN" -eq 1 ]; then
     echo "Installing APK..."
-    adb install -r "$BUILD_DIR/android-build/build/outputs/apk/debug/android-build-debug.apk"
+    adb install -r "$BUILD_DIR/android-build/vermilion.apk" >> $LOGFILE 2>> $LOGFILE
   fi
 
   if [ "$OPEN" -eq 1 ]; then
     echo "Launching $PACKAGE_NAME..."
-    adb shell monkey -p "$PACKAGE_NAME" 1
+    adb shell monkey -p "$PACKAGE_NAME" 1 >> $LOGFILE 2>> $LOGFILE
 
     echo "Attaching logcat..."
     sleep 0.5
@@ -75,15 +83,23 @@ if [ "$TARGET" = "android" ]; then
 
 elif [ "$TARGET" = "linux" ]; then
   BUILD_DIR="build/linux"
+  $LOGFILE="$BUILD_DIR/build.log"
+
+  rm $LOGFILE >/dev/null 2>&1 || true
+  mkdir -p $BUILD_DIR
+  touch $LOGFILE
 
   if [ "$CLEAN" -eq 1 ]; then
-    echo "Starting clean configuration for Linux..."
+    echo "Cleaning build directory."
     rm -rf $BUILD_DIR
-    cmake -B $BUILD_DIR
+    mkdir -p $BUILD_DIR
+    touch $LOGFILE
+    echo "Writing new build files."
+    cmake -B $BUILD_DIR >> $LOGFILE
   fi
 
   echo "Building Linux target..."
-  cmake --build "$BUILD_DIR"
+  cmake --build "$BUILD_DIR" >> $LOGFILE
 
   if [ "$OPEN" -eq 1 ]; then
     echo "Launching Linux application..."
