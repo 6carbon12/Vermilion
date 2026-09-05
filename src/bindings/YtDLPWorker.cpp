@@ -1,11 +1,14 @@
 #include "YtDLPWorker.h"
-#include <qtmetamacros.h>
-#include <pybind11/embed.h>
-#include <QStandardPaths>
 #include <QCoreApplication>
+#include <QStandardPaths>
 #include <QString>
+#include <pybind11/embed.h>
+#include <qloggingcategory.h>
+#include <qtmetamacros.h>
 
 namespace py = pybind11;
+
+Q_LOGGING_CATEGORY(wrkr, "YtDLPWorker")
 
 YtDLPWorker::YtDLPWorker(QObject *parent) : QObject(parent) {}
 
@@ -23,32 +26,30 @@ py::dict YtDLPWorker::getYdlOpts() {
   QString jsBinaryPath = nativeLibDir + "/libqjs.so";
 
   py::dict runtime_config;
-  runtime_config["path"] = jsBinaryPath.toStdString(); 
+  runtime_config["path"] = jsBinaryPath.toStdString();
 
   py::dict js_runtimes;
-  js_runtimes["quickjs"] = runtime_config; 
+  js_runtimes["quickjs"] = runtime_config;
 
   py::dict ydl_opts;
   ydl_opts["format"] = "bestaudio/best";
   ydl_opts["quiet"] = true;
   ydl_opts["noplaylist"] = true;
   ydl_opts["js_runtimes"] = js_runtimes;
-  ydl_opts["download"] = false;
+  ydl_opts["download"] = true;
 
   return ydl_opts;
 }
 
 void YtDLPWorker::init() {
-  const std::array<QString, 3> modules = {
-    "assets:/yt_dlp",
-    "assets:/yt_dlp_ejs",
-    "assets:/certifi"
-  };
+  const std::array<QString, 3> modules = {"assets:/yt_dlp", "assets:/yt_dlp_ejs", "assets:/certifi"};
 
-  for (const auto& modulePath : modules) {
+  for (const auto &modulePath : modules) {
     if (auto result = PyHelper::installModule(modulePath); !result) {
       PyHelper::Error e = result.error();
       Q_EMIT initFailed(e);
+      qCWarning(wrkr) << "Initializtion failed.";
+      qCWarning(wrkr) << e.debugContext;
       return;
     }
   }
@@ -68,33 +69,30 @@ void YtDLPWorker::init() {
       yt_dlp = py::module_::import("yt_dlp");
       YoutubeDL = yt_dlp.attr("YoutubeDL");
       ydl = YoutubeDL(ydlOpts);
-    } catch (py::error_already_set& e) {
-      Q_EMIT initFailed(PyHelper::Error({
-            PyHelper::ErrorReason::ImportFailed,
-            e.what()
-            }));
+      qCDebug(wrkr) << "Initializtion success.";
+    } catch (py::error_already_set &e) {
+      qCWarning(wrkr) << "Initializtion failed.";
+      Q_EMIT initFailed(PyHelper::Error({PyHelper::ErrorReason::ImportFailed, e.what()}));
     }
   }
 }
 
-void YtDLPWorker::extractUrl(const QString& url) {
+void YtDLPWorker::extractUrl(const QString &url) {
   if (!ydl || ydl.is_none()) {
     Q_EMIT extractFailed("yt-dlp is not initialized. Cannot extract URL.");
+    qCWarning(wrkr) << "yt-dlp is not initialized. Cannot extract URL.";
     return;
   }
   using namespace pybind11::literals;
-  qDebug() << "0";
   py::gil_scoped_acquire acquire;
-  qDebug() << "1";
   py::object info = ydl.attr("extract_info")(url.toStdString(), "download"_a = false);
-  qDebug() << "2";
 
   if (info.contains("url") && !info["url"].is_none()) {
     std::string audioURL = info["url"].cast<std::string>();
-    qDebug() << "2";
     Q_EMIT extractSuccess(QString::fromStdString(audioURL));
+    qCDebug(wrkr) << "Extraction success: " << QString::fromStdString(audioURL);
   } else {
-    qDebug() << "3";
     Q_EMIT extractFailed("`url` not found in the info object.");
+    qCWarning(wrkr) << "Extraction failed, url was not found in the object.";
   }
 }

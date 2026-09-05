@@ -36,8 +36,7 @@ int main(int argc, char *argv[]) {
   if (auto result = PyHelper::init(); !result) {
     auto e = result.error();
     qCDebug(vermilion) << "Failed to initialize python.";
-    qCDebug(vermilion) << "Error in: " << e.location.file_name() << " at "
-                       << e.location.function_name() << ":"
+    qCDebug(vermilion) << "Error in: " << e.location.file_name() << " at " << e.location.function_name() << ":"
                        << e.location.line();
     qCDebug(vermilion) << e.debugContext;
     return -1;
@@ -49,8 +48,7 @@ int main(int argc, char *argv[]) {
     qCDebug(vermilion) << e.what();
     return -1;
   } catch (const std::exception &e) {
-    qCDebug(vermilion) << "Failed to initialize python interpreter:"
-                       << e.what();
+    qCDebug(vermilion) << "Failed to initialize python interpreter:" << e.what();
     return -1;
   } catch (...) {
     qCDebug(vermilion) << "Unknown fatal error during python initialization.";
@@ -60,8 +58,8 @@ int main(int argc, char *argv[]) {
   py::gil_scoped_release release;
   QQmlApplicationEngine engine;
   QObject::connect(
-      &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
-      []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
+      &engine, &QQmlApplicationEngine::objectCreationFailed, &app, []() { QCoreApplication::exit(-1); },
+      Qt::QueuedConnection);
 
   engine.loadFromModule("Vermilion", "Main");
   int exitCode = app.exec();
