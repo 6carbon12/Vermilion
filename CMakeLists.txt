@@ -17,7 +17,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(pybind11)
 
-find_package(Qt6 6.11 REQUIRED COMPONENTS Core Qml Quick)
+find_package(Qt6 6.11 REQUIRED COMPONENTS Core Qml Quick Multimedia)
 qt_standard_project_setup(REQUIRES 6.11)
 
 set(APP_NAME vermilion)
@@ -33,22 +33,31 @@ set(CPP_SOURCES
   src/core/FileSystem.h
 )
 
-# CPP Files
+set(CPP_INCLUDES
+  src/core
+  src/bindings
+  src/managers
+)
+
 qt_add_executable(${APP_NAME} ${CPP_SOURCES})
 
-# QML Files
 qt_add_qml_module(
   ${APP_NAME}
   URI ${PROJECT_NAME}
   VERSION 1.0
   QML_FILES
   src/qml/Main.qml
+  SOURCES
+  src/managers/YtDLPManager.h
+  src/managers/YtDLPManager.cpp
 )
 
 # `slots` is a macro used by QT
 # but `slots` is used as a variable in Python C API
 # So we disable that keywork with this:
 target_compile_definitions(${APP_NAME} PRIVATE QT_NO_KEYWORDS)
+
+target_include_directories(${APP_NAME} PRIVATE ${CPP_INCLUDES})
 
 if(ANDROID)
   # Setup
@@ -61,6 +70,7 @@ if(ANDROID)
 
   target_link_libraries(${APP_NAME}
     PRIVATE Qt6::Quick
+    PRIVATE Qt6::Multimedia
     PRIVATE pybind11::embed
     PRIVATE "${PYTHON_LIB_DIR}/libpython3.11.so"
     PRIVATE "${PYTHON_LIB_DIR}/libffi.so"
@@ -87,6 +97,7 @@ else()
   find_package(Python3 COMPONENTS Development.Embed REQUIRED)
   target_link_libraries(vermilion PRIVATE
     Qt6::Quick
+    PRIVATE Qt6::Multimedia
     pybind11::embed
     Python3::Python)
 endif()
