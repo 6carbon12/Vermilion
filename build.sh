@@ -36,6 +36,14 @@ for arg in "$@"; do
   esac
 done
 
+updateLspFiles() {
+	echo "Updating .qmlls.ini"
+	sed -E '/^\[.*(SLASH).*\]/d' $1/.qt/.qmlls.build.ini > .qmlls.ini
+
+	echo "Updating compile_commands.json"
+	cp $1/compile_commands.json ./compile_commands.json
+}
+
 if [ "$TARGET" = "android" ]; then
   BUILD_DIR="build/android"
   LOGFILE="$BUILD_DIR/build.log"
@@ -61,6 +69,8 @@ if [ "$TARGET" = "android" ]; then
 
   echo "Building Android target..."
   cmake --build "$BUILD_DIR" 2>&1 | tee -a "$LOGFILE" | grep --line-buffered -E '^\['
+
+	updateLspFiles $BUILD_DIR
 
   if [ "$CLEAR" -eq 1 ]; then
     echo "Clearing application data..."
@@ -100,6 +110,8 @@ elif [ "$TARGET" = "linux" ]; then
 
   echo "Building Linux target..."
   cmake --build "$BUILD_DIR" >> $LOGFILE
+
+	updateLspFiles $BUILD_DIR
 
   if [ "$OPEN" -eq 1 ]; then
     echo "Launching Linux application..."
