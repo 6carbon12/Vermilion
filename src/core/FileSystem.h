@@ -6,7 +6,6 @@
 
 namespace Core::FileSystem
 {
-using namespace Core::FileSystem;
 
 enum class ErrorReason
 {
