@@ -31,6 +31,8 @@ set(CPP_SOURCES
   src/bindings/YtDLPWorker.h
   src/core/FileSystem.cpp
   src/core/FileSystem.h
+	src/core/Network.cpp
+	src/core/Network.h
 )
 
 set(CPP_INCLUDES
@@ -71,6 +73,7 @@ if(ANDROID)
   target_link_libraries(${APP_NAME}
     PRIVATE Qt6::Quick
     PRIVATE Qt6::Multimedia
+    PRIVATE Qt6::Network
     PRIVATE pybind11::embed
     PRIVATE "${PYTHON_LIB_DIR}/libpython3.11.so"
     PRIVATE "${PYTHON_LIB_DIR}/libffi.so"
@@ -91,6 +94,8 @@ if(ANDROID)
     "${PYTHON_LIB_DIR}/libssl.so"
     "${PYTHON_LIB_DIR}/libsqlite3.so"
     "${CMAKE_CURRENT_SOURCE_DIR}/platform/android/libs/libqjs.so"
+    "${CMAKE_CURRENT_SOURCE_DIR}/platform/android/libs/libcrypto_3.so"
+    "${CMAKE_CURRENT_SOURCE_DIR}/platform/android/libs/libssl_3.so"
   )
 
 else()

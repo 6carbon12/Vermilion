@@ -31,6 +31,7 @@ Q_LOGGING_CATEGORY(vermilion, "Vermilion")
 int main(int argc, char *argv[]) {
   QGuiApplication app(argc, argv);
   app.setApplicationName("Vermilion");
+  qRegisterMetaType<QMap<QByteArray, QByteArray>>("QMap<QByteArray,QByteArray>");
 
   auto res = PyHelper::init();
   if (auto result = PyHelper::init(); !result) {
