@@ -3,3 +3,5 @@ build*/
 !build.gradle
 .cache/
 .qmlls.ini
+.stfolder
+.stignore

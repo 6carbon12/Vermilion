@@ -92,8 +92,21 @@ void YtDLPWorker::extractUrl(const QString &url) {
 
   if (info.contains("url") && !info["url"].is_none()) {
     QString audioURL = QString::fromStdString(info["url"].cast<std::string>());
-    Q_EMIT extractSuccess(audioURL);
-    qCDebug(wrkr) << "Extraction success:" << audioURL;
+    qCDebug(wrkr) << "Audio URL extraction success:" << audioURL;
+
+    QMap<QByteArray, QByteArray> headersMap;
+    if (info.contains("http_headers")) {
+      py::dict headers = info["http_headers"].cast<py::dict>();
+      for (auto item : headers) {
+        QByteArray key = QByteArray::fromStdString(item.first.cast<std::string>());
+        QByteArray value = QByteArray::fromStdString(item.second.cast<std::string>());
+        headersMap.insert(key, value);
+      }
+      qCDebug(wrkr) << "Headers extraction success:" << headersMap;
+    }
+
+    Q_EMIT extractSuccess(audioURL, headersMap); 
+    qCDebug(wrkr) << "Extraction completed.";
   } else {
     Q_EMIT extractFailed("`url` not found in the info object.");
     qCWarning(wrkr) << "Extraction failed, url was not found in the object.";

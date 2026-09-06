@@ -6,6 +6,7 @@
 #include <QString>
 #include <QThread>
 #include <qtmetamacros.h>
+#include "Network.h"
 
 class YtDLPManager : public QObject {
   Q_OBJECT
@@ -23,8 +24,9 @@ Q_SIGNALS:
   void extractionFailed(const QString &error);
 
 private:
-  QThread *workerThread = nullptr;
-  YtDLPWorker *worker = nullptr;
+  QThread *workerThread;
+  YtDLPWorker *worker;
+  Core::Network::StreamDownloader *downloader;
 
   Q_SIGNAL void startWorkerInit();
   Q_SIGNAL void startExtraction(const QString &url);
