@@ -34,11 +34,24 @@ py::dict YtDLPWorker::getYdlOpts() {
   py::dict ydl_opts;
   ydl_opts["format"] = "bestaudio/best";
   ydl_opts["quiet"] = true;
+  ydl_opts["no_warnings"] = true;
   ydl_opts["noplaylist"] = true;
-  ydl_opts["js_runtimes"] = js_runtimes;
   ydl_opts["skip_download"] = true;
-  ydl_opts["writesubtitles"] = false;
-  ydl_opts["writeautomaticsub"] = false;
+
+  py::dict extractor_args;
+  py::dict yt_args;
+  py::list client_args;
+
+  // Fast API clients first, web JS decryption as absolute last resort
+  client_args.append("android");
+  client_args.append("ios");
+  client_args.append("web");
+
+  yt_args["player_client"] = client_args;
+  extractor_args["youtube"] = yt_args;
+
+  ydl_opts["extractor_args"] = extractor_args;
+  ydl_opts["js_runtimes"] = js_runtimes;
 
   return ydl_opts;
 }
@@ -105,7 +118,7 @@ void YtDLPWorker::extractUrl(const QString &url) {
       qCDebug(wrkr) << "Headers extraction success:" << headersMap;
     }
 
-    Q_EMIT extractSuccess(audioURL, headersMap); 
+    Q_EMIT extractSuccess(audioURL, headersMap);
     qCDebug(wrkr) << "Extraction completed.";
   } else {
     Q_EMIT extractFailed("`url` not found in the info object.");
