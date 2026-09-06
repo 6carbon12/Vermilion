@@ -36,7 +36,9 @@ py::dict YtDLPWorker::getYdlOpts() {
   ydl_opts["quiet"] = true;
   ydl_opts["noplaylist"] = true;
   ydl_opts["js_runtimes"] = js_runtimes;
-  ydl_opts["download"] = true;
+  ydl_opts["skip_download"] = true;
+  ydl_opts["writesubtitles"] = false;
+  ydl_opts["writeautomaticsub"] = false;
 
   return ydl_opts;
 }
@@ -72,6 +74,7 @@ void YtDLPWorker::init() {
       qCDebug(wrkr) << "Initializtion success.";
     } catch (py::error_already_set &e) {
       qCWarning(wrkr) << "Initializtion failed.";
+      qCWarning(wrkr) << e.what();
       Q_EMIT initFailed(PyHelper::Error({PyHelper::ErrorReason::ImportFailed, e.what()}));
     }
   }
@@ -88,9 +91,9 @@ void YtDLPWorker::extractUrl(const QString &url) {
   py::object info = ydl.attr("extract_info")(url.toStdString(), "download"_a = false);
 
   if (info.contains("url") && !info["url"].is_none()) {
-    std::string audioURL = info["url"].cast<std::string>();
-    Q_EMIT extractSuccess(QString::fromStdString(audioURL));
-    qCDebug(wrkr) << "Extraction success: " << QString::fromStdString(audioURL);
+    QString audioURL = QString::fromStdString(info["url"].cast<std::string>());
+    Q_EMIT extractSuccess(audioURL);
+    qCDebug(wrkr) << "Extraction success:" << audioURL;
   } else {
     Q_EMIT extractFailed("`url` not found in the info object.");
     qCWarning(wrkr) << "Extraction failed, url was not found in the object.";
