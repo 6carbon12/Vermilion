@@ -60,15 +60,11 @@ std::expected<void, Error> installModule(const QString &modulePath, const QStrin
   QString sitePkgs = PYTHONHOME + "/lib/python3.11/site-packages";
   QDir().mkpath(sitePkgs);
   QString moduleTgtPath = sitePkgs + "/" + (moduleName.isEmpty() ? modulePath.section('/', -1) : moduleName);
-  if (QDir().exists(moduleTgtPath)) {
-    qCDebug(PyHelper) << "Module:" << modulePath << "already installed.";
-    return {};
-  }
 
   auto result = Core::FileSystem::copyDirectoryRecursively(modulePath, moduleTgtPath);
 
   if (result) {
-    qCDebug(PyHelper) << "Installed module:" << modulePath << "already installed.";
+    qCDebug(PyHelper) << "Installed module:" << modulePath;
     return {};
   }
 
