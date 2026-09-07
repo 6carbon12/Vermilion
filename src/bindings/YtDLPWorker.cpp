@@ -15,13 +15,12 @@ YtDLPWorker::YtDLPWorker(QObject *parent) : QObject(parent) {}
 YtDLPWorker::~YtDLPWorker() {
   if (Py_IsInitialized()) {
     py::gil_scoped_acquire acquire;
-    ydl = py::object();
     YoutubeDL = py::object();
     yt_dlp = py::object();
   }
 }
 
-py::dict YtDLPWorker::getYdlOpts() {
+py::dict YtDLPWorker::getGeneralYdlOpts() {
   QString nativeLibDir = QCoreApplication::applicationDirPath();
   QString jsBinaryPath = nativeLibDir + "/libqjs.so";
 
@@ -31,25 +30,23 @@ py::dict YtDLPWorker::getYdlOpts() {
   py::dict js_runtimes;
   js_runtimes["quickjs"] = runtime_config;
 
+  py::list client_args;
+  client_args.append("android");
+  client_args.append("ios");
+  client_args.append("web");
+
+  py::dict yt_args;
+  yt_args["player_client"] = client_args;
+
+  py::dict extractor_args;
+  extractor_args["youtube"] = yt_args;
+
   py::dict ydl_opts;
   ydl_opts["format"] = "bestaudio/best";
   ydl_opts["quiet"] = true;
   ydl_opts["no_warnings"] = true;
   ydl_opts["noplaylist"] = true;
   ydl_opts["skip_download"] = true;
-
-  py::dict extractor_args;
-  py::dict yt_args;
-  py::list client_args;
-
-  // Fast API clients first, web JS decryption as absolute last resort
-  client_args.append("android");
-  client_args.append("ios");
-  client_args.append("web");
-
-  yt_args["player_client"] = client_args;
-  extractor_args["youtube"] = yt_args;
-
   ydl_opts["extractor_args"] = extractor_args;
   ydl_opts["js_runtimes"] = js_runtimes;
 
@@ -80,10 +77,9 @@ void YtDLPWorker::init() {
       // Invalidate caches to force a rescan of modules.
       py::module_::import("importlib").attr("invalidate_caches")();
 
-      py::dict ydlOpts = getYdlOpts();
+      py::dict ydlOpts = getGeneralYdlOpts();
       yt_dlp = py::module_::import("yt_dlp");
       YoutubeDL = yt_dlp.attr("YoutubeDL");
-      ydl = YoutubeDL(ydlOpts);
       qCDebug(wrkr) << "Initializtion success.";
     } catch (py::error_already_set &e) {
       qCWarning(wrkr) << "Initializtion failed.";
@@ -101,6 +97,10 @@ void YtDLPWorker::extractUrl(const QString &url) {
   }
   using namespace pybind11::literals;
   py::gil_scoped_acquire acquire;
+
+  qCDebug(wrkr) << "Extracting info";
+  py::dict ydlOpts = getGeneralYdlOpts();
+  py::object ydl = YoutubeDL(ydlOpts);
   py::object info = ydl.attr("extract_info")(url.toStdString(), "download"_a = false);
 
   if (info.contains("url") && !info["url"].is_none()) {

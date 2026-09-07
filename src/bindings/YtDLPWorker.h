@@ -11,8 +11,7 @@ class YtDLPWorker : public QObject {
 private:
   py::object yt_dlp;
   py::object YoutubeDL;
-  py::object ydl;
-  py::dict getYdlOpts();
+  py::dict getGeneralYdlOpts();
 
 public:
   explicit YtDLPWorker(QObject *parent = nullptr);
