@@ -1,9 +1,13 @@
 #include "YtDLPWorker.h"
 #include <QCoreApplication>
+#include <QDir>
+#include <QLoggingCategory>
 #include <QStandardPaths>
 #include <QString>
+#include <QUrl>
+#include <QVariantList>
+#include <QVariantMap>
 #include <pybind11/embed.h>
-#include <qloggingcategory.h>
 #include <qtmetamacros.h>
 
 namespace py = pybind11;
@@ -23,6 +27,8 @@ YtDLPWorker::~YtDLPWorker() {
 py::dict YtDLPWorker::getGeneralYdlOpts() {
   QString nativeLibDir = QCoreApplication::applicationDirPath();
   QString jsBinaryPath = nativeLibDir + "/libqjs.so";
+  QString yt_dlpCacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/yt-dlp";
+  QDir().mkpath(yt_dlpCacheDir);
 
   py::dict runtime_config;
   runtime_config["path"] = jsBinaryPath.toStdString();
@@ -49,6 +55,7 @@ py::dict YtDLPWorker::getGeneralYdlOpts() {
   ydl_opts["skip_download"] = true;
   ydl_opts["extractor_args"] = extractor_args;
   ydl_opts["js_runtimes"] = js_runtimes;
+  ydl_opts["cachedir"] = yt_dlpCacheDir.toStdString();
 
   return ydl_opts;
 }
@@ -94,12 +101,60 @@ void YtDLPWorker::init() {
   }
 }
 
-void YtDLPWorker::extractUrl(const QString &url) {
-  if (!ydl || ydl.is_none()) {
-    Q_EMIT extractFailed("yt-dlp is not initialized. Cannot extract URL.");
-    qCWarning(wrkr) << "yt-dlp is not initialized. Cannot extract URL.";
-    return;
+void YtDLPWorker::search(const QString &query, int maxResults) {
+  qCDebug(YtDLPWorker_l) << "Searching query: " << query;
+  using namespace pybind11::literals;
+  py::gil_scoped_acquire acquire;
+
+  QVariantList resultsList;
+  try {
+    py::object results = YTMusic.attr("search")(query.toStdString(), "filter"_a = "songs", "limit"_a = maxResults);
+
+    for (py::handle result : results) {
+      py::dict resultDict = result.cast<py::dict>();
+
+      auto getStrMember = [&](const char *member) -> QString {
+        if (resultDict.contains(member) && !resultDict[member].is_none()) {
+          return QString::fromStdString(resultDict[member].cast<std::string>());
+        } else {
+          qCWarning(YtDLPWorker_l) << "Unable to get member: " << member << ". From a result of ytmusicapi";
+          return "N/A";
+        }
+      };
+
+      QVariantMap resultData;
+      resultData["title"] = getStrMember("title");
+      resultData["url"] = "https://youtube.com/watch?v=" + getStrMember("videoId");
+      resultData["viewCount"] = getStrMember("views");
+      resultData["duration"] = getStrMember("duration");
+
+      if (resultDict.contains("thumbnails") && !resultDict["thumbnails"].is_none()) {
+        py::list thumbs = resultDict["thumbnails"].cast<py::list>();
+        if (!thumbs.empty()) {
+          py::dict bestThumb = thumbs[thumbs.size() - 1].cast<py::dict>();
+          std::string thumbUrl = bestThumb["url"].cast<std::string>();
+          resultData["thumbnail"] = QString::fromStdString(thumbUrl);
+        } else {
+          qCWarning(YtDLPWorker_l) << "Thumbnails empty";
+        }
+      } else {
+        qCWarning(YtDLPWorker_l) << "Unable to get member: " << "thumbnails" << ". From a result of ytmusicapi";
+      }
+
+      resultsList.append(resultData);
+    }
+
+    Q_EMIT searchSuccess(resultsList);
+  } catch (const py::error_already_set &e) {
+    qCDebug(YtDLPWorker_l) << "Search failed" << e.what();
+    Q_EMIT searchFailed(QString::fromStdString(e.what()));
+  } catch (const std::exception &e) {
+    qCDebug(YtDLPWorker_l) << "Search failed" << e.what();
+    Q_EMIT searchFailed(QString::fromStdString(e.what()));
   }
+}
+
+void YtDLPWorker::extractUrl(const QString &url) {
   using namespace pybind11::literals;
   py::gil_scoped_acquire acquire;
 

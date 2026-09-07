@@ -18,10 +18,13 @@ public:
   ~YtDLPManager() override;
 
   Q_INVOKABLE void requestExtraction(const QString &url);
+  Q_INVOKABLE void requestSearch(const QString &query, int maxResults = 5);
 
 Q_SIGNALS:
   void extractionSuccess(const QString &url);
   void extractionFailed(const QString &error);
+  void searchSuccess(const QVariantList &results);
+  void searchFailed(const QString &error);
 
 private:
   QThread *workerThread;
@@ -30,4 +33,5 @@ private:
 
   Q_SIGNAL void startWorkerInit();
   Q_SIGNAL void startExtraction(const QString &url);
+  Q_SIGNAL void startSearch(const QString &query, int maxResults);
 };
