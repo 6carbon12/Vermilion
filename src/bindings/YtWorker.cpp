@@ -1,4 +1,4 @@
-#include "YtDLPWorker.h"
+#include "YtWorker.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QLoggingCategory>
@@ -12,11 +12,11 @@
 
 namespace py = pybind11;
 
-Q_LOGGING_CATEGORY(YtDLPWorker_l, "YtDLPWorker")
+Q_LOGGING_CATEGORY(YtWorker_l, "YtWorker")
 
-YtDLPWorker::YtDLPWorker(QObject *parent) : QObject(parent) {}
+YtWorker::YtWorker(QObject *parent) : QObject(parent) {}
 
-YtDLPWorker::~YtDLPWorker() {
+YtWorker::~YtWorker() {
   if (Py_IsInitialized()) {
     py::gil_scoped_acquire acquire;
     YoutubeDL = py::object();
@@ -24,7 +24,7 @@ YtDLPWorker::~YtDLPWorker() {
   }
 }
 
-py::dict YtDLPWorker::getGeneralYdlOpts() {
+py::dict YtWorker::getGeneralYdlOpts() {
   QString nativeLibDir = QCoreApplication::applicationDirPath();
   QString jsBinaryPath = nativeLibDir + "/libqjs.so";
   QString yt_dlpCacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/yt-dlp";
@@ -60,7 +60,7 @@ py::dict YtDLPWorker::getGeneralYdlOpts() {
   return ydl_opts;
 }
 
-void YtDLPWorker::init() {
+void YtWorker::init() {
   const std::array<QString, 9> modules = {
       "assets:/yt_dlp",  "assets:/yt_dlp_ejs",         "assets:/certifi", "assets:/ytmusicapi", "assets:/requests",
       "assets:/urllib3", "assets:/charset_normalizer", "assets:/idna",    "assets:/setuptools"};
@@ -69,9 +69,9 @@ void YtDLPWorker::init() {
     if (auto result = PyHelper::installModule(modulePath); !result) {
       PyHelper::Error e = result.error();
       Q_EMIT initFailed(e);
-      qCWarning(YtDLPWorker_l) << "Initializtion failed.";
-      qCWarning(YtDLPWorker_l) << "Failed to install module: " << modulePath;
-      qCWarning(YtDLPWorker_l) << e.debugContext;
+      qCWarning(YtWorker_l) << "Initializtion failed.";
+      qCWarning(YtWorker_l) << "Failed to install module: " << modulePath;
+      qCWarning(YtWorker_l) << e.debugContext;
       return;
     }
   }
@@ -92,17 +92,17 @@ void YtDLPWorker::init() {
       YoutubeDL = yt_dlp.attr("YoutubeDL");
       yt_dlp = py::module_::import("ytmusicapi");
       YTMusic = yt_dlp.attr("YTMusic")();
-      qCDebug(YtDLPWorker_l) << "Initializtion success.";
+      qCDebug(YtWorker_l) << "Initializtion success.";
     } catch (py::error_already_set &e) {
-      qCWarning(YtDLPWorker_l) << "Initializtion failed.";
-      qCWarning(YtDLPWorker_l) << e.what();
+      qCWarning(YtWorker_l) << "Initializtion failed.";
+      qCWarning(YtWorker_l) << e.what();
       Q_EMIT initFailed(PyHelper::Error({PyHelper::ErrorReason::ImportFailed, e.what()}));
     }
   }
 }
 
-void YtDLPWorker::search(const QString &query, int maxResults) {
-  qCDebug(YtDLPWorker_l) << "Searching query: " << query;
+void YtWorker::search(const QString &query, int maxResults) {
+  qCDebug(YtWorker_l) << "Searching query: " << query;
   using namespace pybind11::literals;
   py::gil_scoped_acquire acquire;
 
@@ -117,7 +117,7 @@ void YtDLPWorker::search(const QString &query, int maxResults) {
         if (resultDict.contains(member) && !resultDict[member].is_none()) {
           return QString::fromStdString(resultDict[member].cast<std::string>());
         } else {
-          qCWarning(YtDLPWorker_l) << "Unable to get member: " << member << ". From a result of ytmusicapi";
+          qCWarning(YtWorker_l) << "Unable to get member: " << member << ". From a result of ytmusicapi";
           return "N/A";
         }
       };
@@ -135,10 +135,10 @@ void YtDLPWorker::search(const QString &query, int maxResults) {
           std::string thumbUrl = bestThumb["url"].cast<std::string>();
           resultData["thumbnail"] = QString::fromStdString(thumbUrl);
         } else {
-          qCWarning(YtDLPWorker_l) << "Thumbnails empty";
+          qCWarning(YtWorker_l) << "Thumbnails empty";
         }
       } else {
-        qCWarning(YtDLPWorker_l) << "Unable to get member: " << "thumbnails" << ". From a result of ytmusicapi";
+        qCWarning(YtWorker_l) << "Unable to get member: " << "thumbnails" << ". From a result of ytmusicapi";
       }
 
       resultsList.append(resultData);
@@ -146,26 +146,26 @@ void YtDLPWorker::search(const QString &query, int maxResults) {
 
     Q_EMIT searchSuccess(resultsList);
   } catch (const py::error_already_set &e) {
-    qCDebug(YtDLPWorker_l) << "Search failed" << e.what();
+    qCDebug(YtWorker_l) << "Search failed" << e.what();
     Q_EMIT searchFailed(QString::fromStdString(e.what()));
   } catch (const std::exception &e) {
-    qCDebug(YtDLPWorker_l) << "Search failed" << e.what();
+    qCDebug(YtWorker_l) << "Search failed" << e.what();
     Q_EMIT searchFailed(QString::fromStdString(e.what()));
   }
 }
 
-void YtDLPWorker::extractUrl(const QString &url) {
+void YtWorker::extractUrl(const QString &url) {
   using namespace pybind11::literals;
   py::gil_scoped_acquire acquire;
 
-  qCDebug(YtDLPWorker_l) << "Extracting info";
+  qCDebug(YtWorker_l) << "Extracting info";
   py::dict ydlOpts = getGeneralYdlOpts();
   py::object ydl = YoutubeDL(ydlOpts);
   py::object info = ydl.attr("extract_info")(url.toStdString(), "download"_a = false);
 
   if (info.contains("url") && !info["url"].is_none()) {
     QString audioURL = QString::fromStdString(info["url"].cast<std::string>());
-    qCDebug(YtDLPWorker_l) << "Audio URL extraction success:" << audioURL;
+    qCDebug(YtWorker_l) << "Audio URL extraction success:" << audioURL;
 
     QMap<QByteArray, QByteArray> headersMap;
     if (info.contains("http_headers")) {
@@ -175,13 +175,13 @@ void YtDLPWorker::extractUrl(const QString &url) {
         QByteArray value = QByteArray::fromStdString(item.second.cast<std::string>());
         headersMap.insert(key, value);
       }
-      qCDebug(YtDLPWorker_l) << "Headers extraction success:" << headersMap;
+      qCDebug(YtWorker_l) << "Headers extraction success:" << headersMap;
     }
 
     Q_EMIT extractSuccess(audioURL, headersMap);
-    qCDebug(YtDLPWorker_l) << "Extraction completed.";
+    qCDebug(YtWorker_l) << "Extraction completed.";
   } else {
     Q_EMIT extractFailed("`url` not found in the info object.");
-    qCWarning(YtDLPWorker_l) << "Extraction failed, url was not found in the object.";
+    qCWarning(YtWorker_l) << "Extraction failed, url was not found in the object.";
   }
 }

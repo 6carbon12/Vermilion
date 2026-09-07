@@ -27,8 +27,8 @@ set(CPP_SOURCES
   src/main.cpp
   src/bindings/PyHelper.cpp
   src/bindings/PyHelper.h
-  src/bindings/YtDLPWorker.cpp
-  src/bindings/YtDLPWorker.h
+  src/bindings/YtWorker.cpp
+  src/bindings/YtWorker.h
   src/core/FileSystem.cpp
   src/core/FileSystem.h
 	src/core/Network.cpp
@@ -50,8 +50,8 @@ qt_add_qml_module(
   QML_FILES
   src/qml/Main.qml
   SOURCES
-  src/managers/YtDLPManager.h
-  src/managers/YtDLPManager.cpp
+  src/managers/YtManager.h
+  src/managers/YtManager.cpp
 )
 
 # `slots` is a macro used by QT

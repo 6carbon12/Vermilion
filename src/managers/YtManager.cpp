@@ -1,16 +1,16 @@
-#include "YtDLPManager.h"
+#include "YtManager.h"
 #include <QDebug>
-#include <QtLogging>
 #include <QLoggingCategory>
+#include <QtLogging>
 
-Q_LOGGING_CATEGORY(mgr, "YtDLPManager")
+Q_LOGGING_CATEGORY(mgr, "YtManager")
 
-YtDLPManager::YtDLPManager(QObject *parent)
+YtManager::YtManager(QObject *parent)
     : QObject(parent), workerThread(nullptr), worker(nullptr), downloader(nullptr) {
   using Core::Network::StreamDownloader;
 
   workerThread = new QThread(this);
-  worker = new YtDLPWorker();
+  worker = new YtWorker();
   downloader = new Core::Network::StreamDownloader();
 
   worker->moveToThread(workerThread);
@@ -18,21 +18,21 @@ YtDLPManager::YtDLPManager(QObject *parent)
   connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
   connect(workerThread, &QThread::finished, downloader, &QObject::deleteLater);
 
-  connect(this, &YtDLPManager::startWorkerInit, worker, &YtDLPWorker::init, Qt::QueuedConnection);
-  connect(this, &YtDLPManager::startExtraction, worker, &YtDLPWorker::extractUrl, Qt::QueuedConnection);
-  connect(this, &YtDLPManager::startSearch, worker, &YtDLPWorker::search, Qt::QueuedConnection);
+  connect(this, &YtManager::startWorkerInit, worker, &YtWorker::init, Qt::QueuedConnection);
+  connect(this, &YtManager::startExtraction, worker, &YtWorker::extractUrl, Qt::QueuedConnection);
+  connect(this, &YtManager::startSearch, worker, &YtWorker::search, Qt::QueuedConnection);
 
-  connect(worker, &YtDLPWorker::initFailed, this, [](PyHelper::Error e) {
+  connect(worker, &YtWorker::initFailed, this, [](PyHelper::Error e) {
     qCFatal(mgr) << "Failed to initalize worker... App might not work." << e.debugContext;
   });
-  connect(worker, &YtDLPWorker::extractSuccess, this,
+  connect(worker, &YtWorker::extractSuccess, this,
           [this](const QString &url, const QMap<QByteArray, QByteArray> &headersMap) {
             downloader->startDownload(url, headersMap);
           });
-  connect(worker, &YtDLPWorker::extractFailed, this, [this](const QString &err) { Q_EMIT extractionFailed(err); });
-  connect(worker, &YtDLPWorker::searchSuccess, this,
+  connect(worker, &YtWorker::extractFailed, this, [this](const QString &err) { Q_EMIT extractionFailed(err); });
+  connect(worker, &YtWorker::searchSuccess, this,
           [this](const QVariantList &results) { Q_EMIT searchSuccess(results); });
-  connect(worker, &YtDLPWorker::searchFailed, this, [this](const QString &err) { Q_EMIT searchFailed(err); });
+  connect(worker, &YtWorker::searchFailed, this, [this](const QString &err) { Q_EMIT searchFailed(err); });
 
   connect(downloader, &StreamDownloader::bufferReady, this,
           [this](const QString &localFileUrl) { Q_EMIT extractionSuccess(localFileUrl); });
@@ -43,11 +43,11 @@ YtDLPManager::YtDLPManager(QObject *parent)
   Q_EMIT startWorkerInit();
 }
 
-YtDLPManager::~YtDLPManager() {
+YtManager::~YtManager() {
   workerThread->quit();
   workerThread->wait();
 }
 
-void YtDLPManager::requestExtraction(const QString &url) { Q_EMIT startExtraction(url); }
+void YtManager::requestExtraction(const QString &url) { Q_EMIT startExtraction(url); }
 
-void YtDLPManager::requestSearch(const QString &query, int maxResults) { Q_EMIT startSearch(query, maxResults); }
+void YtManager::requestSearch(const QString &query, int maxResults) { Q_EMIT startSearch(query, maxResults); }

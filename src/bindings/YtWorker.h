@@ -6,7 +6,7 @@
 #include <qtmetamacros.h>
 
 namespace py = pybind11;
-class YtDLPWorker : public QObject {
+class YtWorker : public QObject {
   Q_OBJECT
 private:
   /* Modules */
@@ -18,8 +18,8 @@ private:
   py::dict getGeneralYdlOpts();
 
 public:
-  explicit YtDLPWorker(QObject *parent = nullptr);
-  ~YtDLPWorker();
+  explicit YtWorker(QObject *parent = nullptr);
+  ~YtWorker();
 public Q_SLOTS:
   void init();
   void extractUrl(const QString &url);
