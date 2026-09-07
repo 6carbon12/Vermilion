@@ -1,21 +1,21 @@
 #pragma once
 
-#include "../bindings/YtDLPWorker.h"
+#include "Network.h"
+#include "YtWorker.h"
 #include <QObject>
 #include <QQmlEngine>
 #include <QString>
 #include <QThread>
 #include <qtmetamacros.h>
-#include "Network.h"
 
-class YtDLPManager : public QObject {
+class YtManager : public QObject {
   Q_OBJECT
   QML_SINGLETON
-  QML_NAMED_ELEMENT(YtDLP)
+  QML_NAMED_ELEMENT(YT)
 
 public:
-  explicit YtDLPManager(QObject *parent = nullptr);
-  ~YtDLPManager() override;
+  explicit YtManager(QObject *parent = nullptr);
+  ~YtManager() override;
 
   Q_INVOKABLE void requestExtraction(const QString &url);
   Q_INVOKABLE void requestSearch(const QString &query, int maxResults = 5);
@@ -28,7 +28,7 @@ Q_SIGNALS:
 
 private:
   QThread *workerThread;
-  YtDLPWorker *worker;
+  YtWorker *worker;
   Core::Network::StreamDownloader *downloader;
 
   Q_SIGNAL void startWorkerInit();
