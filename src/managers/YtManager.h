@@ -14,8 +14,9 @@ class YtManager : public QObject {
   QML_NAMED_ELEMENT(YT)
 
 public:
-  explicit YtManager(QObject *parent = nullptr);
   ~YtManager() override;
+  static YtManager* instance();
+  static YtManager* create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
   Q_INVOKABLE void requestExtraction(const QString &url);
   Q_INVOKABLE void requestSearch(const QString &query, int maxResults = 5);
@@ -27,6 +28,10 @@ Q_SIGNALS:
   void searchFailed(const QString &error);
 
 private:
+  // Constructor is private in order to force QML to use create()
+  // to create the instance
+  explicit YtManager(QObject *parent = nullptr);
+
   QThread *workerThread;
   YtWorker *worker;
   Core::Network::StreamDownloader *downloader;

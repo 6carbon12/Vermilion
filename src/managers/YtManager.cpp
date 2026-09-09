@@ -48,6 +48,17 @@ YtManager::~YtManager() {
   workerThread->wait();
 }
 
+YtManager* YtManager::instance() {
+  static YtManager _instance;
+  return &_instance;
+}
+
+YtManager* YtManager::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
+  Q_UNUSED(qmlEngine);
+  Q_UNUSED(jsEngine);
+  return YtManager::instance();
+}
+
 void YtManager::requestExtraction(const QString &url) { Q_EMIT startExtraction(url); }
 
 void YtManager::requestSearch(const QString &query, int maxResults) { Q_EMIT startSearch(query, maxResults); }
