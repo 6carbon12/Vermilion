@@ -9,9 +9,9 @@ public:
   AndroidPlayer();
   ~AndroidPlayer();
 
-  void play(const QString &filePath) override;
+  void setUrl(const QString &url) override;
+  void play() override;
   void pause() override;
-  void resume() override;
   Core::PlayerState::State getPlayerState() override;
 
 private:

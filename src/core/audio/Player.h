@@ -16,9 +16,9 @@ public:
   ~Player() = default;
 
   static std::unique_ptr<Player> create();
-  virtual void play(const QString &filePath) = 0;
+  virtual void setUrl(const QString &url) = 0;
+  virtual void play() = 0;
   virtual void pause() = 0;
-  virtual void resume() = 0;
   virtual PlayerState getPlayerState() = 0;
 
 protected:
