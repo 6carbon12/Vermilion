@@ -25,10 +25,13 @@ public Q_SLOTS:
   void init();
   void extractUrl(const QString &url);
   void search(const QString &query, int maxResults = 5);
+  void getRelatedTracks(const QString &url);
 Q_SIGNALS:
-  void initFailed(PyHelper::Error e);
+  void initFailed(PyHelper::Error error);
   void extractSuccess(const QString &url, const QMap<QByteArray, QByteArray> &headers);
-  void extractFailed(const QString &e);
+  void extractFailed(const QString &error);
   void searchSuccess(const QList<Core::Track> &results);
   void searchFailed(const QString &error);
+  void getRelatedTracksSuccess(const QList<Core::Track> &tracks);
+  void getRelatedTracksFailed(const QString &error);
 };
