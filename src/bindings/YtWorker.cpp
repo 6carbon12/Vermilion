@@ -2,13 +2,18 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QLoggingCategory>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include <QStandardPaths>
 #include <QString>
 #include <QUrl>
 #include <QVariantList>
 #include <QVariantMap>
 #include <pybind11/embed.h>
+#include <qlogging.h>
+#include <qobject.h>
 #include <qtmetamacros.h>
+#include <string>
 
 namespace py = pybind11;
 
@@ -183,5 +188,75 @@ void YtWorker::extractUrl(const QString &url) {
   } else {
     Q_EMIT extractFailed("`url` not found in the info object.");
     qCWarning(YtWorker_l) << "Extraction failed, url was not found in the object.";
+  }
+}
+
+void YtWorker::getRelatedTracks(const QString &url) {
+  using namespace pybind11::literals;
+  py::gil_scoped_acquire acquire;
+  QList<Core::Track> relatedTracks;
+  QRegularExpression regex("v=([a-zA-Z0-9_-]{11})");
+
+  QRegularExpressionMatch match = regex.match(url);
+  QString videoId{};
+  if (match.hasMatch()) {
+    videoId = match.captured(1);
+    if (videoId.length() != 11) {
+      Q_EMIT getRelatedTracksFailed("Invalid Regex match.");
+      return;
+    }
+  } else {
+    Q_EMIT getRelatedTracksFailed("Invalid URL.");
+    return;
+  }
+
+  std::string videoIdStd = videoId.toStdString();
+  try {
+    py::object output = YTMusic.attr("get_watch_playlist")("videoId"_a = videoIdStd, "radio"_a = true);
+    py::list tracks = output["tracks"].cast<py::list>();
+
+    for (py::handle track : tracks) {
+      py::dict trackDict = track.cast<py::dict>();
+
+      auto getStrMember = [&](const char *member) -> QString {
+        if (trackDict.contains(member) && !trackDict[member].is_none()) {
+          return QString::fromStdString(trackDict[member].cast<std::string>());
+        } else {
+          qCWarning(YtWorker_l) << "Unable to get member: " << member << ". From a result of ytmusicapi";
+          return "N/A";
+        }
+      };
+
+      Core::Track resultData;
+      resultData.title = getStrMember("title");
+      qCDebug(YtWorker_l) << "Got reated title: " << resultData.title;
+      resultData.url = "https://youtube.com/watch?v=" + getStrMember("videoId");
+      resultData.views = getStrMember("views");
+      resultData.duration = getStrMember("length");
+
+      if (trackDict.contains("thumbnails") && !trackDict["thumbnails"].is_none()) {
+        py::list thumbs = trackDict["thumbnails"].cast<py::list>();
+        if (!thumbs.empty()) {
+          py::dict bestThumb = thumbs[thumbs.size() - 1].cast<py::dict>();
+          std::string thumbUrl = bestThumb["url"].cast<std::string>();
+          resultData.thumbnailUrl = QString::fromStdString(thumbUrl);
+        } else {
+          qCWarning(YtWorker_l) << "Thumbnails empty";
+        }
+      } else {
+        qCWarning(YtWorker_l) << "Unable to get member: " << "thumbnails" << ". From a result of ytmusicapi";
+      }
+
+      relatedTracks.append(resultData);
+    }
+
+    qCDebug(YtWorker_l) << "Related tracks fetched successfully.";
+    Q_EMIT getRelatedTracksSuccess(relatedTracks);
+  } catch (const py::error_already_set &e) {
+    qCDebug(YtWorker_l) << "Related tracks failed to get\n" << e.what();
+    Q_EMIT getRelatedTracksFailed(QString::fromStdString(e.what()));
+  } catch (const std::exception &e) {
+    qCDebug(YtWorker_l) << "Related tracks failed to get\n" << e.what();
+    Q_EMIT getRelatedTracksFailed(QString::fromStdString(e.what()));
   }
 }
