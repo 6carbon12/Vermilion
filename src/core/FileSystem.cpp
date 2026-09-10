@@ -32,6 +32,7 @@ std::expected<void, Error> copyDirectoryRecursively(const QString &sourceDir, co
     }
 
     if (QFile::exists(tgtPath)) {
+      QFile::setPermissions(tgtPath, QFile::ReadOwner | QFile::WriteOwner);
       if (!QFile::remove(tgtPath)) {
         return std::unexpected(Error{ErrorReason::DeletionFailed, tgtPath, "The given file couldn't be deleted."});
       }
@@ -40,6 +41,8 @@ std::expected<void, Error> copyDirectoryRecursively(const QString &sourceDir, co
     if (!QFile::copy(srcPath, tgtPath)) {
       return std::unexpected(Error{ErrorReason::CopyFailed, tgtPath, "Failed to copy a file to the given target."});
     }
+
+    QFile::setPermissions(tgtPath, QFile::ReadOwner | QFile::WriteOwner | QFile::ReadUser | QFile::WriteUser);
   }
 
   return {};
