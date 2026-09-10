@@ -2,6 +2,7 @@
 
 #include "Network.h"
 #include "YtWorker.h"
+#include "Track.h"
 #include <QObject>
 #include <QQmlEngine>
 #include <QString>
@@ -18,13 +19,13 @@ public:
   static YtManager* instance();
   static YtManager* create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
-  Q_INVOKABLE void requestExtraction(const QString &url);
+  void requestExtraction(const QString &url);
   Q_INVOKABLE void requestSearch(const QString &query, int maxResults = 5);
 
 Q_SIGNALS:
   void extractionSuccess(const QString &url);
   void extractionFailed(const QString &error);
-  void searchSuccess(const QVariantList &results);
+  void searchSuccess(const QList<Core::Track> &results);
   void searchFailed(const QString &error);
 
 private:

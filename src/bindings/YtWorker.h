@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PyHelper.h"
+#include "Track.h"
 #include <QObject>
 #include <pybind11/embed.h>
 #include <qtmetamacros.h>
@@ -28,6 +29,6 @@ Q_SIGNALS:
   void initFailed(PyHelper::Error e);
   void extractSuccess(const QString &url, const QMap<QByteArray, QByteArray> &headers);
   void extractFailed(const QString &e);
-  void searchSuccess(const QVariantList &results);
+  void searchSuccess(const QList<Core::Track> &results);
   void searchFailed(const QString &error);
 };

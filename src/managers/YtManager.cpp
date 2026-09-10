@@ -31,7 +31,7 @@ YtManager::YtManager(QObject *parent)
           });
   connect(worker, &YtWorker::extractFailed, this, [this](const QString &err) { Q_EMIT extractionFailed(err); });
   connect(worker, &YtWorker::searchSuccess, this,
-          [this](const QVariantList &results) { Q_EMIT searchSuccess(results); });
+          [this](const QList<Core::Track> &results) { Q_EMIT searchSuccess(results); });
   connect(worker, &YtWorker::searchFailed, this, [this](const QString &err) { Q_EMIT searchFailed(err); });
 
   connect(downloader, &StreamDownloader::bufferReady, this,

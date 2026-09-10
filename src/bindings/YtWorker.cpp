@@ -106,7 +106,7 @@ void YtWorker::search(const QString &query, int maxResults) {
   using namespace pybind11::literals;
   py::gil_scoped_acquire acquire;
 
-  QVariantList resultsList;
+  QList<Core::Track> resultsList;
   try {
     py::object results = YTMusic.attr("search")(query.toStdString(), "filter"_a = "songs", "limit"_a = maxResults);
 
@@ -122,18 +122,18 @@ void YtWorker::search(const QString &query, int maxResults) {
         }
       };
 
-      QVariantMap resultData;
-      resultData["title"] = getStrMember("title");
-      resultData["url"] = "https://youtube.com/watch?v=" + getStrMember("videoId");
-      resultData["viewCount"] = getStrMember("views");
-      resultData["duration"] = getStrMember("duration");
+      Core::Track resultData;
+      resultData.title = getStrMember("title");
+      resultData.url = "https://youtube.com/watch?v=" + getStrMember("videoId");
+      resultData.views = getStrMember("views");
+      resultData.duration = getStrMember("duration");
 
       if (resultDict.contains("thumbnails") && !resultDict["thumbnails"].is_none()) {
         py::list thumbs = resultDict["thumbnails"].cast<py::list>();
         if (!thumbs.empty()) {
           py::dict bestThumb = thumbs[thumbs.size() - 1].cast<py::dict>();
           std::string thumbUrl = bestThumb["url"].cast<std::string>();
-          resultData["thumbnail"] = QString::fromStdString(thumbUrl);
+          resultData.thumbnailUrl = QString::fromStdString(thumbUrl);
         } else {
           qCWarning(YtWorker_l) << "Thumbnails empty";
         }
