@@ -33,10 +33,15 @@ set(CPP_SOURCES
   src/core/FileSystem.h
 	src/core/Network.cpp
 	src/core/Network.h
+	src/core/audio/Player.cpp
+	src/core/audio/Player.h
+  src/core/audio/AndroidPlayer.cpp
+  src/core/audio/AndroidPlayer.h
 )
 
 set(CPP_INCLUDES
   src/core
+  src/core/audio
   src/bindings
   src/managers
 )
@@ -52,11 +57,14 @@ qt_add_qml_module(
   SOURCES
   src/managers/YtManager.h
   src/managers/YtManager.cpp
+  src/managers/PlayerManager.h
+  src/managers/PlayerManager.cpp
+  src/core/audio/PlayerState.h
 )
 
 # `slots` is a macro used by QT
 # but `slots` is used as a variable in Python C API
-# So we disable that keywork with this:
+# So we disable that keyword with this:
 target_compile_definitions(${APP_NAME} PRIVATE QT_NO_KEYWORDS)
 
 target_include_directories(${APP_NAME} PRIVATE ${CPP_INCLUDES})

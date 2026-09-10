@@ -1,0 +1,27 @@
+#pragma once
+#include "PlayerState.h"
+#include <QDir>
+#include <memory>
+#include <qqmlintegration.h>
+#include <qtmetamacros.h>
+
+namespace Core {
+
+class Player : public QObject {
+  Q_OBJECT
+
+public:
+  using PlayerState = Core::PlayerState::State;
+  explicit Player(QObject *parent = nullptr) : QObject(parent) {};
+  ~Player() = default;
+
+  static std::unique_ptr<Player> create();
+  virtual void play(const QString &filePath) = 0;
+  virtual void pause() = 0;
+  virtual void resume() = 0;
+  virtual PlayerState getPlayerState() = 0;
+
+protected:
+  PlayerState state{PlayerState::Initialized};
+};
+} // namespace Core
