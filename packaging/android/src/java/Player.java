@@ -61,9 +61,11 @@ public class Player {
   }
 
   public void release() {
-    if (exoPlayer != null) {
-      exoPlayer.release();
-      exoPlayer = null;
-    }
+    ((Activity) context).runOnUiThread(() -> {
+      if (exoPlayer != null) {
+        exoPlayer.release();
+        exoPlayer = null;
+      }
+    });
   }
 }

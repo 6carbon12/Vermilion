@@ -26,6 +26,8 @@ YtWorker::~YtWorker() {
     py::gil_scoped_acquire acquire;
     YoutubeDL = py::object();
     yt_dlp = py::object();
+    YTMusic = py::object();
+    ytmusicapi = py::object();
   }
 }
 

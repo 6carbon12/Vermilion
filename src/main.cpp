@@ -50,14 +50,22 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  py::gil_scoped_release release;
-  QQmlApplicationEngine engine;
-  QObject::connect(
-      &engine, &QQmlApplicationEngine::objectCreationFailed, &app, []() { QCoreApplication::exit(-1); },
-      Qt::QueuedConnection);
+  int exitCode = 0;
 
-  engine.loadFromModule("Vermilion", "Main");
-  int exitCode = app.exec();
+  // Create a new scope block for the engine and the `GIL` release
+  {
+    py::gil_scoped_release release;
+    QQmlApplicationEngine engine;
+
+    QObject::connect(
+        &engine, &QQmlApplicationEngine::objectCreationFailed, &app, []() { QCoreApplication::exit(-1); },
+        Qt::QueuedConnection);
+    engine.loadFromModule("Vermilion", "Main");
+
+    exitCode = app.exec();
+  }
+
   py::finalize_interpreter();
+
   return exitCode;
 }
