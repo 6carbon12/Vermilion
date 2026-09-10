@@ -1,4 +1,4 @@
-#include "./bindings/PyHelper.h"
+#include "PyHelper.h"
 #include <QDir>
 #include <QFile>
 #include <QGuiApplication>
@@ -18,11 +18,6 @@
 #include <qloggingcategory.h>
 #include <qtenvironmentvariables.h>
 
-#ifdef Q_OS_ANDROID
-#include <QCoreApplication>
-#include <QJniObject>
-#endif
-
 namespace py = pybind11;
 using namespace py::literals;
 
@@ -31,28 +26,27 @@ Q_LOGGING_CATEGORY(vermilion, "Vermilion")
 int main(int argc, char *argv[]) {
   QGuiApplication app(argc, argv);
   app.setApplicationName("Vermilion");
-  qRegisterMetaType<QMap<QByteArray, QByteArray>>("QMap<QByteArray,QByteArray>");
+  qRegisterMetaType<QMap<QByteArray, QByteArray>>();
 
-  auto res = PyHelper::init();
   if (auto result = PyHelper::init(); !result) {
     auto e = result.error();
-    qCDebug(vermilion) << "Failed to initialize python.";
-    qCDebug(vermilion) << "Error in: " << e.location.file_name() << " at " << e.location.function_name() << ":"
+    qCFatal(vermilion) << "Failed to initialize python.";
+    qCFatal(vermilion) << "Error in: " << e.location.file_name() << " at " << e.location.function_name() << ":"
                        << e.location.line();
-    qCDebug(vermilion) << e.debugContext;
+    qCFatal(vermilion) << e.debugContext;
     return -1;
   }
 
   try {
     py::initialize_interpreter();
   } catch (const py::error_already_set &e) {
-    qCDebug(vermilion) << e.what();
+    qCFatal(vermilion) << e.what();
     return -1;
   } catch (const std::exception &e) {
-    qCDebug(vermilion) << "Failed to initialize python interpreter:" << e.what();
+    qCFatal(vermilion) << "Failed to initialize python interpreter:" << e.what();
     return -1;
   } catch (...) {
-    qCDebug(vermilion) << "Unknown fatal error during python initialization.";
+    qCFatal(vermilion) << "Unknown fatal error during python initialization.";
     return -1;
   }
 
