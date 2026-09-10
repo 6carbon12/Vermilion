@@ -25,6 +25,8 @@ public:
   Q_INVOKABLE void setUrl(const QString &url);
   Q_INVOKABLE void play();
   Q_INVOKABLE void pause();
+  Q_INVOKABLE void next();
+  Q_INVOKABLE void prev();
   PlayerState getPlayerState();
 
 Q_SIGNALS:
@@ -34,6 +36,10 @@ Q_SIGNALS:
 private:
   explicit PlayerManager(QObject *parent = nullptr);
   QString currentUrl{};
+  int currentTrackIndex{};
+  QList<Core::Track> tracks{};
   std::unique_ptr<Core::Player> player;
   YtManager *YT;
+
+  bool playAfterExtract{false};
 };
