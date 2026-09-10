@@ -1,4 +1,5 @@
 #include "YtManager.h"
+#include <QCoreApplication>
 #include <QDebug>
 #include <QLoggingCategory>
 #include <QtLogging>
@@ -45,6 +46,13 @@ YtManager::YtManager(QObject *parent) : QObject(parent), workerThread(nullptr), 
 
   workerThread->start();
   Q_EMIT startWorkerInit();
+
+  connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, [this]() {
+    if (workerThread->isRunning()) {
+      workerThread->quit();
+      workerThread->wait();
+    }
+  });
 }
 
 YtManager::~YtManager() {
@@ -60,7 +68,9 @@ YtManager *YtManager::instance() {
 YtManager *YtManager::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
   Q_UNUSED(qmlEngine);
   Q_UNUSED(jsEngine);
-  return YtManager::instance();
+  YtManager *inst = YtManager::instance();
+  QQmlEngine::setObjectOwnership(inst, QQmlEngine::CppOwnership);
+  return inst;
 }
 
 void YtManager::requestExtraction(const QString &url) { Q_EMIT startExtraction(url); }

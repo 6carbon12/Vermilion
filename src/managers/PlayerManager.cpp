@@ -1,4 +1,5 @@
 #include "PlayerManager.h"
+#include <QCoreApplication>
 #include <qloggingcategory.h>
 #include <qtmetamacros.h>
 #include <qtpreprocessorsupport.h>
@@ -27,6 +28,10 @@ PlayerManager::PlayerManager(QObject *parent) : QObject(parent) {
           [this](const QList<Core::Track> &realtedTracks) { tracks = realtedTracks; });
   connect(YT, &YtManager::getRelatedTracksFailed, this, [this](const QString &error) { Q_EMIT errorOccured(error); });
 
+  connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, [this]() {
+    player.reset();
+  });
+
   qCDebug(PlayerManager_l) << "Initalization complete.";
 }
 
@@ -38,7 +43,9 @@ PlayerManager *PlayerManager::instance() {
 PlayerManager *PlayerManager::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
   Q_UNUSED(qmlEngine);
   Q_UNUSED(jsEngine);
-  return PlayerManager::instance();
+  PlayerManager *inst = PlayerManager::instance();
+  QQmlEngine::setObjectOwnership(inst, QQmlEngine::CppOwnership);
+  return inst;
 }
 
 void PlayerManager::setUrl(const QString &url) {
