@@ -61,6 +61,11 @@ std::expected<void, Error> installModule(const QString &modulePath, const QStrin
   QDir().mkpath(sitePkgs);
   QString moduleTgtPath = sitePkgs + "/" + (moduleName.isEmpty() ? modulePath.section('/', -1) : moduleName);
 
+  if (QDir(moduleTgtPath).exists() && !QDir(moduleTgtPath).isEmpty()) {
+    qCDebug(PyHelper) << "Module already exists, skipping installation:" << moduleTgtPath;
+    return {};
+  }
+
   auto result = Core::FileSystem::copyDirectoryRecursively(modulePath, moduleTgtPath);
 
   if (result) {
