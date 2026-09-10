@@ -12,11 +12,7 @@ PlayerManager::PlayerManager(QObject *parent) : QObject(parent) {
   YT = YtManager::instance();
 
   connect(YT, &YtManager::extractionSuccess, this, [this](const QString &filePath) {
-    qCDebug(PlayerManager_l) << "Playing file: " << filePath;
-    if (player) {
-      player->play(filePath);
-      Q_EMIT playerStateChanged();
-    }
+    player->setUrl(filePath);
   });
   connect(YT, &YtManager::extractionFailed, this,
           [](const QString &error) { qDebug() << "Extraction failed" << error; });
@@ -35,21 +31,19 @@ PlayerManager *PlayerManager::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine)
   return PlayerManager::instance();
 }
 
-void PlayerManager::play(const QString &url) { YT->requestExtraction(url); }
+void PlayerManager::setUrl(const QString &url) {
+  currentUrl = url;
+  YT->requestExtraction(url);
+}
+
+void PlayerManager::play() {
+  player->play();
+  Q_EMIT playerStateChanged();
+}
 
 PlayerState PlayerManager::getPlayerState() { return player ? player->getPlayerState() : PlayerState::Error; }
 
 void PlayerManager::pause() {
-  if (player) {
-    player->pause();
-    Q_EMIT playerStateChanged();
-  }
+  player->pause();
+  Q_EMIT playerStateChanged();
 }
-
-void PlayerManager::resume() {
-  if (player) {
-    player->resume();
-    Q_EMIT playerStateChanged();
-  }
-}
-

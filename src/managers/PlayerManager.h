@@ -22,9 +22,9 @@ public:
   static PlayerManager *instance();
   static PlayerManager *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
-  Q_INVOKABLE void play(const QString &url);
+  Q_INVOKABLE void setUrl(const QString &url);
+  Q_INVOKABLE void play();
   Q_INVOKABLE void pause();
-  Q_INVOKABLE void resume();
   PlayerState getPlayerState();
 
 Q_SIGNALS:
@@ -33,6 +33,7 @@ Q_SIGNALS:
 
 private:
   explicit PlayerManager(QObject *parent = nullptr);
+  QString currentUrl{};
   std::unique_ptr<Core::Player> player;
   YtManager *YT;
 };

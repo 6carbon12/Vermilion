@@ -21,15 +21,25 @@ AndroidPlayer::~AndroidPlayer() {
   }
 }
 
-void AndroidPlayer::play(const QString &url) {
+void AndroidPlayer::setUrl(const QString &url) {
   if (!player.isValid()) {
     qDebug() << "AndroidPlayer: Player object isn't valid.";
     return;
   }
 
   QJniObject jUrl = QJniObject::fromString(url);
+  jstring jUrlStr = jUrl.object<jstring>();
+  player.callMethod<void>("setUrl", jUrlStr);
+  state = PlayerState::Playing;
+}
 
-  player.callMethod<void>("play", "(Ljava/lang/String;)V", jUrl.object());
+void AndroidPlayer::play() {
+  if (!player.isValid()) {
+    qDebug() << "AndroidPlayer: Player object isn't valid.";
+    return;
+  }
+
+  player.callMethod<void>("play");
   qDebug() << "AndroidPlayer: Playing song now. Setting state.";
   state = PlayerState::Playing;
   qDebug() << "AndroidPlayer: Playing song now. Set state to Playing.";
@@ -43,16 +53,6 @@ void AndroidPlayer::pause() {
 
   player.callMethod<void>("pause");
   state = PlayerState::Paused;
-}
-
-void AndroidPlayer::resume() {
-  if (!player.isValid()) {
-    qDebug() << "AndroidPlayer: Player object isn't valid.";
-    return;
-  }
-
-  player.callMethod<void>("resume");
-  state = PlayerState::Playing;
 }
 
 Core::PlayerState::State AndroidPlayer::getPlayerState() {

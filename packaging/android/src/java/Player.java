@@ -13,7 +13,7 @@ public class Player {
     this.exoPlayer = new ExoPlayer.Builder(context).build();
   }
 
-  public void play(String url) {
+  public void setUrl(String url) {
     if (!(context instanceof Activity)) {
       return;
     }
@@ -23,8 +23,21 @@ public class Player {
         Uri mediaUri = Uri.parse(url);
         exoPlayer.setMediaItem(MediaItem.fromUri(mediaUri));
         exoPlayer.prepare();
-        exoPlayer.play();
 
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    });
+  }
+
+  public void play() {
+    if (!(context instanceof Activity)) {
+      return;
+    }
+
+    ((Activity) context).runOnUiThread(() -> {
+      try {
+        exoPlayer.play();
       } catch (Exception e) {
         e.printStackTrace();
       }
