@@ -7,6 +7,7 @@
 #include <QQmlEngine>
 #include <QString>
 #include <QThread>
+#include <qlist.h>
 #include <qtmetamacros.h>
 
 class YtManager : public QObject {
@@ -20,6 +21,7 @@ public:
   static YtManager* create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
   void requestExtraction(const QString &url);
+  void getRelatedTracks(const QString &url);
   Q_INVOKABLE void requestSearch(const QString &query, int maxResults = 5);
 
 Q_SIGNALS:
@@ -27,9 +29,11 @@ Q_SIGNALS:
   void extractionFailed(const QString &error);
   void searchSuccess(const QList<Core::Track> &results);
   void searchFailed(const QString &error);
+  void getRelatedTracksSuccess(const QList<Core::Track> &tracks);
+  void getRelatedTracksFailed(const QString &error);
 
 private:
-  // Constructor is private in order to force QML to use create()
+  // Constructor is private in order to force `QML` Engine to use create()
   // to create the instance
   explicit YtManager(QObject *parent = nullptr);
 
@@ -40,4 +44,5 @@ private:
   Q_SIGNAL void startWorkerInit();
   Q_SIGNAL void startExtraction(const QString &url);
   Q_SIGNAL void startSearch(const QString &query, int maxResults);
+  Q_SIGNAL void startGetRelatedTracks(const QString &url);
 };
