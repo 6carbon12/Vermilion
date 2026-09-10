@@ -60,6 +60,7 @@ qt_add_qml_module(
   src/managers/PlayerManager.h
   src/managers/PlayerManager.cpp
   src/core/audio/PlayerState.h
+  src/core/audio/Track.h
 )
 
 # `slots` is a macro used by QT
