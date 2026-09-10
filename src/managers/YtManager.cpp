@@ -5,8 +5,7 @@
 
 Q_LOGGING_CATEGORY(mgr, "YtManager")
 
-YtManager::YtManager(QObject *parent)
-    : QObject(parent), workerThread(nullptr), worker(nullptr), downloader(nullptr) {
+YtManager::YtManager(QObject *parent) : QObject(parent), workerThread(nullptr), worker(nullptr), downloader(nullptr) {
   using Core::Network::StreamDownloader;
 
   workerThread = new QThread(this);
@@ -21,6 +20,7 @@ YtManager::YtManager(QObject *parent)
   connect(this, &YtManager::startWorkerInit, worker, &YtWorker::init, Qt::QueuedConnection);
   connect(this, &YtManager::startExtraction, worker, &YtWorker::extractUrl, Qt::QueuedConnection);
   connect(this, &YtManager::startSearch, worker, &YtWorker::search, Qt::QueuedConnection);
+  connect(this, &YtManager::startGetRelatedTracks, worker, &YtWorker::getRelatedTracks, Qt::QueuedConnection);
 
   connect(worker, &YtWorker::initFailed, this, [](PyHelper::Error e) {
     qCFatal(mgr) << "Failed to initalize worker... App might not work." << e.debugContext;
@@ -33,6 +33,10 @@ YtManager::YtManager(QObject *parent)
   connect(worker, &YtWorker::searchSuccess, this,
           [this](const QList<Core::Track> &results) { Q_EMIT searchSuccess(results); });
   connect(worker, &YtWorker::searchFailed, this, [this](const QString &err) { Q_EMIT searchFailed(err); });
+  connect(worker, &YtWorker::getRelatedTracksFailed, this,
+          [this](const QString &err) { Q_EMIT getRelatedTracksFailed(err); });
+  connect(worker, &YtWorker::getRelatedTracksSuccess, this,
+          [this](const QList<Core::Track> &tracks) { Q_EMIT getRelatedTracksSuccess(tracks); });
 
   connect(downloader, &StreamDownloader::bufferReady, this,
           [this](const QString &localFileUrl) { Q_EMIT extractionSuccess(localFileUrl); });
@@ -48,12 +52,12 @@ YtManager::~YtManager() {
   workerThread->wait();
 }
 
-YtManager* YtManager::instance() {
+YtManager *YtManager::instance() {
   static YtManager _instance;
   return &_instance;
 }
 
-YtManager* YtManager::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
+YtManager *YtManager::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
   Q_UNUSED(qmlEngine);
   Q_UNUSED(jsEngine);
   return YtManager::instance();
@@ -62,3 +66,5 @@ YtManager* YtManager::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
 void YtManager::requestExtraction(const QString &url) { Q_EMIT startExtraction(url); }
 
 void YtManager::requestSearch(const QString &query, int maxResults) { Q_EMIT startSearch(query, maxResults); }
+
+void YtManager::getRelatedTracks(const QString &url) { Q_EMIT startGetRelatedTracks(url); }
