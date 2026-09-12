@@ -71,9 +71,22 @@ void AndroidPlayer::seekTo(long positionMs) {
     return;
   }
 
-  qDebug() << "AndroidPlayer: Seeking to: " << positionMs/1000.0 << "s";
   jlong jPostitionMs = static_cast<jlong>(positionMs);
 
   player.callMethod<void>("seekTo", jPostitionMs);
+}
+
+long AndroidPlayer::getCurrentPosition() {
+  if (!player.isValid()) {
+    return 0;
+  }
+  return player.callMethod<jlong>("getCurrentPosition");
+}
+
+long AndroidPlayer::getDuration() {
+  if (!player.isValid()) {
+    return 0;
+  }
+  return player.callMethod<jlong>("getDuration");
 }
 } // namespace Core
