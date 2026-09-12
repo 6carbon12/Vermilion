@@ -20,6 +20,8 @@ public:
   virtual void play() = 0;
   virtual void pause() = 0;
   virtual void seekTo(long positionMs) = 0;
+  virtual long getCurrentPosition() = 0;
+  virtual long getDuration() = 0;
   virtual PlayerState getPlayerState() = 0;
 
 protected:

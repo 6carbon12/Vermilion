@@ -13,6 +13,8 @@ public:
   void play() override;
   void pause() override;
   void seekTo(long positionMs) override;
+  long getCurrentPosition() override;
+  long getDuration() override;
   Core::PlayerState::State getPlayerState() override;
 
 private:
