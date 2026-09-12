@@ -93,3 +93,8 @@ void PlayerManager::prev() {
   playAfterExtract = true;
   YT->requestExtraction(currentUrl);
 }
+
+void PlayerManager::seekTo(long postionMs) {
+  qCDebug(PlayerManager_l) << "Seeking to: " << postionMs/1000.0 << "s";
+  player->seekTo(postionMs);
+}

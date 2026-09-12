@@ -27,6 +27,7 @@ public:
   Q_INVOKABLE void pause();
   Q_INVOKABLE void next();
   Q_INVOKABLE void prev();
+  Q_INVOKABLE void seekTo(long postionMs);
   PlayerState getPlayerState();
 
 Q_SIGNALS:
