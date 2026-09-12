@@ -11,6 +11,8 @@ PlayerManager::PlayerManager(QObject *parent) : QObject(parent) {
   qCDebug(PlayerManager_l) << "Called private constructor.";
   player = Core::Player::create();
   YT = YtManager::instance();
+  progressTimer = new QTimer(this);
+  progressTimer->setInterval(200);
 
   connect(YT, &YtManager::extractionSuccess, this, [this](const QString &filePath) {
     player->setUrl(filePath);
@@ -28,10 +30,14 @@ PlayerManager::PlayerManager(QObject *parent) : QObject(parent) {
           [this](const QList<Core::Track> &realtedTracks) { tracks = realtedTracks; });
   connect(YT, &YtManager::getRelatedTracksFailed, this, [this](const QString &error) { Q_EMIT errorOccured(error); });
 
-  connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, [this]() {
-    player.reset();
-  });
+  connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, [this]() { player.reset(); });
 
+  connect(progressTimer, &QTimer::timeout, this, [this]() {
+    if (getPlayerState() == PlayerState::Playing) {
+      Q_EMIT positionChanged();
+      Q_EMIT durationChanged();
+    }
+  });
   qCDebug(PlayerManager_l) << "Initalization complete.";
 }
 
@@ -57,11 +63,13 @@ void PlayerManager::setUrl(const QString &url) {
 
 void PlayerManager::play() {
   player->play();
+  progressTimer->start();
   Q_EMIT playerStateChanged();
 }
 
 void PlayerManager::pause() {
   player->pause();
+  progressTimer->stop();
   Q_EMIT playerStateChanged();
 }
 
@@ -95,6 +103,9 @@ void PlayerManager::prev() {
 }
 
 void PlayerManager::seekTo(long postionMs) {
-  qCDebug(PlayerManager_l) << "Seeking to: " << postionMs/1000.0 << "s";
   player->seekTo(postionMs);
 }
+
+long PlayerManager::getPosition() { return player ? player->getCurrentPosition() : 0; }
+
+long PlayerManager::getDuration() { return player ? player->getDuration() : 0; }
