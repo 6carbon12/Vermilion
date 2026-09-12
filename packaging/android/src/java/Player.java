@@ -11,7 +11,28 @@ public class Player {
   public Player(Context context) {
     this.context = context;
     this.exoPlayer = new ExoPlayer.Builder(context).build();
+
+    this.exoPlayer.addListener(new androidx.media3.common.Player.Listener() {
+      @Override
+      public void onPlaybackStateChanged(int playbackState) {
+        if (playbackState == androidx.media3.common.Player.STATE_ENDED) {
+          onTrackEnded();
+        }
+      }
+
+      @Override
+      public void onPlayerError(androidx.media3.common.PlaybackException error) {
+        // TODO: Handle case: EOF can be reached if there is a network error and the file is not fully downloaded
+        if (error.getCause() instanceof java.io.EOFException ||
+            error.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_IO_UNSPECIFIED) {
+          onTrackEnded();
+        }
+      }
+    });
   }
+
+
+  private native void onTrackEnded();
 
   public void setUrl(String url) {
     if (!(context instanceof Activity)) {

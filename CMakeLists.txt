@@ -37,6 +37,7 @@ set(CPP_SOURCES
 	src/core/audio/Player.h
   src/core/audio/AndroidPlayer.cpp
   src/core/audio/AndroidPlayer.h
+  src/bindings/java/onTrackEnded.cpp
 )
 
 set(CPP_INCLUDES
