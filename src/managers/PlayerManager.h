@@ -7,6 +7,7 @@
 #include <QQmlEngine>
 #include <QString>
 #include <QThread>
+#include <QTimer>
 #include <qtmetamacros.h>
 
 class PlayerManager : public QObject {
@@ -14,6 +15,8 @@ class PlayerManager : public QObject {
   QML_SINGLETON
   QML_NAMED_ELEMENT(Player)
   Q_PROPERTY(Core::PlayerState::State playerState READ getPlayerState NOTIFY playerStateChanged)
+  Q_PROPERTY(long position READ getPosition NOTIFY positionChanged)
+  Q_PROPERTY(long duration READ getDuration NOTIFY durationChanged)
 
 public:
   using PlayerState = Core::PlayerState::State;
@@ -28,10 +31,14 @@ public:
   Q_INVOKABLE void next();
   Q_INVOKABLE void prev();
   Q_INVOKABLE void seekTo(long postionMs);
+  Q_INVOKABLE long getPosition();
+  Q_INVOKABLE long getDuration();
   PlayerState getPlayerState();
 
 Q_SIGNALS:
   void playerStateChanged();
+  void positionChanged();
+  void durationChanged();
   void errorOccured(const QString &error);
 
 private:
@@ -41,6 +48,7 @@ private:
   QList<Core::Track> tracks{};
   std::unique_ptr<Core::Player> player;
   YtManager *YT;
+  QTimer *progressTimer;
 
   bool playAfterExtract{false};
 };
