@@ -73,10 +73,14 @@ public class Player {
     });
   }
 
-  public void resume() {
+  public void seekTo(long positionMs) {
+    if (!(context instanceof Activity)) {
+      return;
+    }
+
     ((Activity) context).runOnUiThread(() -> {
-      if (exoPlayer != null && !exoPlayer.isPlaying()) {
-        exoPlayer.play();
+      if (exoPlayer != null) {
+        exoPlayer.seekTo(positionMs);
       }
     });
   }
