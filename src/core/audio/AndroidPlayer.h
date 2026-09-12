@@ -12,6 +12,7 @@ public:
   void setUrl(const QString &url) override;
   void play() override;
   void pause() override;
+  void seekTo(long positionMs) override;
   Core::PlayerState::State getPlayerState() override;
 
 private:
