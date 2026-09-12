@@ -1,6 +1,7 @@
 #include "AndroidPlayer.h"
 #include <QGuiApplication>
 #include <QJniObject>
+#include <jni.h>
 
 namespace Core {
 AndroidPlayer::AndroidPlayer() {
@@ -63,4 +64,16 @@ Core::PlayerState::State AndroidPlayer::getPlayerState() {
 
   return state;
 };
+
+void AndroidPlayer::seekTo(long positionMs) {
+  if (!player.isValid()) {
+    qDebug() << "AndroidPlayer: Player object isn't valid.";
+    return;
+  }
+
+  qDebug() << "AndroidPlayer: Seeking to: " << positionMs/1000.0 << "s";
+  jlong jPostitionMs = static_cast<jlong>(positionMs);
+
+  player.callMethod<void>("seekTo", jPostitionMs);
+}
 } // namespace Core
