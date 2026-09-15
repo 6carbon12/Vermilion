@@ -19,9 +19,13 @@ apply plugin: qtGradlePluginType
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
-    //noinspection GradleDependency
     implementation 'androidx.core:core:1.17.0'
-    implementation "androidx.media3:media3-exoplayer:1.4.0"
+
+    def media3_version = "1.4.0"
+    implementation "androidx.media3:media3-exoplayer:$media3_version"
+    implementation "androidx.media3:media3-session:$media3_version"
+
+    implementation 'com.google.guava:guava:32.1.3-android'
 }
 
 android {
