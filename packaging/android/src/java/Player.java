@@ -1,30 +1,38 @@
+import io.github.x6carbon12.vermilion.PlaybackService;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.content.Context;
-import android.net.Uri;
+import androidx.core.content.ContextCompat;
 import androidx.media3.common.MediaItem;
-import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.common.PlaybackException;
+import androidx.media3.common.Player.Listener;
+import androidx.media3.session.MediaController;
+import androidx.media3.session.SessionToken;
+import com.google.common.util.concurrent.ListenableFuture;
 
 public class Player {
-  private ExoPlayer exoPlayer;
+  private MediaController mediaController;
+  private ListenableFuture<MediaController> controllerFuture;
   private Context context;
 
   private volatile long cachedPosition = 0;
   private volatile long cachedDuration = 0;
 
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
-
   private final Runnable updateProgressAction = new Runnable() {
     @Override
     public void run() {
-      if (exoPlayer != null) {
-        boolean isPlaying = exoPlayer.isPlaying();
-        int state = exoPlayer.getPlaybackState();
+      if (mediaController != null) {
+        boolean isPlaying = mediaController.isPlaying();
+        int state = mediaController.getPlaybackState();
 
         if (isPlaying) {
-          cachedPosition = exoPlayer.getCurrentPosition();
-          long duration = exoPlayer.getDuration();
+          cachedPosition = mediaController.getCurrentPosition();
+          long duration = mediaController.getDuration();
           cachedDuration = duration < 0 ? 0 : duration;
         }
 
@@ -37,24 +45,47 @@ public class Player {
 
   public Player(Context context) {
     this.context = context;
-    this.exoPlayer = new ExoPlayer.Builder(context).build();
 
-    this.exoPlayer.addListener(new androidx.media3.common.Player.Listener() {
-      @Override
-      public void onPlaybackStateChanged(int playbackState) {
-        if (playbackState == androidx.media3.common.Player.STATE_ENDED) {
-          onTrackEnded();
-        }
-      }
+    Intent intent = new Intent(context, PlaybackService.class);
+    ContextCompat.startForegroundService(context, intent);
 
-      @Override
-      public void onPlayerError(androidx.media3.common.PlaybackException error) {
-        if (error.getCause() instanceof java.io.EOFException ||
-            error.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_IO_UNSPECIFIED) {
-          onTrackEnded();
+    SessionToken sessionToken =
+      new SessionToken(context, new ComponentName(context, PlaybackService.class));
+
+    controllerFuture = new MediaController.Builder(context, sessionToken).buildAsync();
+
+    controllerFuture.addListener(() -> {
+      try {
+        mediaController = controllerFuture.get();
+
+        mediaController.addListener(new Listener() {
+          @Override
+          public void onPlaybackStateChanged(int playbackState) {
+            if (playbackState == androidx.media3.common.Player.STATE_ENDED) {
+              safeOnTrackEnded();
             }
+          }
+
+          @Override
+          public void onPlayerError(PlaybackException error) {
+            if (error.getCause() instanceof java.io.EOFException ||
+                error.errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED) {
+              safeOnTrackEnded();
+                }
+          }
+        });
+      } catch (Exception e) {
+        Log.e("Player", "Failed to connect to MediaSessionService", e);
       }
-    });
+    }, ContextCompat.getMainExecutor(context)); 
+  }
+
+  private void safeOnTrackEnded() {
+    try {
+      onTrackEnded();
+    } catch (UnsatisfiedLinkError e) {
+      Log.w("Player", "Native callback failed (Qt app UI might be closed)");
+    }
   }
 
   private native void onTrackEnded();
@@ -62,9 +93,13 @@ public class Player {
   public void setUrl(String url) {
     mainHandler.post(() -> {
       try {
-        Uri mediaUri = Uri.parse(url);
-        exoPlayer.setMediaItem(MediaItem.fromUri(mediaUri));
-        exoPlayer.prepare();
+        if (mediaController != null) {
+          Uri mediaUri = Uri.parse(url);
+          mediaController.setMediaItem(MediaItem.fromUri(mediaUri));
+          mediaController.prepare();
+        } else {
+          Log.w("Player", "Cannot setUrl: MediaController is not connected yet.");
+        }
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -74,8 +109,8 @@ public class Player {
   public void play() {
     mainHandler.post(() -> {
       try {
-        if (exoPlayer != null) {
-          exoPlayer.play();
+        if (mediaController != null) {
+          mediaController.play();
           mainHandler.post(updateProgressAction);
         }
       } catch (Exception e) {
@@ -86,8 +121,8 @@ public class Player {
 
   public void pause() {
     mainHandler.post(() -> {
-      if (exoPlayer != null && exoPlayer.isPlaying()) {
-        exoPlayer.pause();
+      if (mediaController != null && mediaController.isPlaying()) {
+        mediaController.pause();
         mainHandler.removeCallbacks(updateProgressAction);
       }
     });
@@ -96,27 +131,27 @@ public class Player {
   public void seekTo(long positionMs) {
     cachedPosition = positionMs;
     mainHandler.post(() -> {
-      if (exoPlayer != null) {
-        exoPlayer.seekTo(positionMs);
+      if (mediaController != null) {
+        mediaController.seekTo(positionMs);
       }
     });
   }
 
   public void release() {
     mainHandler.post(() -> {
-      if (exoPlayer != null) {
-        mainHandler.removeCallbacks(updateProgressAction);
-        exoPlayer.release();
-        exoPlayer = null;
+      mainHandler.removeCallbacks(updateProgressAction);
+      if (mediaController != null) {
+        mediaController.release();
+        mediaController = null;
+      }
+      if (controllerFuture != null) {
+        MediaController.releaseFuture(controllerFuture);
+        controllerFuture = null;
       }
     });
   }
 
-  public long getCurrentPosition() {
-    return cachedPosition;
-  }
+  public long getCurrentPosition() { return cachedPosition; }
 
-  public long getDuration() {
-    return cachedDuration;
-  }
+  public long getDuration() { return cachedDuration; }
 }
