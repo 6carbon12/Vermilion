@@ -9,6 +9,8 @@
 #include <QThread>
 #include <QTimer>
 #include <qtmetamacros.h>
+#include <mutex>
+
 
 class PlayerManager : public QObject {
   Q_OBJECT
@@ -43,12 +45,12 @@ Q_SIGNALS:
 
 private:
   explicit PlayerManager(QObject *parent = nullptr);
-  QString currentUrl{};
+  bool playAfterExtract{false};
   int currentTrackIndex{};
   QList<Core::Track> tracks{};
+  QString currentUrl{};
+  QTimer *progressTimer;
+  std::mutex queueMutex;
   std::unique_ptr<Core::Player> player;
   YtManager *YT;
-  QTimer *progressTimer;
-
-  bool playAfterExtract{false};
 };
