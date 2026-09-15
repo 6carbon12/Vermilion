@@ -1,28 +1,23 @@
 #pragma once
 
 #include "Network.h"
-#include "YtWorker.h"
 #include "Track.h"
+#include "YtWorker.h"
+#include <QList>
 #include <QObject>
-#include <QQmlEngine>
 #include <QString>
 #include <QThread>
-#include <qlist.h>
-#include <qtmetamacros.h>
 
-class YtManager : public QObject {
+class YtEngine : public QObject {
   Q_OBJECT
-  QML_SINGLETON
-  QML_NAMED_ELEMENT(YT)
-
 public:
-  ~YtManager() override;
-  static YtManager* instance();
-  static YtManager* create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
+  explicit YtEngine(QObject *parent = nullptr);
+  ~YtEngine();
 
+public Q_SLOTS:
   void requestExtraction(const QString &url);
+  void requestSearch(const QString &query, int maxResults);
   void getRelatedTracks(const QString &url);
-  Q_INVOKABLE void requestSearch(const QString &query, int maxResults = 5);
 
 Q_SIGNALS:
   void extractionSuccess(const QString &url);
@@ -33,10 +28,6 @@ Q_SIGNALS:
   void getRelatedTracksFailed(const QString &error);
 
 private:
-  // Constructor is private in order to force `QML` Engine to use create()
-  // to create the instance
-  explicit YtManager(QObject *parent = nullptr);
-
   QThread *workerThread;
   YtWorker *worker;
   Core::Network::StreamDownloader *downloader;
