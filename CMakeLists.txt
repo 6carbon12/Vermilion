@@ -38,6 +38,10 @@ set(CPP_SOURCES
   src/core/audio/AndroidPlayer.cpp
   src/core/audio/AndroidPlayer.h
   src/bindings/java/onTrackEnded.cpp
+  src/managers/PlayerEngine.h
+  src/managers/PlayerEngine.cpp
+  src/bindings/YtEngine.h
+  src/bindings/YtEngine.cpp
 )
 
 set(CPP_INCLUDES
@@ -56,10 +60,10 @@ qt_add_qml_module(
   QML_FILES
   src/qml/Main.qml
   SOURCES
-  src/managers/YtManager.h
-  src/managers/YtManager.cpp
-  src/managers/PlayerManager.h
-  src/managers/PlayerManager.cpp
+  src/managers/YtController.h
+  src/managers/YtController.cpp
+  src/managers/PlayerController.h
+  src/managers/PlayerController.cpp
   src/core/audio/PlayerState.h
   src/core/audio/Track.h
 )
