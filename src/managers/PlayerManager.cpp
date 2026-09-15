@@ -1,6 +1,7 @@
 #include "PlayerManager.h"
 #include <QCoreApplication>
 #include <qloggingcategory.h>
+#include <qnamespace.h>
 #include <qtmetamacros.h>
 #include <qtpreprocessorsupport.h>
 
@@ -15,12 +16,13 @@ PlayerManager::PlayerManager(QObject *parent) : QObject(parent) {
   progressTimer->setInterval(200);
 
   connect(YT, &YtManager::extractionSuccess, this, [this](const QString &filePath) {
+    std::lock_guard<std::mutex> lock(queueMutex);
     player->setUrl(filePath);
     if (playAfterExtract) {
       playAfterExtract = false;
       player->play();
     }
-  });
+  }, Qt::DirectConnection);
   connect(YT, &YtManager::extractionFailed, this, [this](const QString &error) {
     playAfterExtract = false;
     qDebug() << "Extraction failed" << error;
@@ -76,6 +78,7 @@ void PlayerManager::pause() {
 PlayerState PlayerManager::getPlayerState() { return player ? player->getPlayerState() : PlayerState::Error; }
 
 void PlayerManager::next() {
+  std::lock_guard<std::mutex> lock(queueMutex);
   if (currentTrackIndex >= tracks.length()) {
     qCWarning(PlayerManager_l) << "Cannot go to next track. No next track present.";
     qCWarning(PlayerManager_l) << "Tracks: " << tracks.length();
