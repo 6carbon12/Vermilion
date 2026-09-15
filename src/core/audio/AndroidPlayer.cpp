@@ -5,8 +5,7 @@
 
 namespace Core {
 AndroidPlayer::AndroidPlayer() {
-  QJniObject context =
-      QJniObject::callStaticObjectMethod("org/qtproject/qt/android/QtNative", "activity", "()Landroid/app/Activity;");
+  QJniObject context = QNativeInterface::QAndroidApplication::context();
 
   if (context.isValid()) {
     player = QJniObject("Player", "(Landroid/content/Context;)V", context.object());
