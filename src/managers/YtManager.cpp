@@ -14,6 +14,7 @@ YtManager::YtManager(QObject *parent) : QObject(parent), workerThread(nullptr), 
   downloader = new Core::Network::StreamDownloader();
 
   worker->moveToThread(workerThread);
+  downloader->moveToThread(workerThread);
 
   connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
   connect(workerThread, &QThread::finished, downloader, &QObject::deleteLater);
