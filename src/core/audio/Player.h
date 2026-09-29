@@ -1,5 +1,6 @@
 #pragma once
 #include "PlayerState.h"
+#include "Track.h"
 #include <QDir>
 #include <memory>
 #include <qqmlintegration.h>
@@ -16,7 +17,7 @@ public:
   ~Player() = default;
 
   static std::unique_ptr<Player> create();
-  virtual void setUrl(const QString &url) = 0;
+  virtual void loadTrack(const QString &url, const Core::Track &track) = 0;
   virtual void play() = 0;
   virtual void pause() = 0;
   virtual void seekTo(long positionMs) = 0;

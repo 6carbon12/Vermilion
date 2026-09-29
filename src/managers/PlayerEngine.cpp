@@ -1,4 +1,5 @@
 #include "PlayerEngine.h"
+#include "Track.h"
 #include "YtController.h"
 #include <QDebug>
 
@@ -14,7 +15,8 @@ PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
     if (!player) {
       return;
     }
-    player->setUrl(filePath);
+    Core::Track currentTrack = tracks[currentTrackIndex];
+    player->loadTrack(filePath, currentTrack);
 
     if (playAfterExtract) {
       playAfterExtract = false;

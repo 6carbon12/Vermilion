@@ -9,7 +9,7 @@ public:
   AndroidPlayer();
   ~AndroidPlayer();
 
-  void setUrl(const QString &url) override;
+  void loadTrack(const QString &url, const Core::Track &track) override;
   void play() override;
   void pause() override;
   void seekTo(long positionMs) override;
