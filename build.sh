@@ -70,6 +70,12 @@ if [ "$TARGET" = "android" ]; then
   echo "Building Android target..."
   cmake --build "$BUILD_DIR" 2>&1 | tee -a "$LOGFILE" | grep --line-buffered -E '^\['
 
+  if [ ${PIPESTATUS[0]} -ne 0 ]; then
+    echo "Build Failed..."
+    bat "$LOGFILE"
+    exit 1
+  fi
+
 	updateLspFiles $BUILD_DIR
 
   if [ "$CLEAR" -eq 1 ]; then
@@ -77,7 +83,7 @@ if [ "$TARGET" = "android" ]; then
     adb shell pm clear "$PACKAGE_NAME" >> $LOGFILE 2>/dev/null || true
   fi
 
-  if [ "$INSTALL" -eq 1 ] || [ "$OPEN" -eq 1 ]; then
+  if [ "$INSTALL" -eq 1 ]; then
     echo "Installing APK..."
     adb install -r "$BUILD_DIR/android-build/vermilion.apk" >> $LOGFILE 2>> $LOGFILE
   fi
