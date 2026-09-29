@@ -84,24 +84,18 @@ public class Player {
     try {
       onTrackEnded();
     } catch (UnsatisfiedLinkError e) {
-      Log.w("Player", "Native callback failed (Qt app UI might be closed)");
+      Log.w("Player", "Failed to call CPP native function 'onTrackEnded'");
     }
   }
 
   private native void onTrackEnded();
 
-  public void setUrl(String url) {
+  public void loadTrack(String url, String title, String artist, String artUrl) {
     mainHandler.post(() -> {
-      try {
-        if (mediaController != null) {
-          Uri mediaUri = Uri.parse(url);
-          mediaController.setMediaItem(MediaItem.fromUri(mediaUri));
-          mediaController.prepare();
-        } else {
-          Log.w("Player", "Cannot setUrl: MediaController is not connected yet.");
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
+      PlaybackService service = PlaybackService.getInstance();
+      if (service != null) {
+        // Routes through the service so the MediaSession registers the track and metadata
+        service.loadTrackInSession(url, title, artist, artUrl);
       }
     });
   }

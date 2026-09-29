@@ -21,15 +21,21 @@ AndroidPlayer::~AndroidPlayer() {
   }
 }
 
-void AndroidPlayer::setUrl(const QString &url) {
+void AndroidPlayer::loadTrack(const QString &url, const Core::Track &track) {
   if (!player.isValid()) {
     qDebug() << "AndroidPlayer: Player object isn't valid.";
     return;
   }
 
   QJniObject jUrl = QJniObject::fromString(url);
-  jstring jUrlStr = jUrl.object<jstring>();
-  player.callMethod<void>("setUrl", jUrlStr);
+  QJniObject jTitle = QJniObject::fromString(track.title);
+  QJniObject jArtist = QJniObject::fromString(track.artist);
+  QJniObject jArtUrl = QJniObject::fromString(track.thumbnailUrl);
+
+  player.callMethod<void>("loadTrack", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+                          jUrl.object<jstring>(), jTitle.object<jstring>(), jArtist.object<jstring>(),
+                          jArtUrl.object<jstring>());
+
   state = PlayerState::Playing;
 }
 
