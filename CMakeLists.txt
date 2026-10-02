@@ -76,12 +76,49 @@ target_compile_definitions(${APP_NAME} PRIVATE QT_NO_KEYWORDS)
 target_include_directories(${APP_NAME} PRIVATE ${CPP_INCLUDES})
 
 if(ANDROID)
-  # Setup
-  set(PYTHON_DIR "${CMAKE_CURRENT_SOURCE_DIR}/platform/android/python")
-  set(PYTHON_INC_DIR "${PYTHON_DIR}/include/python3.11")
-  set(PYTHON_LIB_DIR "${PYTHON_DIR}/lib/arm64-v8a")
+  set(P4A_DIR "$ENV{HOME}/.local/share/python-for-android/build")
+  set(P4A_PYTHON_BUILD "${P4A_DIR}/other_builds/python3/arm64-v8a__ndk_target_27/python3")
+  set(P4A_LIBS_COLLECTION "${P4A_DIR}/libs_collections/embed/arm64-v8a")
 
-  # Links and Includes
+  FetchContent_Declare(
+    custom_android_libs
+    URL "https://github.com/6carbon12/Vermilion/releases/download/v1.0/vermilion-extra-libs.tar.gz"
+  )
+  FetchContent_MakeAvailable(custom_android_libs)
+
+  set(ANDROID_PKG_STAGE "${CMAKE_CURRENT_BINARY_DIR}/android_pkg_stage")
+  file(REMOVE_RECURSE "${ANDROID_PKG_STAGE}")
+
+  file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/packaging/android/"
+    DESTINATION "${ANDROID_PKG_STAGE}"
+    PATTERN "assets" EXCLUDE
+    PATTERN "libs" EXCLUDE
+  )
+
+  file(MAKE_DIRECTORY "${ANDROID_PKG_STAGE}/assets")
+  file(MAKE_DIRECTORY "${ANDROID_PKG_STAGE}/libs/arm64-v8a")
+
+  file(CREATE_LINK
+    "${P4A_PYTHON_BUILD}/android-build/android-root/lib/python3.11"
+    "${ANDROID_PKG_STAGE}/assets/python311"
+    SYMBOLIC
+  )
+
+  file(GLOB P4A_PACKAGES "${P4A_DIR}/python-installs/embed/arm64-v8a/*")
+  foreach(pkg_path ${P4A_PACKAGES})
+    get_filename_component(pkg_name "${pkg_path}" NAME)
+    file(CREATE_LINK "${pkg_path}" "${ANDROID_PKG_STAGE}/assets/${pkg_name}" SYMBOLIC)
+  endforeach()
+
+  file(GLOB DYNLOAD_SO_FILES "${P4A_PYTHON_BUILD}/android-build/android-root/lib/python3.11/lib-dynload/*.so")
+  foreach(so_file ${DYNLOAD_SO_FILES})
+    get_filename_component(so_name "${so_file}" NAME)
+    file(CREATE_LINK "${so_file}" "${ANDROID_PKG_STAGE}/libs/arm64-v8a/${so_name}" SYMBOLIC)
+  endforeach()
+
+  set(PYTHON_INC_DIR "${P4A_PYTHON_BUILD}/Include")
+  set(PYTHON_SO "${P4A_PYTHON_BUILD}/android-build/libpython3.11.so")
+
   target_include_directories(${APP_NAME} PRIVATE "${PYTHON_INC_DIR}")
 
   target_link_libraries(${APP_NAME}
@@ -89,29 +126,28 @@ if(ANDROID)
     PRIVATE Qt6::Multimedia
     PRIVATE Qt6::Network
     PRIVATE pybind11::embed
-    PRIVATE "${PYTHON_LIB_DIR}/libpython3.11.so"
-    PRIVATE "${PYTHON_LIB_DIR}/libffi.so"
-    PRIVATE "${PYTHON_LIB_DIR}/libcrypto.so"
-    PRIVATE "${PYTHON_LIB_DIR}/libssl.so"
-    PRIVATE "${PYTHON_LIB_DIR}/libsqlite3.so"
+    PRIVATE "${PYTHON_SO}"
+    PRIVATE "${P4A_LIBS_COLLECTION}/libffi.so"
+    PRIVATE "${P4A_LIBS_COLLECTION}/libcrypto.so"
+    PRIVATE "${P4A_LIBS_COLLECTION}/libssl.so"
+    PRIVATE "${P4A_LIBS_COLLECTION}/libsqlite3.so"
   )
 
-  # Other configuration
-  set_property(TARGET ${APP_NAME} PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/packaging/android")
+  set_property(TARGET ${APP_NAME} PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR "${ANDROID_PKG_STAGE}")
   set_property(TARGET ${APP_NAME} PROPERTY QT_ANDROID_APP_NAME "Vermilion")
   set_property(TARGET ${APP_NAME} PROPERTY QT_ANDROID_PACKAGE_NAME "io.github.x6carbon12.vermilion")
+
   set_property(TARGET ${APP_NAME} PROPERTY
     QT_ANDROID_EXTRA_LIBS
-    "${PYTHON_LIB_DIR}/libpython3.11.so"
-    "${PYTHON_LIB_DIR}/libffi.so"
-    "${PYTHON_LIB_DIR}/libcrypto.so"
-    "${PYTHON_LIB_DIR}/libssl.so"
-    "${PYTHON_LIB_DIR}/libsqlite3.so"
-    "${CMAKE_CURRENT_SOURCE_DIR}/platform/android/libs/libqjs.so"
-    "${CMAKE_CURRENT_SOURCE_DIR}/platform/android/libs/libcrypto_3.so"
-    "${CMAKE_CURRENT_SOURCE_DIR}/platform/android/libs/libssl_3.so"
+    "${PYTHON_SO}"
+    "${P4A_LIBS_COLLECTION}/libffi.so"
+    "${P4A_LIBS_COLLECTION}/libcrypto.so"
+    "${P4A_LIBS_COLLECTION}/libssl.so"
+    "${P4A_LIBS_COLLECTION}/libsqlite3.so"
+    "${custom_android_libs_SOURCE_DIR}/libqjs.so"
+    "${custom_android_libs_SOURCE_DIR}/libcrypto_3.so"
+    "${custom_android_libs_SOURCE_DIR}/libssl_3.so"
   )
-
 else()
   find_package(Python3 COMPONENTS Development.Embed REQUIRED)
   target_link_libraries(vermilion PRIVATE
