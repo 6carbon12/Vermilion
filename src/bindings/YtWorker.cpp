@@ -68,9 +68,9 @@ py::dict YtWorker::getGeneralYdlOpts() {
 }
 
 void YtWorker::init() {
-  const std::array<QString, 9> modules = {
+  const std::array<QString, 8> modules = {
       "assets:/yt_dlp",  "assets:/yt_dlp_ejs",         "assets:/certifi", "assets:/ytmusicapi", "assets:/requests",
-      "assets:/urllib3", "assets:/charset_normalizer", "assets:/idna",    "assets:/setuptools"};
+      "assets:/urllib3", "assets:/charset_normalizer", "assets:/idna"};
 
   for (const auto &modulePath : modules) {
     if (auto result = PyHelper::installModule(modulePath); !result) {
