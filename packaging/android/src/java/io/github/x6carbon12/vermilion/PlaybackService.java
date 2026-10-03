@@ -12,7 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-
+import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
@@ -20,6 +20,7 @@ import androidx.media3.common.ForwardingPlayer;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.Player;
+import androidx.media3.common.PlaybackException;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.session.MediaSession;
 import androidx.media3.session.MediaSessionService;
@@ -27,7 +28,6 @@ import androidx.media3.session.MediaStyleNotificationHelper;
 
 public class PlaybackService extends MediaSessionService {
   private static PlaybackService instance;
-  private static Runnable onReadyCallback;
 
   private MediaSession mediaSession;
   private ExoPlayer basePlayer;
@@ -38,8 +38,7 @@ public class PlaybackService extends MediaSessionService {
   private static final int NOTIFICATION_ID = 1001;
   private static final String CHANNEL_ID = "vermilion_playback_channel";
 
-  public static void start(Context context, Runnable onReady) {
-    onReadyCallback = onReady;
+  public static void start(Context context) {
     ContextCompat.startForegroundService(context, new Intent(context, PlaybackService.class));
   }
 
@@ -62,11 +61,33 @@ public class PlaybackService extends MediaSessionService {
         .setHandleAudioBecomingNoisy(true)
         .build();
 
-    mediaSession = new MediaSession.Builder(this, createWrappedPlayer(basePlayer)).build();
+    basePlayer.addListener(new Player.Listener() {
+      @Override
+      public void onPlaybackStateChanged(int playbackState) {
+        if (playbackState == Player.STATE_ENDED) {
+          onNext();
+        }
+      }
 
-    if (onReadyCallback != null) {
-      new Handler(Looper.getMainLooper()).post(onReadyCallback);
-      onReadyCallback = null;
+      @Override
+      public void onPlayerError(PlaybackException error) {
+        if (error.getCause() instanceof java.io.EOFException ||
+            error.errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED) {
+          onNext();
+        }
+      }
+    });
+
+    mediaSession = new MediaSession.Builder(this, createWrappedPlayer(basePlayer)).build();
+  }
+
+  private native void onTrackEnded();
+
+  private void safeOnTrackEnded() {
+    try {
+      onTrackEnded();
+    } catch (UnsatisfiedLinkError e) {
+      Log.w("Player", "Failed to call CPP native function 'onTrackEnded'");
     }
   }
 

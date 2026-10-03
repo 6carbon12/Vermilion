@@ -37,57 +37,31 @@ public class Player {
     this.context = context;
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) 
-          != PackageManager.PERMISSION_GRANTED) {
+      if (ContextCompat.checkSelfPermission(context,
+          Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
         if (context instanceof Activity) {
           ActivityCompat.requestPermissions(
-              (Activity) context, 
-              new String[]{Manifest.permission.POST_NOTIFICATIONS}, 
-              101
-              );
+              (Activity) context,
+              new String[] { Manifest.permission.POST_NOTIFICATIONS },
+              101);
         }
-          }
+      }
     }
 
-    PlaybackService.start(context, () -> {
-      this.player = PlaybackService.getInstance().getBasePlayer();
-
-      this.player.addListener(new Listener() {
-        @Override
-        public void onPlaybackStateChanged(int playbackState) {
-          Log.d("VermilionEngine", "ExoPlayer State: " + playbackState);
-          if (playbackState == androidx.media3.common.Player.STATE_ENDED) {
-            safeOnTrackEnded();
-          }
-        }
-
-        @Override
-        public void onPlayerError(PlaybackException error) {
-          Log.e("VermilionPlayer", "ExoPlayer Error: " + error.getMessage(), error);
-          if (error.getCause() instanceof java.io.EOFException ||
-              error.errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED) {
-            safeOnTrackEnded();
-              }
-        }
-      });
-    });
+    PlaybackService.start(context);
   }
 
-  private void safeOnTrackEnded() {
-    try {
-      onTrackEnded();
-    } catch (UnsatisfiedLinkError e) {
-      Log.w("Player", "Failed to call CPP native function 'onTrackEnded'");
+  private ExoPlayer getPlayer() {
+    if (player == null && PlaybackService.getInstance() != null) {
+      player = PlaybackService.getInstance().getBasePlayer();
     }
+    return player;
   }
-
-  private native void onTrackEnded();
 
   public void loadTrack(String url, String title, String artist, String artUrl) {
     mainHandler.post(() -> {
       PlaybackService service = PlaybackService.getInstance();
       if (service != null) {
-        // Routes through the service so the MediaSession registers the track and metadata
         service.loadTrackInSession(url, title, artist, artUrl);
       }
     });
@@ -95,7 +69,7 @@ public class Player {
 
   public void play() {
     mainHandler.post(() -> {
-      if (player != null) {
+      if (getPlayer() != null) {
         player.play();
         mainHandler.post(updateProgressAction);
       }
@@ -104,8 +78,8 @@ public class Player {
 
   public void pause() {
     mainHandler.post(() -> {
-      if (player != null && player.isPlaying()) {
-        player.pause(); // Direct control.
+      if (getPlayer() != null && player.isPlaying()) {
+        player.pause();
         mainHandler.removeCallbacks(updateProgressAction);
       }
     });
@@ -114,18 +88,25 @@ public class Player {
   public void seekTo(long positionMs) {
     cachedPosition = positionMs;
     mainHandler.post(() -> {
-      if (player != null) player.seekTo(positionMs);
+      if (getPlayer() != null) {
+        player.seekTo(positionMs);
+      }
     });
   }
 
   public void release() {
     mainHandler.post(() -> {
       mainHandler.removeCallbacks(updateProgressAction);
-      player = null; 
+      player = null;
       context.stopService(new Intent(context, PlaybackService.class));
     });
   }
 
-  public long getCurrentPosition() { return cachedPosition; }
-  public long getDuration() { return cachedDuration; }
+  public long getCurrentPosition() {
+    return cachedPosition;
+  }
+
+  public long getDuration() {
+    return cachedDuration;
+  }
 }
