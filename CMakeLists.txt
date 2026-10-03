@@ -89,10 +89,15 @@ if(ANDROID)
   set(ANDROID_PKG_STAGE "${CMAKE_CURRENT_BINARY_DIR}/android_pkg_stage")
   file(REMOVE_RECURSE "${ANDROID_PKG_STAGE}")
 
-  file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/packaging/android/"
+  file(GLOB_RECURSE ALL_JAVA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/packaging/android/src/*.java")
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${ALL_JAVA_FILES})
+
+  file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/packaging/android/src"
     DESTINATION "${ANDROID_PKG_STAGE}"
-    PATTERN "assets" EXCLUDE
-    PATTERN "libs" EXCLUDE
+  )
+  file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/packaging/android/AndroidManifest.xml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/packaging/android/build.gradle"
+    DESTINATION "${ANDROID_PKG_STAGE}"
   )
 
   file(MAKE_DIRECTORY "${ANDROID_PKG_STAGE}/assets")
