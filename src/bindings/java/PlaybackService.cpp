@@ -20,7 +20,6 @@ extern "C" {
   JNIEXPORT void JNICALL Java_io_github_x6carbon12_vermilion_PlaybackService_onNext(JNIEnv *env, jobject thiz) {
     Q_UNUSED(env);
     Q_UNUSED(thiz);
-    qDebug("JNI: Next called...");
     QMetaObject::invokeMethod(PlayerController::instance(), "next", Qt::DirectConnection);
   }
 
@@ -28,11 +27,5 @@ extern "C" {
     Q_UNUSED(env);
     Q_UNUSED(thiz);
     QMetaObject::invokeMethod(PlayerController::instance(), "prev", Qt::DirectConnection);
-  }
-
-  JNIEXPORT void JNICALL Java_Player_onTrackEnded(JNIEnv *env, jobject thiz) {
-    Q_UNUSED(env);
-    Q_UNUSED(thiz);
-    QMetaObject::invokeMethod(PlayerController::instance(), "next", Qt::DirectConnection);
   }
 }
