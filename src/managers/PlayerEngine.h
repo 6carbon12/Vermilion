@@ -25,7 +25,7 @@ public Q_SLOTS:
   void seekTo(long positionMs);
 
 Q_SIGNALS:
-  void stateChanged(Core::PlayerState::State state);
+  void playerStateChanged(Core::PlayerState::State state);
   void positionChanged(long position, long duration);
   void errorOccurred(const QString &error);
 

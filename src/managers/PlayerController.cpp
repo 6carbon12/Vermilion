@@ -20,7 +20,7 @@ PlayerController::PlayerController(QObject *parent) : QObject(parent) {
   connect(this, &PlayerController::requestPrev, worker, &PlayerEngine::prev, Qt::QueuedConnection);
   connect(this, &PlayerController::requestSeekTo, worker, &PlayerEngine::seekTo, Qt::QueuedConnection);
 
-  connect(worker, &PlayerEngine::stateChanged, this, [this](PlayerState newState) {
+  connect(worker, &PlayerEngine::playerStateChanged, this, [this](PlayerState newState) {
     cachedState = newState;
     Q_EMIT playerStateChanged();
   });

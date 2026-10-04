@@ -10,6 +10,11 @@ PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
 
   progressTimer->setInterval(200);
 
+  connect(player.get(), &Core::Player::requestNext, this, [this]() { next(); });
+  connect(player.get(), &Core::Player::requestPrev, this, [this]() { prev(); });
+  connect(player.get(), &Core::Player::playerStateChanged, this,
+          [this]() { Q_EMIT playerStateChanged(player->getPlayerState()); });
+
   connect(YT, &YtEngine::extractionSuccess, this, [this](const QString &filePath) {
     std::lock_guard<std::mutex> lock(queueMutex);
     if (!player) {
@@ -21,7 +26,6 @@ PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
     if (playAfterExtract) {
       playAfterExtract = false;
       player->play();
-      Q_EMIT stateChanged(player->getPlayerState());
     }
   });
 
@@ -35,8 +39,7 @@ PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
     tracks = relatedTracks;
   });
 
-  connect(YT, &YtEngine::getRelatedTracksFailed, this,
-          [this](const QString &error) { Q_EMIT errorOccurred(error); });
+  connect(YT, &YtEngine::getRelatedTracksFailed, this, [this](const QString &error) { Q_EMIT errorOccurred(error); });
 
   connect(progressTimer, &QTimer::timeout, this, [this]() {
     if (player && player->getPlayerState() == PlayerState::Playing) {
@@ -58,7 +61,6 @@ void PlayerEngine::play() {
   if (player) {
     player->play();
     progressTimer->start();
-    Q_EMIT stateChanged(player->getPlayerState());
   }
 }
 
@@ -66,7 +68,6 @@ void PlayerEngine::pause() {
   if (player) {
     player->pause();
     progressTimer->stop();
-    Q_EMIT stateChanged(player->getPlayerState());
   }
 }
 
