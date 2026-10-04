@@ -22,7 +22,8 @@ public:
   Q_INVOKABLE void emitRequestPrev();
   Q_INVOKABLE void handlePlayerStateChanged();
 private:
+  /// @brief Gives PlayerState from the java playerState.
   Core::PlayerState::State getPlayerStateFromInt(int playerState);
-  QJniObject player;
+  QJniObject player; ///< Holds the actual Java player object.
 };
 } // namespace Core
