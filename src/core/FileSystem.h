@@ -10,8 +10,8 @@ enum class ErrorReason { CreationFailed, DeletionFailed, CopyFailed, NotFound, P
 
 struct Error {
   ErrorReason reason;
-  QString problematicPath;
-  QString debugContext;
+  QString problematicPath; ///< Path of the file/folder which caused the given Error.
+  QString debugContext; ///< Human readable error message.
   std::source_location location = std::source_location::current();
 };
 
