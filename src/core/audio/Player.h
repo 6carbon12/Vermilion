@@ -14,9 +14,10 @@ class Player : public QObject {
 public:
   using PlayerState = Core::PlayerState::State;
   explicit Player(QObject *parent = nullptr) : QObject(parent) {};
-  ~Player() = default;
+  ~Player();
 
   static std::unique_ptr<Player> create();
+  static Player* instance();
   virtual void loadTrack(const QString &url, const Core::Track &track) = 0;
   virtual void play() = 0;
   virtual void pause() = 0;
@@ -33,5 +34,6 @@ Q_SIGNALS:
 
 protected:
   PlayerState state{PlayerState::Initialized};
+  static Player* self;
 };
 } // namespace Core
