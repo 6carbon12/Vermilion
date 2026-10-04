@@ -28,8 +28,8 @@ public class Player {
         cachedPosition = player.getCurrentPosition();
         long duration = player.getDuration();
         cachedDuration = duration < 0 ? 0 : duration;
-        mainHandler.postDelayed(this, 200);
       }
+      mainHandler.postDelayed(this, 200);
     }
   };
 
