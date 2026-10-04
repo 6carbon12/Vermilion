@@ -35,6 +35,16 @@ public class PlaybackService extends MediaSessionService {
   private CharSequence currentTitle = "Vermilion Engine";
   private CharSequence currentArtist = "Ready to play";
 
+  // 0: INITALIZED
+  // 1: PLAYING
+  // 2: PAUSED
+  // 3: ERROR
+  private int playerState = 0;
+
+  public int getPlayerState() {
+    return playerState;
+  }
+
   private static final int NOTIFICATION_ID = 1001;
   private static final String CHANNEL_ID = "vermilion_playback_channel";
 
@@ -63,18 +73,48 @@ public class PlaybackService extends MediaSessionService {
 
     basePlayer.addListener(new Player.Listener() {
       @Override
-      public void onPlaybackStateChanged(int playbackState) {
-        if (playbackState == Player.STATE_ENDED) {
-          onNext();
+      public void onIsPlayingChanged(boolean isPlaying) {
+        if (isPlaying) {
+          playerState = 1;
+        } else {
+          playerState = 2;
         }
+        playerStateChanged();
+      }
+
+      @Override
+      public void onPlaybackStateChanged(int playbackState) {
+        switch (playerState) {
+          case Player.STATE_ENDED:
+            requestNext();
+            playerState = 0;
+            break;
+          case Player.STATE_IDLE:
+            Log.w("PlayerService", "Player is Idle. State undefined");
+            break;
+          case Player.STATE_BUFFERING:
+            Log.w("PlayerService", "Player is buffering. State undefined");
+            break;
+          case Player.STATE_READY:
+            boolean playWhenReady = basePlayer.getPlayWhenReady();
+            if (playWhenReady) {
+              playerState = 1;
+            } else {
+              playerState = 2;
+            }
+            break;
+        }
+        playerStateChanged();
       }
 
       @Override
       public void onPlayerError(PlaybackException error) {
+        playerState = 3;
         if (error.getCause() instanceof java.io.EOFException ||
             error.errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED) {
-          onNext();
+          requestNext();
         }
+        playerStateChanged();
       }
     });
 
@@ -183,22 +223,22 @@ public class PlaybackService extends MediaSessionService {
     return new ForwardingPlayer(player) {
       @Override
       public void play() {
-        onPlay();
+        player.play();
       }
 
       @Override
       public void pause() {
-        onPause();
+        player.pause();
       }
 
       @Override
       public void seekToNext() {
-        onNext();
+        requestNext();
       }
 
       @Override
       public void seekToPrevious() {
-        onPrev();
+        requestPrev();
       }
 
       @Override
@@ -251,11 +291,9 @@ public class PlaybackService extends MediaSessionService {
     super.onDestroy();
   }
 
-  private native void onPlay();
+  private native void requestNext();
 
-  private native void onPause();
+  private native void requestPrev();
 
-  private native void onNext();
-
-  private native void onPrev();
+  private native void playerStateChanged();
 }

@@ -109,4 +109,8 @@ public class Player {
   public long getDuration() {
     return cachedDuration;
   }
+
+  public int getPlayerState() {
+    return PlaybackService.getInstance().getPlayerState();
+  }
 }

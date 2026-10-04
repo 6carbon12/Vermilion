@@ -37,7 +37,6 @@ set(CPP_SOURCES
 	src/core/audio/Player.h
   src/core/audio/AndroidPlayer.cpp
   src/core/audio/AndroidPlayer.h
-  src/bindings/java/onTrackEnded.cpp
   src/managers/PlayerEngine.h
   src/managers/PlayerEngine.cpp
   src/bindings/YtEngine.h
