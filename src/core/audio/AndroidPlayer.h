@@ -20,5 +20,8 @@ public:
 private:
   Core::PlayerState::State getPlayerStateFromInt(int playerState);
   QJniObject player;
+  Q_INVOKABLE void emitRequestNext();
+  Q_INVOKABLE void emitRequestPrev();
+  Q_INVOKABLE void handlePlayerStateChanged();
 };
 } // namespace Core

@@ -1,5 +1,7 @@
 #include "AndroidPlayer.h"
+#include "Player.h"
 #include <QGuiApplication>
+#include <QMetaObject>
 #include <QJniObject>
 #include <jni.h>
 
@@ -94,4 +96,39 @@ long AndroidPlayer::getDuration() {
   }
   return player.callMethod<jlong>("getDuration");
 }
+
+void AndroidPlayer::emitRequestNext() {
+  Q_EMIT requestNext();
+}
+
+void AndroidPlayer::emitRequestPrev() {
+  Q_EMIT requestPrev();
+}
+
+void AndroidPlayer::handlePlayerStateChanged() {
+  // TODO: Get player state from Java and update the cache.
+  // And remove all other changes to `state`
+  state = PlayerState::Playing;
+  Q_EMIT playerStateChanged();
+}
 } // namespace Core
+
+extern "C" {
+  JNIEXPORT void JNICALL Java_io_github_x6carbon12_vermilion_PlaybackService_requestNext(JNIEnv *env, jobject thiz) {
+    Q_UNUSED(env);
+    Q_UNUSED(thiz);
+    QMetaObject::invokeMethod(Core::Player::instance(), "emitRequestNext", Qt::DirectConnection);
+  }
+
+  JNIEXPORT void JNICALL Java_io_github_x6carbon12_vermilion_PlaybackService_requestPrev(JNIEnv *env, jobject thiz) {
+    Q_UNUSED(env);
+    Q_UNUSED(thiz);
+    QMetaObject::invokeMethod(Core::Player::instance(), "emitRequestPrev", Qt::DirectConnection);
+  }
+
+  JNIEXPORT void JNICALL Java_io_github_x6carbon12_vermilion_PlaybackService_playerStateChanged(JNIEnv *env, jobject thiz) {
+    Q_UNUSED(env);
+    Q_UNUSED(thiz);
+    QMetaObject::invokeMethod(Core::Player::instance(), "handlePlayerStateChanged", Qt::DirectConnection);
+  }
+}
