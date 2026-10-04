@@ -5,6 +5,7 @@
 
 namespace Core {
 class AndroidPlayer : public Player {
+  Q_OBJECT
 public:
   AndroidPlayer();
   ~AndroidPlayer();
@@ -17,11 +18,11 @@ public:
   long getDuration() override;
   Core::PlayerState::State getPlayerState() override;
 
-private:
-  Core::PlayerState::State getPlayerStateFromInt(int playerState);
-  QJniObject player;
   Q_INVOKABLE void emitRequestNext();
   Q_INVOKABLE void emitRequestPrev();
   Q_INVOKABLE void handlePlayerStateChanged();
+private:
+  Core::PlayerState::State getPlayerStateFromInt(int playerState);
+  QJniObject player;
 };
 } // namespace Core

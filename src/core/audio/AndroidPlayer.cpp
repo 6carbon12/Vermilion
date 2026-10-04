@@ -4,6 +4,7 @@
 #include <QMetaObject>
 #include <QJniObject>
 #include <jni.h>
+#include <memory>
 
 namespace Core {
 AndroidPlayer::AndroidPlayer() {
@@ -14,7 +15,6 @@ AndroidPlayer::AndroidPlayer() {
   } else {
     qWarning() << "Failed to obtain valid Android context for Java Player instantiation.";
   }
-  state = PlayerState::Initialized;
 }
 
 AndroidPlayer::~AndroidPlayer() {
@@ -38,7 +38,6 @@ void AndroidPlayer::loadTrack(const QString &url, const Core::Track &track) {
                           jUrl.object<jstring>(), jTitle.object<jstring>(), jArtist.object<jstring>(),
                           jArtUrl.object<jstring>());
 
-  state = PlayerState::Playing;
 }
 
 void AndroidPlayer::play() {
@@ -48,9 +47,6 @@ void AndroidPlayer::play() {
   }
 
   player.callMethod<void>("play");
-  qDebug() << "AndroidPlayer: Playing song now. Setting state.";
-  state = PlayerState::Playing;
-  qDebug() << "AndroidPlayer: Playing song now. Set state to Playing.";
 }
 
 void AndroidPlayer::pause() {
@@ -60,7 +56,6 @@ void AndroidPlayer::pause() {
   }
 
   player.callMethod<void>("pause");
-  state = PlayerState::Paused;
 }
 
 Core::PlayerState::State AndroidPlayer::getPlayerState() {
@@ -106,10 +101,24 @@ void AndroidPlayer::emitRequestPrev() {
 }
 
 void AndroidPlayer::handlePlayerStateChanged() {
-  // TODO: Get player state from Java and update the cache.
-  // And remove all other changes to `state`
-  state = PlayerState::Playing;
+  jint playerState = player.callMethod<jint>("getPlayerState");
+  state = getPlayerStateFromInt(playerState);
   Q_EMIT playerStateChanged();
+}
+
+Core::PlayerState::State AndroidPlayer::getPlayerStateFromInt(int playerState) {
+  switch (playerState) {
+    case 0:
+      return PlayerState::Initialized;
+    case 1:
+      return PlayerState::Playing;
+    case 2:
+      return PlayerState::Paused;
+    case 3:
+      return PlayerState::Error;
+    default:
+      return PlayerState::Error;
+  }
 }
 } // namespace Core
 
@@ -117,18 +126,21 @@ extern "C" {
   JNIEXPORT void JNICALL Java_io_github_x6carbon12_vermilion_PlaybackService_requestNext(JNIEnv *env, jobject thiz) {
     Q_UNUSED(env);
     Q_UNUSED(thiz);
-    QMetaObject::invokeMethod(Core::Player::instance(), "emitRequestNext", Qt::DirectConnection);
+    Core::AndroidPlayer* androidPlayerPtr = static_cast<Core::AndroidPlayer *>(Core::Player::instance());
+    QMetaObject::invokeMethod(androidPlayerPtr, "emitRequestNext", Qt::DirectConnection);
   }
 
   JNIEXPORT void JNICALL Java_io_github_x6carbon12_vermilion_PlaybackService_requestPrev(JNIEnv *env, jobject thiz) {
     Q_UNUSED(env);
     Q_UNUSED(thiz);
-    QMetaObject::invokeMethod(Core::Player::instance(), "emitRequestPrev", Qt::DirectConnection);
+    Core::AndroidPlayer* androidPlayerPtr = static_cast<Core::AndroidPlayer *>(Core::Player::instance());
+    QMetaObject::invokeMethod(androidPlayerPtr, "emitRequestPrev", Qt::DirectConnection);
   }
 
   JNIEXPORT void JNICALL Java_io_github_x6carbon12_vermilion_PlaybackService_playerStateChanged(JNIEnv *env, jobject thiz) {
     Q_UNUSED(env);
     Q_UNUSED(thiz);
-    QMetaObject::invokeMethod(Core::Player::instance(), "handlePlayerStateChanged", Qt::DirectConnection);
+    Core::AndroidPlayer* androidPlayerPtr = static_cast<Core::AndroidPlayer *>(Core::Player::instance());
+    QMetaObject::invokeMethod(androidPlayerPtr, "handlePlayerStateChanged", Qt::DirectConnection);
   }
 }
