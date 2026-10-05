@@ -64,6 +64,11 @@ Q_SIGNALS:
   /// @brief Emitted whenever the active track's playback state changes.
   void playerStateChanged();
 
+  /// @brief Emitted when player's position is updated.
+  ///
+  /// Emitted every 200ms when player is actively playing.
+  /// @see `getCurrentPosition`.
+  void playerPositionChanged();
 protected:
   PlayerState state{PlayerState::Initialized}; ///< Current operational state of the player.
   static Player* self; ///< Raw pointer to the current instance of the player.
