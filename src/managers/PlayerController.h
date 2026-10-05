@@ -7,6 +7,10 @@
 #include <QString>
 #include <QThread>
 
+/// @brief Transparent singleton wrapper around `PlayerEngine`
+///
+/// Manages `PlayerEngine` in a separate thread and creates binding for it on main thread for QML.
+/// Has a private constructor to force QML engine to use `create` function when initializing this object.
 class PlayerController : public QObject {
   Q_OBJECT
   QML_SINGLETON
