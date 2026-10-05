@@ -4,3 +4,6 @@ CompileFlags:
 
 Diagnostics:
   UnusedIncludes: Strict
+
+Documentation:
+  CommentFormat: Doxygen
