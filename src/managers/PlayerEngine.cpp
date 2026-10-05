@@ -6,14 +6,14 @@
 PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
   player = Core::Player::create();
   YT = YtController::instance()->getCore();
-  progressTimer = new QTimer(this);
-
-  progressTimer->setInterval(200);
 
   connect(player.get(), &Core::Player::requestNext, this, [this]() { next(); });
   connect(player.get(), &Core::Player::requestPrev, this, [this]() { prev(); });
   connect(player.get(), &Core::Player::playerStateChanged, this,
           [this]() { Q_EMIT playerStateChanged(player->getPlayerState()); });
+  connect(player.get(), &Core::Player::playerPositionChanged, this, [this]() {
+    Q_EMIT positionChanged(player->getCurrentPosition(), player->getDuration());
+  });
 
   connect(YT, &YtEngine::extractionSuccess, this, [this](const QString &filePath) {
     std::lock_guard<std::mutex> lock(queueMutex);
@@ -41,11 +41,6 @@ PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
 
   connect(YT, &YtEngine::getRelatedTracksFailed, this, [this](const QString &error) { Q_EMIT errorOccurred(error); });
 
-  connect(progressTimer, &QTimer::timeout, this, [this]() {
-    if (player && player->getPlayerState() == PlayerState::Playing) {
-      Q_EMIT positionChanged(player->getCurrentPosition(), player->getDuration());
-    }
-  });
 }
 
 void PlayerEngine::setUrl(const QString &url) {
@@ -60,14 +55,12 @@ void PlayerEngine::setUrl(const QString &url) {
 void PlayerEngine::play() {
   if (player) {
     player->play();
-    progressTimer->start();
   }
 }
 
 void PlayerEngine::pause() {
   if (player) {
     player->pause();
-    progressTimer->stop();
   }
 }
 

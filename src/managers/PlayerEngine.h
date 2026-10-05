@@ -58,7 +58,6 @@ private:
   int currentTrackIndex{};
   QList<Core::Track> tracks{};
   QString currentUrl{};
-  QTimer *progressTimer;
   std::mutex queueMutex;
   std::unique_ptr<Core::Player> player;
   YtEngine *YT;
