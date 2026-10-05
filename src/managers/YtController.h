@@ -6,6 +6,11 @@
 #include <QQmlEngine>
 #include <QString>
 
+/// @brief Transparent singleton wrapper around YtEngine
+///
+/// This class is to be used only by QML
+/// If you ever wish to use any of the capabilities of the class.
+/// Use `getCore` to get the underlying `YtEngine` and use that instead.
 class YtController : public QObject {
   Q_OBJECT
   QML_SINGLETON
@@ -20,6 +25,8 @@ public:
   void getRelatedTracks(const QString &url);
   Q_INVOKABLE void requestSearch(const QString &query, int maxResults = 5);
 
+  /// @returns the pointer to the `YtEngine` this class controls
+  /// @see `YtEngine`
   YtEngine* getCore() const { return core; }
 
 Q_SIGNALS:
