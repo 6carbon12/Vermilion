@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "PlayerState.h"
 #include <QJniObject>
+#include <QTimer>
 
 namespace Core {
 class AndroidPlayer : public Player {
@@ -25,5 +26,6 @@ private:
   /// @brief Gives PlayerState from the java playerState.
   Core::PlayerState::State getPlayerStateFromInt(int playerState);
   QJniObject player; ///< Holds the actual Java player object.
+  QTimer *positionPoolTimer;
 };
 } // namespace Core
