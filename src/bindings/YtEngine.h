@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Network.h"
 #include "Track.h"
 #include "YtWorker.h"
 #include <QList>
@@ -8,10 +7,7 @@
 #include <QString>
 #include <QThread>
 
-/// @brief Controls `YtWorker` in a separate thread and exposes it's function with some modifications.
-///
-/// Exposes `search` and `getRelatedTracks` as-is, `extractUrl` is exposed as `requestExtraction` which gives a playable
-/// file directly.
+/// @brief Controls `YtWorker` in a separate thread and exposes it's function as-is.
 class YtEngine : public QObject {
   Q_OBJECT
 public:
@@ -19,7 +15,7 @@ public:
   ~YtEngine();
 
 public Q_SLOTS:
-  /// @brief Start extracting YouTube video URL and downloads it.
+  /// @brief Start extracting YouTube video URL.
   /// @param url YouTube video URL to download.
   /// @see `extractionSuccess()`
   /// @see `extractionFailed()`
@@ -42,9 +38,8 @@ public Q_SLOTS:
 
 Q_SIGNALS:
 
-  /// @brief Emitted once a readable size of content is downloaded.
-  /// @param url Path to downloaded file.
-  /// @note Downloaded file is deleted when new URL extraction starts.
+  /// @brief Emitted when URL is successfully extracted.
+  /// @param url extracted streaming URL from YouTube.
   void extractionSuccess(const QString &url);
 
   /// @brief Emitted if extracting streaming URL fails.
@@ -70,7 +65,6 @@ Q_SIGNALS:
 private:
   QThread *workerThread;
   YtWorker *worker;
-  Core::Network::StreamDownloader *downloader;
 
   /// @brief Internal signal only meant to communicate with internal objects using signals and slots, instead of normal
   /// calls.
