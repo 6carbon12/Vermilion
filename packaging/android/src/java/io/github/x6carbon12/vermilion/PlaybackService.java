@@ -83,8 +83,23 @@ public class PlaybackService extends MediaSessionService {
       }
 
       @Override
+      public void onMediaItemTransition(MediaItem mediaItem, int reason) {
+        // Check if ExoPlayer just transitioned into our dummy item
+        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) {
+          // Check if the current item is the dummy item
+          if (mediaItem.mediaMetadata.title != null &&
+              mediaItem.mediaMetadata.title.toString().equals("LOADING...")) {
+            basePlayer.stop();
+            Log.d("PlayerService", "Hit dummy item! Requesting next track from C++.");
+
+            requestNext();
+          }
+        }
+      }
+
+      @Override
       public void onPlaybackStateChanged(int playbackState) {
-        switch (playerState) {
+        switch (playbackState) {
           case Player.STATE_ENDED:
             requestNext();
             playerState = 0;
@@ -161,7 +176,7 @@ public class PlaybackService extends MediaSessionService {
 
     MediaItem dummyNextItem = new MediaItem.Builder()
         .setUri(Uri.parse(url))
-        .setMediaMetadata(new MediaMetadata.Builder().setTitle("Next Track Placeholder").build())
+        .setMediaMetadata(new MediaMetadata.Builder().setTitle("LOADING...").build())
         .build();
 
     mediaSession.getPlayer().setMediaItems(java.util.Arrays.asList(mainItem, dummyNextItem));

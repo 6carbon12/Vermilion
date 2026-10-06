@@ -32,7 +32,7 @@ public:
 
   /// @brief Loads the given track information and prepares the player.
   /// @note This function does not play the track, see `play()`.
-  /// @param url File path of the track to be played.
+  /// @param url Streaming URL of the track to be played.
   /// @param track Metadata of the given track.
   virtual void loadTrack(const QString &url, const Core::Track &track) = 0;
 

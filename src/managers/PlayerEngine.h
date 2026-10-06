@@ -61,4 +61,8 @@ private:
   std::mutex queueMutex;
   std::unique_ptr<Core::Player> player;
   YtEngine *YT;
+
+  QString pendingExtractionUrl;
+  bool waitingForRelatedTracks = false;
+  void processExtraction(const QString &extractedUrl);
 };
