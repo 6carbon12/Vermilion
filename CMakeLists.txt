@@ -48,6 +48,7 @@ set(CPP_INCLUDES
   src/core/audio
   src/bindings
   src/managers
+  src/models
 )
 
 qt_add_executable(${APP_NAME} ${CPP_SOURCES})
@@ -65,6 +66,8 @@ qt_add_qml_module(
   src/managers/PlayerController.cpp
   src/core/audio/PlayerState.h
   src/core/audio/Track.h
+  src/models/TrackListModel.cpp
+  src/models/TrackListModel.h
 )
 
 # `slots` is a macro used by QT
@@ -82,6 +85,7 @@ if(ANDROID)
   FetchContent_Declare(
     custom_android_libs
     URL "https://github.com/6carbon12/Vermilion/releases/download/v1.0/vermilion-extra-libs.tar.gz"
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   )
   FetchContent_MakeAvailable(custom_android_libs)
 
