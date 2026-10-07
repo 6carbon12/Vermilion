@@ -231,13 +231,12 @@ void YtWorker::getRelatedTracks(const QString &url) {
 
       Core::Track resultData;
       resultData.title = getStrMember("title");
-      qCDebug(YtWorker_l) << "Got reated title: " << resultData.title;
       resultData.url = "https://youtube.com/watch?v=" + getStrMember("videoId");
-      resultData.views = getStrMember("views");
+      resultData.views = "N/A";
       resultData.duration = getStrMember("length");
 
-      if (trackDict.contains("thumbnails") && !trackDict["thumbnails"].is_none()) {
-        py::list thumbs = trackDict["thumbnails"].cast<py::list>();
+      if (trackDict.contains("thumbnail") && !trackDict["thumbnail"].is_none()) {
+        py::list thumbs = trackDict["thumbnail"].cast<py::list>();
         if (!thumbs.empty()) {
           py::dict bestThumb = thumbs[thumbs.size() - 1].cast<py::dict>();
           std::string thumbUrl = bestThumb["url"].cast<std::string>();
