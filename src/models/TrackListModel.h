@@ -30,6 +30,7 @@ public:
   QHash<int, QByteArray> roleNames() const override;
 
   Q_INVOKABLE void playTrackAtIndex(const int index);
+  void setTracks(const QList<Core::Track> &tracks);
 
 private:
   QList<Core::Track> m_tracks;

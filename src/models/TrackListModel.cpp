@@ -11,6 +11,12 @@ TrackListModel::TrackListModel(const QList<Core::Track> &tracks, QObject *parent
   m_tracks = tracks;
 }
 
+void TrackListModel::setTracks(const QList<Core::Track> &tracks) {
+  beginResetModel();
+  m_tracks = tracks;
+  endResetModel();
+}
+
 int TrackListModel::rowCount(const QModelIndex &parent) const {
   if (parent.isValid()) {
     return 0;
