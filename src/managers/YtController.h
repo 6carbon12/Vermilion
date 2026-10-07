@@ -1,7 +1,7 @@
 #pragma once
 
+#include "TrackListModel.h"
 #include "YtEngine.h"
-#include "Track.h"
 #include <QObject>
 #include <QQmlEngine>
 #include <QString>
@@ -18,8 +18,8 @@ class YtController : public QObject {
 
 public:
   ~YtController() override = default;
-  static YtController* instance();
-  static YtController* create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
+  static YtController *instance();
+  static YtController *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
   void requestExtraction(const QString &url);
   void getRelatedTracks(const QString &url);
@@ -27,17 +27,19 @@ public:
 
   /// @returns the pointer to the `YtEngine` this class controls
   /// @see `YtEngine`
-  YtEngine* getCore() const { return core; }
+  YtEngine *getCore() const { return core; }
 
 Q_SIGNALS:
   void extractionSuccess(const QString &url);
   void extractionFailed(const QString &error);
-  void searchSuccess(const QList<Core::Track> &results);
+  void searchSuccess(Models::TrackListModel *model);
   void searchFailed(const QString &error);
   void getRelatedTracksSuccess(const QList<Core::Track> &tracks);
   void getRelatedTracksFailed(const QString &error);
 
 private:
   explicit YtController(QObject *parent = nullptr);
+  void handleSearchResults(const QList<Core::Track> &results);
+
   YtEngine *core;
 };
