@@ -3,7 +3,7 @@
 #include <QQmlEngine>
 
 YtController::YtController(QObject *parent) : QObject(parent) {
-  core = new YtEngine(this);
+  core = new YtEngine();
 
   connect(core, &YtEngine::extractionSuccess, this, &YtController::extractionSuccess, Qt::QueuedConnection);
   connect(core, &YtEngine::extractionFailed, this, &YtController::extractionFailed, Qt::QueuedConnection);
