@@ -6,13 +6,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(FetchContent)
 
-if(ANDROID)
-  set(PYBIND11_NOPYTHON ON CACHE BOOL "Disable pybind11 python discovery")
-endif()
+set(PYBIND11_NOPYTHON ON CACHE BOOL "Disable pybind11 python discovery")
 
 FetchContent_Declare(
   pybind11
-  URL https://github.com/pybind/pybind11/archive/refs/tags/v2.12.0.tar.gz
+  URL https://github.com/pybind/pybind11/archive/refs/tags/v3.1.0.tar.gz
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(pybind11)
@@ -21,6 +19,8 @@ find_package(Qt6 6.11 REQUIRED COMPONENTS Core Qml Quick Multimedia)
 qt_standard_project_setup(REQUIRES 6.11)
 
 set(APP_NAME vermilion)
+set(ANDROID_TARGET ${APP_NAME}_android)
+set(LINUX_TARGET ${APP_NAME}_linux)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CPP_SOURCES
@@ -31,16 +31,26 @@ set(CPP_SOURCES
   src/bindings/YtWorker.h
   src/core/FileSystem.cpp
   src/core/FileSystem.h
-	src/core/Network.cpp
-	src/core/Network.h
-	src/core/audio/Player.cpp
-	src/core/audio/Player.h
-  src/core/audio/AndroidPlayer.cpp
-  src/core/audio/AndroidPlayer.h
+  src/core/Network.cpp
+  src/core/Network.h
+  src/core/audio/Player.cpp
+  src/core/audio/Player.h
   src/managers/PlayerEngine.h
   src/managers/PlayerEngine.cpp
   src/bindings/YtEngine.h
   src/bindings/YtEngine.cpp
+  src/core/audio/PlayerState.h
+  src/core/audio/Track.h
+)
+
+set(CPP_ANDROID_SOURCES
+  src/core/audio/AndroidPlayer.cpp
+  src/core/audio/AndroidPlayer.h
+)
+
+set(CPP_LINUX_SOURCES
+  src/core/audio/DesktopPlayer.cpp
+  src/core/audio/DesktopPlayer.h
 )
 
 set(CPP_INCLUDES
@@ -51,35 +61,38 @@ set(CPP_INCLUDES
   src/models
 )
 
-qt_add_executable(${APP_NAME} ${CPP_SOURCES})
-
-qt_add_qml_module(
-  ${APP_NAME}
-  URI ${PROJECT_NAME}
-  VERSION 1.0
-  QML_FILES
-  src/qml/Main.qml
-  SOURCES
-  src/managers/YtController.h
-  src/managers/YtController.cpp
-  src/managers/PlayerController.h
-  src/managers/PlayerController.cpp
-  src/core/audio/PlayerState.h
-  src/core/audio/Track.h
-  src/models/TrackListModel.cpp
-  src/models/TrackListModel.h
-)
-
-# `slots` is a macro used by QT
-# but `slots` is used as a variable in Python C API
-# So we disable that keyword with this:
-target_compile_definitions(${APP_NAME} PRIVATE QT_NO_KEYWORDS)
-
-target_include_directories(${APP_NAME} PRIVATE ${CPP_INCLUDES})
-
 if(ANDROID)
+  qt_add_executable(${ANDROID_TARGET} ${CPP_SOURCES} ${CPP_ANDROID_SOURCES})
+  set_target_properties(${ANDROID_TARGET} PROPERTIES
+    OUTPUT_NAME "vermilion"
+  )
+  # `slots` is a macro used by QT
+  # but `slots` is used as a variable in Python C API
+  # So we disable that keyword with this:
+  target_compile_definitions(${ANDROID_TARGET} PRIVATE QT_NO_KEYWORDS)
+  target_include_directories(${ANDROID_TARGET} PRIVATE ${CPP_INCLUDES})
+
+  qt_add_qml_module(
+    ${ANDROID_TARGET}
+    URI ${PROJECT_NAME}
+    VERSION 1.0
+    QML_FILES
+    src/qml/Main.qml
+    SOURCES
+    src/managers/YtController.h
+    src/managers/YtController.cpp
+    src/managers/PlayerController.h
+    src/managers/PlayerController.cpp
+    src/core/audio/PlayerState.h
+    src/core/audio/Track.h
+    src/models/TrackListModel.cpp
+    src/models/TrackListModel.h
+    OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Vermilion
+  )
+
   set(P4A_DIR "$ENV{HOME}/.local/share/python-for-android/build")
-  set(P4A_PYTHON_BUILD "${P4A_DIR}/other_builds/python3/arm64-v8a__ndk_target_27/python3")
+  set(P4A_PYTHON_BUILD
+    "${P4A_DIR}/other_builds/python3/arm64-v8a__ndk_target_27/python3")
   set(P4A_LIBS_COLLECTION "${P4A_DIR}/libs_collections/embed/arm64-v8a")
 
   FetchContent_Declare(
@@ -127,9 +140,9 @@ if(ANDROID)
   set(PYTHON_INC_DIR "${P4A_PYTHON_BUILD}/Include")
   set(PYTHON_SO "${P4A_PYTHON_BUILD}/android-build/libpython3.11.so")
 
-  target_include_directories(${APP_NAME} PRIVATE "${PYTHON_INC_DIR}")
+  target_include_directories(${ANDROID_TARGET} PRIVATE "${PYTHON_INC_DIR}")
 
-  target_link_libraries(${APP_NAME}
+  target_link_libraries(${ANDROID_TARGET}
     PRIVATE Qt6::Quick
     PRIVATE Qt6::Multimedia
     PRIVATE Qt6::Network
@@ -141,11 +154,11 @@ if(ANDROID)
     PRIVATE "${P4A_LIBS_COLLECTION}/libsqlite3.so"
   )
 
-  set_property(TARGET ${APP_NAME} PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR "${ANDROID_PKG_STAGE}")
-  set_property(TARGET ${APP_NAME} PROPERTY QT_ANDROID_APP_NAME "Vermilion")
-  set_property(TARGET ${APP_NAME} PROPERTY QT_ANDROID_PACKAGE_NAME "io.github.x6carbon12.vermilion")
+  set_property(TARGET ${ANDROID_TARGET} PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR "${ANDROID_PKG_STAGE}")
+  set_property(TARGET ${ANDROID_TARGET} PROPERTY QT_ANDROID_APP_NAME "Vermilion")
+  set_property(TARGET ${ANDROID_TARGET} PROPERTY QT_ANDROID_PACKAGE_NAME "io.github.x6carbon12.vermilion")
 
-  set_property(TARGET ${APP_NAME} PROPERTY
+  set_property(TARGET ${ANDROID_TARGET} PROPERTY
     QT_ANDROID_EXTRA_LIBS
     "${PYTHON_SO}"
     "${P4A_LIBS_COLLECTION}/libffi.so"
@@ -157,8 +170,40 @@ if(ANDROID)
     "${custom_android_libs_SOURCE_DIR}/libssl_3.so"
   )
 else()
-  find_package(Python3 COMPONENTS Development.Embed REQUIRED)
-  target_link_libraries(vermilion PRIVATE
+  qt_add_executable(${LINUX_TARGET} ${CPP_SOURCES} ${CPP_LINUX_SOURCES})
+  set_target_properties(${LINUX_TARGET} PROPERTIES OUTPUT_NAME "vermilion-core")
+  qt_add_qml_module(
+    ${LINUX_TARGET}
+    URI ${PROJECT_NAME}
+    VERSION 1.0
+    QML_FILES
+    src/qml/Main.qml
+    SOURCES
+    src/managers/YtController.h
+    src/managers/YtController.cpp
+    src/managers/PlayerController.h
+    src/managers/PlayerController.cpp
+    src/core/audio/PlayerState.h
+    src/core/audio/Track.h
+    src/models/TrackListModel.cpp
+    src/models/TrackListModel.h
+    OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Vermilion
+  )
+
+  target_compile_definitions(${LINUX_TARGET} PRIVATE QT_NO_KEYWORDS)
+  target_include_directories(${LINUX_TARGET} PRIVATE ${CPP_INCLUDES})
+
+  # All Python stuff is supplied via command line.
+  if(STANDALONE_PYTHON_DIR)
+    set(Python3_ROOT_DIR "${STANDALONE_PYTHON_DIR}")
+    set(Python3_FIND_STRATEGY LOCATION)
+    set(Python3_FIND_REGISTRY NEVER)
+    set(Python3_FIND_FRAMEWORK NEVER)
+  endif()
+
+  find_package(Python3 3.11 EXACT COMPONENTS Development.Embed REQUIRED)
+
+  target_link_libraries(${LINUX_TARGET} PRIVATE
     Qt6::Quick
     PRIVATE Qt6::Multimedia
     pybind11::embed
