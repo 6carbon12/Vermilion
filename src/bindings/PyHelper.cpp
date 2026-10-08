@@ -11,7 +11,7 @@ namespace PyHelper {
 Q_LOGGING_CATEGORY(PyHelper, "PyHelper")
 
 std::expected<void, Error> init() {
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
   if (qEnvironmentVariableIsEmpty("PYTHONHOME")) {
     qCWarning(PyHelper) << "PYTHONHOME not set.";
     return std::unexpected(Error({ErrorReason::FileError, "PYTHONHOME must be set before launching the program."}));
@@ -77,7 +77,7 @@ std::expected<void, Error> installModule(const QString &modulePath, const QStrin
   QDir().mkpath(sitePkgs);
   QString moduleTgtPath = sitePkgs + "/" + (moduleName.isEmpty() ? modulePath.section('/', -1) : moduleName);
 
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
   if (!QDir(moduleTgtPath).exists() || QDir(moduleTgtPath).isEmpty()) {
     qCDebug(PyHelper) << "Module does not exit. Bad things might happen.";
     return std::unexpected(Error({ErrorReason::FileError, "Module not installed. Package might not be installed correctly."}));
