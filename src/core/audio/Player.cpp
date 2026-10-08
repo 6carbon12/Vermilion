@@ -1,5 +1,9 @@
 #include "Player.h"
+#ifdef Q_OS_ANDROID
 #include "AndroidPlayer.h"
+#else
+#include "DesktopPlayer.h"
+#endif
 #include <memory>
 #include <qlogging.h>
 
