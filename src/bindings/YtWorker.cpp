@@ -87,12 +87,14 @@ void YtWorker::init() {
     py::gil_scoped_acquire acquire;
 
     try {
+#ifdef Q_OS_ANDROID
       QString nativeLibDir = QCoreApplication::applicationDirPath();
       py::module_ sys = py::module_::import("sys");
       sys.attr("path").attr("append")(nativeLibDir.toStdString());
 
       // Invalidate caches to force a rescan of modules.
       py::module_::import("importlib").attr("invalidate_caches")();
+#endif
 
       py::dict ydlOpts = getGeneralYdlOpts();
       yt_dlp = py::module_::import("yt_dlp");

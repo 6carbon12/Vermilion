@@ -11,6 +11,22 @@ namespace PyHelper {
 Q_LOGGING_CATEGORY(PyHelper, "PyHelper")
 
 std::expected<void, Error> init() {
+#ifdef Q_OS_LINUX
+  if (qEnvironmentVariableIsEmpty("PYTHONHOME")) {
+    qCWarning(PyHelper) << "PYTHONHOME not set.";
+    return std::unexpected(Error({ErrorReason::FileError, "PYTHONHOME must be set before launching the program."}));
+  }
+
+  const QString PYTHONHOME = qgetenv("PYTHONHOME");
+
+  if (!QDir().exists(PYTHONHOME)) {
+    qCWarning(PyHelper) << "PYTHONHOME is not valid.";
+    return std::unexpected(Error({ErrorReason::FileError, "Given PYTHONHOME path doesn't exist. PYTHONHOME=" + PYTHONHOME}));
+  }
+
+  qCDebug(PyHelper) << "Python initalized.";
+  return {};
+#endif
   QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
   QString stdLibDir = dataDir + "/python/lib/python3.11";
 
@@ -60,6 +76,15 @@ std::expected<void, Error> installModule(const QString &modulePath, const QStrin
   QString sitePkgs = PYTHONHOME + "/lib/python3.11/site-packages";
   QDir().mkpath(sitePkgs);
   QString moduleTgtPath = sitePkgs + "/" + (moduleName.isEmpty() ? modulePath.section('/', -1) : moduleName);
+
+#ifdef Q_OS_LINUX
+  if (!QDir(moduleTgtPath).exists() || QDir(moduleTgtPath).isEmpty()) {
+    qCDebug(PyHelper) << "Module does not exit. Bad things might happen.";
+    return std::unexpected(Error({ErrorReason::FileError, "Module not installed. Package might not be installed correctly."}));
+  }
+
+  return {};
+#endif
 
   if (QDir(moduleTgtPath).exists() && !QDir(moduleTgtPath).isEmpty()) {
     qCDebug(PyHelper) << "Module already exists, skipping installation:" << moduleTgtPath;
