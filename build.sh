@@ -85,7 +85,7 @@ if [ "$TARGET" = "android" ]; then
 
   if [ "$INSTALL" -eq 1 ]; then
     echo "Installing APK..."
-    adb install -r "$BUILD_DIR/android-build/vermilion.apk" >> $LOGFILE 2>> $LOGFILE
+    adb install -r "$BUILD_DIR/android-build/vermilion_android.apk" >> $LOGFILE 2>> $LOGFILE
   fi
 
   if [ "$OPEN" -eq 1 ]; then
@@ -99,7 +99,7 @@ if [ "$TARGET" = "android" ]; then
 
 elif [ "$TARGET" = "linux" ]; then
   BUILD_DIR="build/linux"
-  $LOGFILE="$BUILD_DIR/build.log"
+  LOGFILE="$BUILD_DIR/build.log"
 
   rm $LOGFILE >/dev/null 2>&1 || true
   mkdir -p $BUILD_DIR
@@ -121,7 +121,7 @@ elif [ "$TARGET" = "linux" ]; then
 
   if [ "$OPEN" -eq 1 ]; then
     echo "Launching Linux application..."
-    ./"$BUILD_DIR"/vermilion
+    ./"$BUILD_DIR"/vermilion-core
   fi
 
 else
