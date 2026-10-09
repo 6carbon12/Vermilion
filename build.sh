@@ -115,7 +115,7 @@ elif [ "$TARGET" = "linux" ]; then
   fi
 
   echo "Building Linux target..."
-  cmake --build "$BUILD_DIR" >> $LOGFILE
+  cmake --build "$BUILD_DIR" -j $(nproc) >> $LOGFILE
 
 	updateLspFiles $BUILD_DIR
 
