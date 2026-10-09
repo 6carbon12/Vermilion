@@ -202,10 +202,13 @@ else()
   endif()
 
   find_package(Python3 3.11 EXACT COMPONENTS Development.Embed REQUIRED)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(MPV REQUIRED IMPORTED_TARGET mpv)
 
   target_link_libraries(${LINUX_TARGET} PRIVATE
     Qt6::Quick
     PRIVATE Qt6::Multimedia
     pybind11::embed
+    PkgConfig::MPV
     Python3::Python)
 endif()
