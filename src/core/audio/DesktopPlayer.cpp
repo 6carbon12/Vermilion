@@ -1,22 +1,84 @@
 #include "DesktopPlayer.h"
 #include <QAudioOutput>
 #include <QThread>
+#include <QtConcurrent/QtConcurrentRun>
+#include <clocale>
+#include <cstdio>
+#include <mpv/client.h>
+#include <qfuture.h>
 #include <qmediaplayer.h>
 
 namespace Core {
 DesktopPlayer::DesktopPlayer() {
-  positionPoolTimer = new QTimer(this);
-  positionPoolTimer->setInterval(200);
-  player = new QMediaPlayer(this);
-  player->setAudioOutput(new QAudioOutput(this));
+  setlocale(LC_NUMERIC, "C");
+  mpvHandle = mpv_create();
+  mpv_initialize(mpvHandle);
+  mpv_set_option_string(mpvHandle, "video", "no");
+  const char *clientName = mpv_client_name(mpvHandle);
+  qDebug() << "Client created with name:" << clientName;
 
-  connect(positionPoolTimer, &QTimer::timeout, this, [this]() {
-    if (state == PlayerState::Playing) {
-      Q_EMIT playerPositionChanged();
+  mpv_observe_property(mpvHandle, 0, "pause", MPV_FORMAT_FLAG);
+  mpv_observe_property(mpvHandle, 0, "time-pos/full", MPV_FORMAT_DOUBLE);
+  QFuture<void> future = QtConcurrent::run([this](mpv_handle *handle) { handleMpvState(handle); }, mpvHandle);
+}
+
+void DesktopPlayer::handleMpvState(mpv_handle *handle) {
+  while (true) {
+    mpv_event *event = mpv_wait_event(handle, -1);
+    if (event->event_id == MPV_EVENT_SHUTDOWN) {
+      break;
     }
-  });
 
-  connect(player, &QMediaPlayer::playbackStateChanged, this, [this]() { Q_EMIT playerStateChanged(); });
+    switch (event->event_id) {
+    case MPV_EVENT_START_FILE:
+      qDebug() << "Player State: Loading file...";
+      state = PlayerState::Initialized;
+      break;
+
+    case MPV_EVENT_FILE_LOADED:
+      qDebug() << "Player State: File loaded successfully, ready to play.";
+      break;
+
+    case MPV_EVENT_END_FILE: {
+      mpv_event_end_file *end = (mpv_event_end_file *)event->data;
+      qDebug() << "Player State: Playback finished. Reason code:" << end->reason;
+      if (end->reason == MPV_END_FILE_REASON_ERROR) {
+        const char *errorReason = mpv_error_string(end->error);
+        qCritical() << "Playback failed or crashed due to error:" << errorReason;
+
+        state = PlayerState::Error;
+      } else if (end->reason == MPV_END_FILE_REASON_EOF) {
+        Q_EMIT requestNext();
+      }
+      break;
+    }
+
+    case MPV_EVENT_PROPERTY_CHANGE: {
+      mpv_event_property *prop = (mpv_event_property *)event->data;
+      qDebug() << "Property Changed:" << prop->name;
+      if (strcmp(prop->name, "pause") == 0 && prop->format == MPV_FORMAT_FLAG) {
+        bool isPaused = *(int *)prop->data;
+        qDebug() << "isPaused" << isPaused;
+        if (isPaused) {
+          state = PlayerState::Paused;
+        } else {
+          state = PlayerState::Playing;
+        }
+        qDebug() << "Player state:" << state;
+      } else if (strcmp(prop->name, "time-pos/full") == 0 && prop->format == MPV_FORMAT_DOUBLE) {
+        double d_position = *static_cast<double *>(prop->data);
+        position = std::lround((d_position) * 1000);
+        Q_EMIT playerPositionChanged();
+      }
+      break;
+    }
+
+    default:
+      break;
+    }
+
+    Q_EMIT playerStateChanged();
+  }
 }
 
 void DesktopPlayer::loadTrack(const QString &url, const Core::Track &track) {
@@ -26,47 +88,37 @@ void DesktopPlayer::loadTrack(const QString &url, const Core::Track &track) {
     return;
   }
 
-  player->setSource(mediaUrl);
-  if (playAfterReady) {
-    player->play();
+  QByteArray utf8Url = url.toUtf8();
+  const char *loadfileCmd[] = {"loadfile", utf8Url.constData(), NULL};
+
+  int error = mpv_command(mpvHandle, loadfileCmd);
+  if (error < 0) {
+    qWarning() << "mpv loadfile failed with error:" << mpv_error_string(error);
   }
+  qDebug() << "Loaded file, now pausing.";
 }
 
 void DesktopPlayer::play() {
-  if (!player->source().isValid()) {
-    playAfterReady = true;
-  }
-  player->play();
+  mpv_set_property_string(mpvHandle, "pause", "no");
 }
 
-void DesktopPlayer::pause() {
-  player->pause();
-}
+void DesktopPlayer::pause() { mpv_set_property_string(mpvHandle, "pause", "yes"); }
 
-Core::PlayerState::State DesktopPlayer::getPlayerState() {
-  QMediaPlayer::PlaybackState currentState = player->playbackState();
-  switch (currentState) {
-  case QMediaPlayer::StoppedState:
-    state = PlayerState::Initialized;
-    break;
-  case QMediaPlayer::PausedState:
-    state = PlayerState::Paused;
-    break;
-  case QMediaPlayer::PlayingState:
-    state = PlayerState::Playing;
-    break;
-  }
-
-  return state;
-};
+Core::PlayerState::State DesktopPlayer::getPlayerState() { return state; };
 
 void DesktopPlayer::seekTo(long positionMs) {
-  if (player->isSeekable()) {
-    player->setPosition(positionMs);
-  }
+  std::string positionStr = std::to_string(positionMs / 1000.0);
+  const char *seekCmd[] = {"seek", positionStr.c_str(), "absolute", NULL};
+  mpv_command(mpvHandle, seekCmd);
 }
 
-long DesktopPlayer::getCurrentPosition() { return player->position(); }
+long DesktopPlayer::getCurrentPosition() { return position; }
 
-long DesktopPlayer::getDuration() { return player->duration(); }
+long DesktopPlayer::getDuration() {
+  double *d_duration = new double;
+  mpv_get_property(mpvHandle, "duration/full", MPV_FORMAT_DOUBLE, d_duration);
+  duration = std::lround((*d_duration) * 1000);
+  delete d_duration;
+  return duration;
+}
 } // namespace Core

@@ -3,6 +3,7 @@
 #include "PlayerState.h"
 #include <QTimer>
 #include <QMediaPlayer>
+#include <mpv/client.h>
 
 namespace Core {
 class DesktopPlayer : public Player {
@@ -20,10 +21,9 @@ public:
   Core::PlayerState::State getPlayerState() override;
 
 private:
-  /// @brief Gives PlayerState from the java playerState.
-  Core::PlayerState::State getPlayerStateFromInt(int playerState);
-  QMediaPlayer* player;
-  QTimer *positionPoolTimer;
-  bool playAfterReady;
+  void handleMpvState(mpv_handle *handle);
+  mpv_handle *mpvHandle;
+  long position;
+  long duration;
 };
 } // namespace Core
