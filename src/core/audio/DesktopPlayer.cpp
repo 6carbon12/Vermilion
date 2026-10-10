@@ -1,3 +1,4 @@
+#include "MprisController.h"
 #include "DesktopPlayer.h"
 #include <QAudioOutput>
 #include <QThread>
@@ -7,6 +8,7 @@
 #include <mpv/client.h>
 #include <qfuture.h>
 #include <qmediaplayer.h>
+#include <QDBusConnection>
 
 namespace Core {
 DesktopPlayer::DesktopPlayer() {
@@ -14,8 +16,12 @@ DesktopPlayer::DesktopPlayer() {
   mpvHandle = mpv_create();
   mpv_initialize(mpvHandle);
   mpv_set_option_string(mpvHandle, "video", "no");
-  const char *clientName = mpv_client_name(mpvHandle);
-  qDebug() << "Client created with name:" << clientName;
+
+  mprisController = new MprisController(this, this);
+
+  QDBusConnection bus = QDBusConnection::sessionBus();
+  bus.registerObject("/org/mpris/MediaPlayer2", mprisController);
+  bus.registerService("org.mpris.MediaPlayer2.vermilion");
 
   mpv_observe_property(mpvHandle, 0, "pause", MPV_FORMAT_FLAG);
   mpv_observe_property(mpvHandle, 0, "time-pos/full", MPV_FORMAT_DOUBLE);
@@ -88,11 +94,18 @@ void DesktopPlayer::play(const QString &url, const Core::Track &track) {
 
   QByteArray utf8Url = url.toUtf8();
   const char *loadfileCmd[] = {"loadfile", utf8Url.constData(), NULL};
+  currentTrack = track;
 
   int error = mpv_command(mpvHandle, loadfileCmd);
   if (error < 0) {
     qWarning() << "mpv loadfile failed with error:" << mpv_error_string(error);
   }
+
+  Q_EMIT trackChanged();
+}
+
+Core::Track& DesktopPlayer::getCurrentTrack() {
+  return currentTrack;
 }
 
 void DesktopPlayer::pause() { mpv_set_property_string(mpvHandle, "pause", "yes"); }
@@ -105,6 +118,7 @@ void DesktopPlayer::seekTo(long positionMs) {
   std::string positionStr = std::to_string(positionMs / 1000.0);
   const char *seekCmd[] = {"seek", positionStr.c_str(), "absolute", NULL};
   mpv_command(mpvHandle, seekCmd);
+  Q_EMIT seeked();
 }
 
 long DesktopPlayer::getCurrentPosition() { return position; }
@@ -115,5 +129,13 @@ long DesktopPlayer::getDuration() {
   duration = std::lround((*d_duration) * 1000);
   delete d_duration;
   return duration;
+}
+
+void DesktopPlayer::next() {
+  Q_EMIT requestNext();
+}
+
+void DesktopPlayer::prev() {
+  Q_EMIT requestPrev();
 }
 } // namespace Core

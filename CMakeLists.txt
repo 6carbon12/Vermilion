@@ -51,6 +51,8 @@ set(CPP_ANDROID_SOURCES
 set(CPP_LINUX_SOURCES
   src/core/audio/DesktopPlayer.cpp
   src/core/audio/DesktopPlayer.h
+  src/managers/MprisController.h
+  src/managers/MprisController.cpp
 )
 
 set(CPP_INCLUDES

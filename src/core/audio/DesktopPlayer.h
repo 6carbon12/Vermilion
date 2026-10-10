@@ -5,6 +5,7 @@
 #include <QMediaPlayer>
 #include <mpv/client.h>
 
+class MprisController;
 namespace Core {
 class DesktopPlayer : public Player {
   Q_OBJECT
@@ -20,10 +21,19 @@ public:
   long getDuration() override;
   Core::PlayerState::State getPlayerState() override;
 
+  // For DBus
+  void next();
+  void prev();
+  Core::Track& getCurrentTrack();
+  Q_SIGNAL void trackChanged();
+  Q_SIGNAL void seeked();
+
 private:
   void handleMpvState(mpv_handle *handle);
   mpv_handle *mpvHandle;
   long position;
   long duration;
+  Core::Track currentTrack;
+  MprisController* mprisController;
 };
 } // namespace Core
