@@ -16,3 +16,7 @@ packaging/android/local.properties
 packaging/android/bin/
 
 packaging/android/jdtls_libs/
+
+packaging/android/assets
+packaging/android/libs
+packaging/android/include
