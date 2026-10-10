@@ -67,7 +67,6 @@ void TrackListModel::playTrackAtIndex(const int index) {
     qCWarning(trackListModel) << "Play requested for invalid index:" << index << ". Not doing anything";
     return;
   }
-  PlayerController::instance()->setUrl(m_tracks[index].url);
-  PlayerController::instance()->play();
+  PlayerController::instance()->play(m_tracks[index].url);
 }
 } // namespace Models
