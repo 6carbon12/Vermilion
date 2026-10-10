@@ -18,15 +18,14 @@ public:
   ~PlayerEngine() = default;
 
 public Q_SLOTS:
-  /// @brief Prepares the player to play `url`.
+  /// @brief Plays the given url.
   /// @param url YouTube URL of song to prepare.
-  void setUrl(const QString &url);
+  void play(const QString &url);
 
-  /// @brief Plays the track.
-  /// @note Track must be set before with `setUrl`.
-  void play();
+  /// @brief Resumes playback.
+  void resume();
 
-  /// @brief Pauses the track.
+  /// @brief Pauses playback.
   void pause();
 
   /// @brief Moves to next track in the queue.
@@ -54,7 +53,6 @@ Q_SIGNALS:
   void errorOccurred(const QString &error);
 
 private:
-  bool playAfterExtract{false};
   int currentTrackIndex{};
   QList<Core::Track> tracks{};
   QString currentUrl{};

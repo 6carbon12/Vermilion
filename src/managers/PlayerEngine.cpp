@@ -26,7 +26,6 @@ PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
   });
 
   connect(YT, &YtEngine::extractionFailed, this, [this](const QString &error) {
-    playAfterExtract = false;
     Q_EMIT errorOccurred("Extraction failed: " + error);
   });
 
@@ -48,7 +47,7 @@ PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
       });
 }
 
-void PlayerEngine::setUrl(const QString &url) {
+void PlayerEngine::play(const QString &url) {
   std::lock_guard<std::mutex> lock(queueMutex);
   currentUrl = url;
   currentTrackIndex = 0;
@@ -61,15 +60,15 @@ void PlayerEngine::setUrl(const QString &url) {
   YT->requestExtraction(url);
 }
 
-void PlayerEngine::play() {
-  if (player) {
-    player->play();
-  }
-}
-
 void PlayerEngine::pause() {
   if (player) {
     player->pause();
+  }
+}
+
+void PlayerEngine::resume() {
+  if (player) {
+    player->resume();
   }
 }
 
@@ -81,7 +80,6 @@ void PlayerEngine::next() {
   }
   currentTrackIndex++;
   currentUrl = tracks[currentTrackIndex].url;
-  playAfterExtract = true;
   YT->requestExtraction(currentUrl);
 }
 
@@ -93,7 +91,6 @@ void PlayerEngine::prev() {
   }
   currentTrackIndex--;
   currentUrl = tracks[currentTrackIndex].url;
-  playAfterExtract = true;
   YT->requestExtraction(currentUrl);
 }
 
@@ -115,10 +112,5 @@ void PlayerEngine::processExtraction(const QString &extractedUrl) {
   }
 
   Core::Track currentTrack = tracks[currentTrackIndex];
-  player->loadTrack(extractedUrl, currentTrack);
-
-  if (playAfterExtract) {
-    playAfterExtract = false;
-    player->play();
-  }
+  player->play(extractedUrl, currentTrack);
 }
