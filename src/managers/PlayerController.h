@@ -26,9 +26,9 @@ public:
   static PlayerController *instance();
   static PlayerController *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
-  Q_INVOKABLE void setUrl(const QString &url);
-  Q_INVOKABLE void play();
+  Q_INVOKABLE void play(const QString &url);
   Q_INVOKABLE void pause();
+  Q_INVOKABLE void resume();
   Q_INVOKABLE void next();
   Q_INVOKABLE void prev();
   Q_INVOKABLE void seekTo(long positionMs);
@@ -42,9 +42,9 @@ Q_SIGNALS:
   void durationChanged();
   void errorOccured(const QString &error);
 
-  void requestSetUrl(const QString &url);
-  void requestPlay();
+  void requestPlay(const QString &url);
   void requestPause();
+  void requestResume();
   void requestNext();
   void requestPrev();
   void requestSeekTo(long positionMs);

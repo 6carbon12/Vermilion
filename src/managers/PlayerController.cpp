@@ -13,9 +13,9 @@ PlayerController::PlayerController(QObject *parent) : QObject(parent) {
 
   connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
 
-  connect(this, &PlayerController::requestSetUrl, worker, &PlayerEngine::setUrl, Qt::QueuedConnection);
   connect(this, &PlayerController::requestPlay, worker, &PlayerEngine::play, Qt::QueuedConnection);
   connect(this, &PlayerController::requestPause, worker, &PlayerEngine::pause, Qt::QueuedConnection);
+  connect(this, &PlayerController::requestResume, worker, &PlayerEngine::resume, Qt::QueuedConnection);
   connect(this, &PlayerController::requestNext, worker, &PlayerEngine::next, Qt::QueuedConnection);
   connect(this, &PlayerController::requestPrev, worker, &PlayerEngine::prev, Qt::QueuedConnection);
   connect(this, &PlayerController::requestSeekTo, worker, &PlayerEngine::seekTo, Qt::QueuedConnection);
@@ -58,9 +58,9 @@ PlayerController *PlayerController::create(QQmlEngine *qmlEngine, QJSEngine *jsE
   return inst;
 }
 
-void PlayerController::setUrl(const QString &url) { Q_EMIT requestSetUrl(url); }
-void PlayerController::play() { Q_EMIT requestPlay(); }
+void PlayerController::play(const QString &url) { Q_EMIT requestPlay(url); }
 void PlayerController::pause() { Q_EMIT requestPause(); }
+void PlayerController::resume() { Q_EMIT requestResume(); }
 void PlayerController::next() { Q_EMIT requestNext(); }
 void PlayerController::prev() { Q_EMIT requestPrev(); }
 void PlayerController::seekTo(long positionMs) { Q_EMIT requestSeekTo(positionMs); }
