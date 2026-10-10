@@ -31,7 +31,7 @@ AndroidPlayer::~AndroidPlayer() {
   }
 }
 
-void AndroidPlayer::loadTrack(const QString &url, const Core::Track &track) {
+void AndroidPlayer::play(const QString &url, const Core::Track &track) {
   if (!player.isValid()) {
     qDebug() << "AndroidPlayer: Player object isn't valid.";
     return;
@@ -45,9 +45,10 @@ void AndroidPlayer::loadTrack(const QString &url, const Core::Track &track) {
   player.callMethod<void>("loadTrack", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
                           jUrl.object<jstring>(), jTitle.object<jstring>(), jArtist.object<jstring>(),
                           jArtUrl.object<jstring>());
+  player.callMethod<void>("play");
 }
 
-void AndroidPlayer::play() {
+void AndroidPlayer::resume() {
   if (!player.isValid()) {
     qDebug() << "AndroidPlayer: Player object isn't valid.";
     return;

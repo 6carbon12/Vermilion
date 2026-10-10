@@ -11,9 +11,9 @@ public:
   AndroidPlayer();
   ~AndroidPlayer();
 
-  void loadTrack(const QString &url, const Core::Track &track) override;
-  void play() override;
+  void play(const QString &url, const Core::Track &track) override;
   void pause() override;
+  void resume() override;
   void seekTo(long positionMs) override;
   long getCurrentPosition() override;
   long getDuration() override;
