@@ -72,26 +72,26 @@ echo "Performing cleanup tasks..."
 # Remove specified files and directories from assets/python311/
 PYTHON311_DIR="${ANDROID_PKG_STAGE}/assets/python311"
 if [ -d "$PYTHON311_DIR" ]; then
-    rm -rf \
-        "$PYTHON311_DIR/test" \
-        "$PYTHON311_DIR/lib-dynload" \
-        "$PYTHON311_DIR/ensurepip" \
-        "$PYTHON311_DIR/pydoc_data" \
-        "$PYTHON311_DIR/tkinter" \
-        "$PYTHON311_DIR/turtledemo" \
-        "$PYTHON311_DIR/idlelib" \
-        "$PYTHON311_DIR/unittest" \
-        "$PYTHON311_DIR/diskutils" \
-        "$PYTHON311_DIR/lib2to3" \
-        "$PYTHON311_DIR/venv" \
-        "$PYTHON311_DIR/turtle.py" \
-        "$PYTHON311_DIR/pydoc.py" \
-        "$PYTHON311_DIR/doctest.py" \
-        "$PYTHON311_DIR/pdb.py" \
-        "$PYTHON311_DIR/cProfile.py" \
-        "$PYTHON311_DIR/profile.py" \
-        "$PYTHON311_DIR/antigravity.py" \
-        "$PYTHON311_DIR/this.py"
+  rm -rf \
+    "$PYTHON311_DIR/test" \
+    "$PYTHON311_DIR/lib-dynload" \
+    "$PYTHON311_DIR/ensurepip" \
+    "$PYTHON311_DIR/pydoc_data" \
+    "$PYTHON311_DIR/tkinter" \
+    "$PYTHON311_DIR/turtledemo" \
+    "$PYTHON311_DIR/idlelib" \
+    "$PYTHON311_DIR/unittest" \
+    "$PYTHON311_DIR/diskutils" \
+    "$PYTHON311_DIR/lib2to3" \
+    "$PYTHON311_DIR/venv" \
+    "$PYTHON311_DIR/turtle.py" \
+    "$PYTHON311_DIR/pydoc.py" \
+    "$PYTHON311_DIR/doctest.py" \
+    "$PYTHON311_DIR/pdb.py" \
+    "$PYTHON311_DIR/cProfile.py" \
+    "$PYTHON311_DIR/profile.py" \
+    "$PYTHON311_DIR/antigravity.py" \
+    "$PYTHON311_DIR/this.py"
 fi
 
 # Remove all __pycache__ directories in assets/
@@ -103,20 +103,54 @@ find "${ANDROID_PKG_STAGE}/assets" -type d -name "*.dist-info" -exec rm -rf {} +
 # Clean yt_dlp extractors if the directory exists
 YT_EXTRACTOR_DIR="${ANDROID_PKG_STAGE}/assets/yt_dlp/extractor"
 if [ -d "$YT_EXTRACTOR_DIR" ]; then
-    echo "Cleaning yt_dlp extractors..."
-    cd "$YT_EXTRACTOR_DIR"
-    find . -maxdepth 1 -type f -name "*.py" \
-        ! -name "__init__.py" \
-        ! -name "common.py" \
-        ! -name "commonprotocols.py" \
-        ! -name "extractors.py" \
-        ! -name "_extractors.py" \
-        ! -name "lazy_extractors.py" \
-        ! -name "generic.py" \
-        -delete
-    cd - > /dev/null
+  echo "Cleaning yt_dlp extractors..."
+  cd "$YT_EXTRACTOR_DIR"
+  find . -maxdepth 1 -type f -name "*.py" \
+    ! -name "__init__.py" \
+    ! -name "common.py" \
+    ! -name "commonprotocols.py" \
+    ! -name "extractors.py" \
+    ! -name "_extractors.py" \
+    ! -name "lazy_extractors.py" \
+    ! -name "generic.py" \
+    ! -name "afreecatv.py" \
+    ! -name "adobepass.py" \
+    ! -name "openload.py" \
+    -delete
+  cd - > /dev/null
 fi
 
-rm "${ANDROID_PKG_STAGE}/libs/arm64-v8a/libpythonbin.so"
+rm -f "${ANDROID_PKG_STAGE}/libs/arm64-v8a/libpythonbin.so"
+
+echo "Patching OpenSSL libraries to prevent duplication with Qt..."
+LIBS_DIR="${ANDROID_PKG_STAGE}/libs/arm64-v8a"
+if [ -f "${LIBS_DIR}/libcrypto.so" ] && [ -f "${LIBS_DIR}/libssl.so" ]; then
+  cd "${LIBS_DIR}"
+
+  mv libcrypto.so libcrypto_3.so
+  mv libssl.so libssl_3.so
+
+  patchelf --set-soname libcrypto_3.so libcrypto_3.so
+  patchelf --set-soname libssl_3.so libssl_3.so
+  patchelf --replace-needed libcrypto.so libcrypto_3.so libssl_3.so
+
+  for lib in *.so; do
+    if [[ "$lib" == "libcrypto_3.so" || "$lib" == "libssl_3.so" ]]; then
+      continue
+    fi
+
+    if patchelf --print-needed "$lib" | grep -q "libcrypto.so"; then
+      patchelf --replace-needed libcrypto.so libcrypto_3.so "$lib"
+    fi
+
+    if patchelf --print-needed "$lib" | grep -q "libssl.so"; then
+      patchelf --replace-needed libssl.so libssl_3.so "$lib"
+    fi
+  done
+
+  cd - > /dev/null
+else
+  echo "Warning: libcrypto.so or libssl.so not found in ${LIBS_DIR}, skipping patch."
+fi
 
 echo "Android staging and cleanup completed successfully!"

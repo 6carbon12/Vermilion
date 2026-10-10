@@ -15,7 +15,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(pybind11)
 
-find_package(Qt6 6.11 REQUIRED COMPONENTS Core Qml Quick Multimedia)
+find_package(Qt6 6.11 REQUIRED COMPONENTS Core Qml Quick)
 qt_standard_project_setup(REQUIRES 6.11)
 
 set(APP_NAME vermilion)
@@ -68,6 +68,7 @@ if(ANDROID)
   set_target_properties(${ANDROID_TARGET} PROPERTIES
     OUTPUT_NAME "vermilion"
   )
+
   # `slots` is a macro used by QT
   # but `slots` is used as a variable in Python C API
   # So we disable that keyword with this:
@@ -92,11 +93,6 @@ if(ANDROID)
     OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Vermilion
   )
 
-  set(P4A_DIR "$ENV{HOME}/.local/share/python-for-android/build")
-  set(P4A_PYTHON_BUILD
-    "${P4A_DIR}/other_builds/python3/arm64-v8a__ndk_target_27/python3")
-  set(P4A_LIBS_COLLECTION "${P4A_DIR}/libs_collections/embed/arm64-v8a")
-
   FetchContent_Declare(
     custom_android_libs
     URL "https://github.com/6carbon12/Vermilion/releases/download/v1.0/vermilion-extra-libs.tar.gz"
@@ -104,75 +100,30 @@ if(ANDROID)
   )
   FetchContent_MakeAvailable(custom_android_libs)
 
-  set(ANDROID_PKG_STAGE "${CMAKE_CURRENT_BINARY_DIR}/android_pkg_stage")
-  file(REMOVE_RECURSE "${ANDROID_PKG_STAGE}")
+  set(ANDROID_PKG_DIR "${CMAKE_SOURCE_DIR}/packaging/android")
 
-  file(GLOB_RECURSE ALL_JAVA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/packaging/android/src/*.java")
-  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${ALL_JAVA_FILES})
-
-  file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/packaging/android/src"
-    DESTINATION "${ANDROID_PKG_STAGE}"
-  )
-  file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/packaging/android/AndroidManifest.xml"
-    "${CMAKE_CURRENT_SOURCE_DIR}/packaging/android/build.gradle"
-    DESTINATION "${ANDROID_PKG_STAGE}"
-  )
-
-  file(MAKE_DIRECTORY "${ANDROID_PKG_STAGE}/assets")
-  file(MAKE_DIRECTORY "${ANDROID_PKG_STAGE}/libs/arm64-v8a")
-
-  file(CREATE_LINK
-    "${P4A_PYTHON_BUILD}/android-build/android-root/lib/python3.11"
-    "${ANDROID_PKG_STAGE}/assets/python311"
-    SYMBOLIC
-  )
-
-  file(GLOB P4A_PACKAGES "${P4A_DIR}/python-installs/embed/arm64-v8a/*")
-  foreach(pkg_path ${P4A_PACKAGES})
-    get_filename_component(pkg_name "${pkg_path}" NAME)
-    file(CREATE_LINK "${pkg_path}" "${ANDROID_PKG_STAGE}/assets/${pkg_name}" SYMBOLIC)
-  endforeach()
-
-  file(GLOB DYNLOAD_SO_FILES "${P4A_PYTHON_BUILD}/android-build/android-root/lib/python3.11/lib-dynload/*.so")
-  foreach(so_file ${DYNLOAD_SO_FILES})
-    get_filename_component(so_name "${so_file}" NAME)
-    file(CREATE_LINK "${so_file}" "${ANDROID_PKG_STAGE}/libs/arm64-v8a/${so_name}" SYMBOLIC)
-  endforeach()
-
-  set(PYTHON_INC_DIR "${P4A_PYTHON_BUILD}/Include")
-  set(PYTHON_SO "${P4A_PYTHON_BUILD}/android-build/libpython3.11.so")
-
-  target_include_directories(${ANDROID_TARGET} PRIVATE "${PYTHON_INC_DIR}")
-
+  target_include_directories(${ANDROID_TARGET} PRIVATE "${ANDROID_PKG_DIR}/include")
   target_link_libraries(${ANDROID_TARGET}
     PRIVATE Qt6::Quick
-    PRIVATE Qt6::Multimedia
     PRIVATE Qt6::Network
     PRIVATE pybind11::embed
-    PRIVATE "${PYTHON_SO}"
-    PRIVATE "${P4A_LIBS_COLLECTION}/libffi.so"
-    PRIVATE "${P4A_LIBS_COLLECTION}/libcrypto.so"
-    PRIVATE "${P4A_LIBS_COLLECTION}/libssl.so"
-    PRIVATE "${P4A_LIBS_COLLECTION}/libsqlite3.so"
+    PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libpython3.11.so"
+    PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libffi.so"
+    PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libcrypto_3.so"
+    PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libssl_3.so"
+    PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libsqlite3.so"
   )
 
-  set_property(TARGET ${ANDROID_TARGET} PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR "${ANDROID_PKG_STAGE}")
+  set_property(TARGET ${ANDROID_TARGET} PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR ${ANDROID_PKG_DIR})
   set_property(TARGET ${ANDROID_TARGET} PROPERTY QT_ANDROID_APP_NAME "Vermilion")
   set_property(TARGET ${ANDROID_TARGET} PROPERTY QT_ANDROID_PACKAGE_NAME "io.github.x6carbon12.vermilion")
 
   set_property(TARGET ${ANDROID_TARGET} PROPERTY
     QT_ANDROID_EXTRA_LIBS
-    "${PYTHON_SO}"
-    "${P4A_LIBS_COLLECTION}/libffi.so"
-    "${P4A_LIBS_COLLECTION}/libcrypto.so"
-    "${P4A_LIBS_COLLECTION}/libssl.so"
-    "${P4A_LIBS_COLLECTION}/libsqlite3.so"
     "${custom_android_libs_SOURCE_DIR}/libqjs.so"
-    "${custom_android_libs_SOURCE_DIR}/libcrypto_3.so"
-    "${custom_android_libs_SOURCE_DIR}/libssl_3.so"
   )
 else()
-  find_package(Qt6 COMPONENTS Core DBus REQUIRED)
+  find_package(Qt6 COMPONENTS Core DBus Multimedia REQUIRED)
 
   qt_add_dbus_adaptor(generated_mpris_sources
     "src/dbus/org.mpris.MediaPlayer2.xml"
