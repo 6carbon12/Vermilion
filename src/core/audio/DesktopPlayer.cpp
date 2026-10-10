@@ -37,6 +37,7 @@ void DesktopPlayer::handleMpvState(mpv_handle *handle) {
 
     case MPV_EVENT_FILE_LOADED:
       qDebug() << "Player State: File loaded successfully, ready to play.";
+      state = PlayerState::Playing;
       break;
 
     case MPV_EVENT_END_FILE: {
@@ -55,16 +56,13 @@ void DesktopPlayer::handleMpvState(mpv_handle *handle) {
 
     case MPV_EVENT_PROPERTY_CHANGE: {
       mpv_event_property *prop = (mpv_event_property *)event->data;
-      qDebug() << "Property Changed:" << prop->name;
       if (strcmp(prop->name, "pause") == 0 && prop->format == MPV_FORMAT_FLAG) {
         bool isPaused = *(int *)prop->data;
-        qDebug() << "isPaused" << isPaused;
         if (isPaused) {
           state = PlayerState::Paused;
         } else {
           state = PlayerState::Playing;
         }
-        qDebug() << "Player state:" << state;
       } else if (strcmp(prop->name, "time-pos/full") == 0 && prop->format == MPV_FORMAT_DOUBLE) {
         double d_position = *static_cast<double *>(prop->data);
         position = std::lround((d_position) * 1000);
@@ -81,7 +79,7 @@ void DesktopPlayer::handleMpvState(mpv_handle *handle) {
   }
 }
 
-void DesktopPlayer::loadTrack(const QString &url, const Core::Track &track) {
+void DesktopPlayer::play(const QString &url, const Core::Track &track) {
   QUrl mediaUrl(url);
   if (!mediaUrl.isValid()) {
     qWarning() << "Invalid URL provided to DesktopPlayer:" << url;
@@ -95,14 +93,11 @@ void DesktopPlayer::loadTrack(const QString &url, const Core::Track &track) {
   if (error < 0) {
     qWarning() << "mpv loadfile failed with error:" << mpv_error_string(error);
   }
-  qDebug() << "Loaded file, now pausing.";
-}
-
-void DesktopPlayer::play() {
-  mpv_set_property_string(mpvHandle, "pause", "no");
 }
 
 void DesktopPlayer::pause() { mpv_set_property_string(mpvHandle, "pause", "yes"); }
+
+void DesktopPlayer::resume() { mpv_set_property_string(mpvHandle, "pause", "no"); }
 
 Core::PlayerState::State DesktopPlayer::getPlayerState() { return state; };
 
