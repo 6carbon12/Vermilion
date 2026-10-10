@@ -30,17 +30,16 @@ public:
   /// @return Normal pointer to current player instance.
   static Player* instance();
 
-  /// @brief Loads the given track information and prepares the player.
-  /// @note This function does not play the track, see `play()`.
+  /// @brief Plays the given track.
   /// @param url Streaming URL of the track to be played.
   /// @param track Metadata of the given track.
-  virtual void loadTrack(const QString &url, const Core::Track &track) = 0;
-
-  /// @brief Plays the track loaded from `loadTrack`.
-  virtual void play() = 0;
+  virtual void play(const QString &url, const Core::Track &track) = 0;
 
   /// @brief Pauses the track.
   virtual void pause() = 0;
+
+  /// @brief Resumes the track.
+  virtual void resume() = 0;
 
   /// @param positionMs Position to seek to in milliseconds.
   virtual void seekTo(long positionMs) = 0;
