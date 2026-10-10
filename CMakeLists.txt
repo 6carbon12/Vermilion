@@ -170,7 +170,30 @@ if(ANDROID)
     "${custom_android_libs_SOURCE_DIR}/libssl_3.so"
   )
 else()
-  qt_add_executable(${LINUX_TARGET} ${CPP_SOURCES} ${CPP_LINUX_SOURCES})
+  find_package(Qt6 COMPONENTS Core DBus REQUIRED)
+
+  qt_add_dbus_adaptor(generated_mpris_sources
+    "src/dbus/org.mpris.MediaPlayer2.xml"
+    "src/managers/MprisController.h"
+    "MprisController"
+    "mpris2_adaptor"
+    "Mpris2Adaptor"
+  )
+
+  qt_add_dbus_adaptor(generated_player_sources
+    "src/dbus/org.mpris.MediaPlayer2.Player.xml"
+    "src/managers/MprisController.h"
+    "MprisController"
+    "player_adaptor"
+    "PlayerAdaptor"
+  )
+
+  qt_add_executable(${LINUX_TARGET}
+    ${CPP_SOURCES}
+    ${CPP_LINUX_SOURCES}
+    ${generated_mpris_sources}
+    ${generated_player_sources}
+  )
   set_target_properties(${LINUX_TARGET} PROPERTIES OUTPUT_NAME "vermilion-core")
   qt_add_qml_module(
     ${LINUX_TARGET}
@@ -191,7 +214,10 @@ else()
   )
 
   target_compile_definitions(${LINUX_TARGET} PRIVATE QT_NO_KEYWORDS)
-  target_include_directories(${LINUX_TARGET} PRIVATE ${CPP_INCLUDES})
+  target_include_directories(${LINUX_TARGET} PRIVATE
+    ${CPP_INCLUDES}
+    ${CMAKE_CURRENT_BINARY_DIR}
+  )
 
   # All Python stuff is supplied via command line.
   if(STANDALONE_PYTHON_DIR)
@@ -207,6 +233,7 @@ else()
 
   target_link_libraries(${LINUX_TARGET} PRIVATE
     Qt6::Quick
+    Qt6::DBus
     PRIVATE Qt6::Multimedia
     pybind11::embed
     PkgConfig::MPV
