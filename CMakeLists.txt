@@ -61,6 +61,7 @@ set(CPP_INCLUDES
   src/bindings
   src/managers
   src/models
+  src/dev
 )
 
 if(ANDROID)
@@ -141,12 +142,22 @@ else()
     "PlayerAdaptor"
   )
 
+  set(CPP_SOURCES_DEBUG
+    src/dev/HotReloader.h
+    src/dev/HotReloader.cpp
+  )
   qt_add_executable(${LINUX_TARGET}
     ${CPP_SOURCES}
+    ${CPP_SOURCES_DEBUG}
     ${CPP_LINUX_SOURCES}
     ${generated_mpris_sources}
     ${generated_player_sources}
   )
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${LINUX_TARGET} PRIVATE
+      HOTRELOAD_QML_DIR="${CMAKE_CURRENT_SOURCE_DIR}/src/qml"
+    )
+  endif()
   set_target_properties(${LINUX_TARGET} PROPERTIES OUTPUT_NAME "vermilion-core")
   qt_add_qml_module(
     ${LINUX_TARGET}
