@@ -1,3 +1,5 @@
+#pragma once
+
 #include <qobject.h>
 #include <qqmlapplicationengine.h>
 #include <qqmlintegration.h>
@@ -12,14 +14,16 @@
 // `ApplicationWindow` shall react to `reloadUI` and reload the Contents.
 class HotReloader : public QObject {
   Q_OBJECT
+  QML_SINGLETON
   QML_ELEMENT
-  QML_UNCREATABLE("HotReloader is initalized by CPP.")
-  Q_PROPERTY(QVariantList savedStackHistory READ getSavedStackHistory WRITE setSavedStackHistory NOTIFY savedStackHistoryChanged)
+  Q_PROPERTY(QVariantList savedStackHistory READ getSavedStackHistory WRITE setSavedStackHistory NOTIFY
+                 savedStackHistoryChanged)
 
 public:
-  HotReloader(QQmlApplicationEngine* engine, QString qmlPath, QObject *parent = nullptr);
+  HotReloader(QObject *parent = nullptr);
+
   QVariantList getSavedStackHistory() const;
-  void setSavedStackHistory(const QVariantList& list);
+  void setSavedStackHistory(const QVariantList &list);
   Q_INVOKABLE void requestReload();
 
 Q_SIGNALS:
@@ -31,8 +35,6 @@ Q_SIGNALS:
 
 private:
   QVariantList m_savedStackHistory;
-  QQmlApplicationEngine *m_engine;
-  QString m_qmlPath;
 #ifdef QT_DEBUG
   QFileSystemWatcher m_watcher;
 #endif

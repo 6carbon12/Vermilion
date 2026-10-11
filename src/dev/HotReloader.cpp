@@ -1,16 +1,19 @@
 #include <HotReloader.h>
-#include <QTimer>
+#include <QQmlEngine>
 
-HotReloader::HotReloader(QQmlApplicationEngine *engine, QString qmlPath, QObject *parent)
-    : QObject(parent), m_engine(engine), m_qmlPath(qmlPath) {
+HotReloader::HotReloader(QObject *parent) : QObject(parent) {
 #ifdef QT_DEBUG
+#define XSTR(x) STR(x)
+#define STR(x) #x
+  QString qmlPath = QString::fromUtf8(XSTR(HOTRELOAD_QML_DIR)).remove('"');
+
   m_watcher.addPath(qmlPath);
   m_watcher.addPath(qmlPath + "/pages");
   m_watcher.addPath(qmlPath + "/widgets");
   m_watcher.addPath(qmlPath + "/components");
-  connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, [this]() {
-    Q_EMIT fileChanged();
-  });
+
+  connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, [this]() { Q_EMIT fileChanged(); });
+  qDebug() << "Initalized HotReloader.";
 #endif
 }
 
@@ -26,7 +29,9 @@ void HotReloader::requestReload() {
   QMetaObject::invokeMethod(
       this,
       [this]() {
-        m_engine->clearComponentCache();
+        if (auto engine = qmlEngine(this)) {
+          engine->clearComponentCache();
+        }
         Q_EMIT reloadUI();
       },
       Qt::QueuedConnection);

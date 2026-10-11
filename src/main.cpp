@@ -1,3 +1,4 @@
+#include "HotReloader.h"
 #include "PyHelper.h"
 #include <QDir>
 #include <QFile>
@@ -17,7 +18,6 @@
 #include <qlogging.h>
 #include <qloggingcategory.h>
 #include <qtenvironmentvariables.h>
-#include "HotReloader.h"
 
 namespace py = pybind11;
 using namespace py::literals;
@@ -61,25 +61,14 @@ int main(int argc, char *argv[]) {
     QObject::connect(
         &engine, &QQmlApplicationEngine::objectCreationFailed, &app, []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
-    QString qmlSourceDir = "";
 #ifdef QT_DEBUG
 #define XSTR(x) STR(x)
 #define STR(x) #x
-    qmlSourceDir = QString::fromUtf8(XSTR(HOTRELOAD_QML_DIR)).remove('"');
-#endif
-
-    HotReloader hotReloader(&engine, qmlSourceDir);
-    qmlRegisterSingletonInstance("Vermilion.Dev", 1, 0, "HotReloader", &hotReloader);
-
-#ifdef QT_DEBUG
-    qDebug() << "Running Debug build.";
-    qDebug() << "Loading local file Main.qml at:" << qmlSourceDir;
+    QString qmlSourceDir = QString::fromUtf8(XSTR(HOTRELOAD_QML_DIR)).remove('"');
     engine.load(QUrl::fromLocalFile(qmlSourceDir + "/Main.qml"));
 #else
-    qDebug() << "Running Release build.";
     engine.loadFromModule("Vermilion", "Main");
 #endif
-
     exitCode = app.exec();
   }
 

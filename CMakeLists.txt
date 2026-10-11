@@ -178,6 +178,8 @@ else()
     src/core/audio/Track.h
     src/models/TrackListModel.cpp
     src/models/TrackListModel.h
+    src/dev/HotReloader.h
+    src/dev/HotReloader.cpp
     OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Vermilion
   )
 
