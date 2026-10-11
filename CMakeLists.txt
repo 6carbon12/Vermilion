@@ -165,6 +165,10 @@ else()
     VERSION 1.0
     QML_FILES
     src/qml/Main.qml
+    src/qml/MainShell.qml
+    src/qml/pages/Home.qml
+    src/qml/pages/Search.qml
+    src/qml/pages/Artist.qml
     SOURCES
     src/managers/YtController.h
     src/managers/YtController.cpp
