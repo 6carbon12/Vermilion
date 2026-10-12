@@ -1,33 +1,64 @@
 pragma ComponentBehavior: Bound
 
+import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import Vermilion
+import "./widgets"
 
 Item {
   id: rootContent
 
-  property var stack: mainContentLayout.children[navigationLoader.item.currentIndex]
+  property int activeTabIndex: 0
+  property var stack: stackRepeater.itemAt(activeTabIndex)
 
   Component.onCompleted: {
     let history = HotReloader.savedStackHistory;
+    console.log("Restoring history...");
+
     if (history && history.length > 0) {
-      for (let i = 0; i < mainContentLayout.children.length; i++) {
-        let page = mainContentLayout.children[i];
-        if (page.item) {
-          page.item.clear(StackView.Immediate);
+      for (let i = 0; i < stackRepeater.count; i++) {
+        let sv = stackRepeater.itemAt(i) as StackView;
+        if (sv)
+          sv.clear(StackView.Immediate);
+      }
+
+      for (let i = 0; i < history.length; i++) {
+        if (history[i].currentIndex !== undefined) {
+          rootContent.activeTabIndex = history[i].currentIndex;
+          continue;
+        }
+
+        let sv = stackRepeater.itemAt(history[i].index) as StackView;
+        if (sv) {
+          sv.pushItem(history[i].url, history[i].args || {}, StackView.Immediate);
         }
       }
-      for (let i = 0; i < history.length; i++) {
-        mainContentLayout.pushItem(history[i].url, history[i].args, StackView.Immediate);
-      }
       HotReloader.savedStackHistory = [];
-    } else {
-      mainContentLayout.currentIndex = 0;
+    }
+  }
+  onActiveTabIndexChanged: {
+    if (navigationLoader.item && "currentIndex" in navigationLoader.item) {
+      let navBar = navigationLoader.item as BottomBar
+      if (navBar.currentIndex !== activeTabIndex) {
+        navBar.currentIndex = activeTabIndex;
+      }
     }
   }
 
+  Connections {
+    function onCurrentIndexChanged() {
+      if (navigationLoader.item && "currentIndex" in navigationLoader.item) {
+        let navBar = navigationLoader.item as BottomBar
+        if (rootContent.activeTabIndex !== navBar.currentIndex) {
+          rootContent.activeTabIndex = navBar.currentIndex;
+        }
+      }
+    }
+
+    target: navigationLoader.item
+  }
   StateGroup {
     id: layoutState
 
@@ -54,8 +85,6 @@ Item {
 
       Layout.column: 0
       Layout.fillHeight: layoutState.state === "desktop"
-
-      // Adjusts its own sizing constraints based on the active layout direction
       Layout.fillWidth: layoutState.state === "mobile"
       Layout.preferredHeight: layoutState.state === "mobile" ? 48 : -1
       Layout.preferredWidth: layoutState.state === "desktop" ? 48 : -1
@@ -70,9 +99,13 @@ Item {
       Layout.fillWidth: true
       Layout.row: layoutState.state === "mobile" ? 0 : 0
       clip: true
-      currentIndex: navigationLoader.item.currentIndex
+
+      // Bind StackLayout to the hoisted root state
+      currentIndex: rootContent.activeTabIndex
 
       Repeater {
+        id: stackRepeater
+
         model: ["pages/Home.qml", "pages/Search.qml", "pages/Library.qml", "pages/Settings.qml"]
 
         StackView {
@@ -91,28 +124,43 @@ Item {
       }
     }
   }
+
   Connections {
     function onCurrentIndexChanged() {
-      if (navigationLoader.item) {
-        console.log("Index changed...");
-        mainContentLayout.currentIndex = navigationLoader.item.currentIndex;
-      }
+      let bottomBar = navigationLoader.item as BottomBar;
+      if (bottomBar)
+        rootContent.activeTabIndex = bottomBar.currentIndex;
     }
 
     target: navigationLoader.item
   }
   Connections {
     function onFileChanged() {
+      console.log("MainShell: File changes detected...");
       let historyArray = [];
-      for (let i = 0; i < mainContentLayout.depth; i++) {
-        let page = mainContentLayout.get(i);
-        if (page && page.pageUrl) {
-          historyArray.push({
-            "url": page.pageUrl,
-            "args": page.pageArgs
-          });
+      historyArray.push({
+        "currentIndex": rootContent.activeTabIndex
+      });
+
+      for (let i = 0; i < stackRepeater.count; i++) {
+        let sv = stackRepeater.itemAt(i) as StackView;
+        if (!sv)
+          continue;
+
+        for (let j = 0; j < sv.depth; j++) {
+          let stackItem = sv.get(j); // Might be a loader OR the loaded component.
+          let pageObj = stackItem.item ? stackItem.item : stackItem;
+          if (pageObj && pageObj.pageUrl) {
+            historyArray.push({
+              "url": pageObj.pageUrl,
+              "args": pageObj.pageArgs || {},
+              "index": i
+            });
+          }
         }
       }
+
+      console.log("MainShell: History Size:", historyArray.length);
       HotReloader.savedStackHistory = historyArray;
       HotReloader.requestReload();
     }
