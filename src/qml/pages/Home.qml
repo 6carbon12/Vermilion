@@ -6,27 +6,21 @@ import QtQuick.Controls
 Page {
   id: homePage
 
-  // Serialization Interface
-  property string pageUrl: "pages/Home.qml"
   property var pageArgs: ({})
+  property string pageUrl: Qt.resolvedUrl("Home.qml")
 
-  background: Rectangle { color: "#1e1e2e" }
+  background: Rectangle {
+    color: "#000000"
+  }
 
   Column {
     anchors.centerIn: parent
     spacing: 20
 
     Text {
-      text: "HOME"
-      font.pixelSize: 24
       color: "white"
-    }
-
-    Button {
-      text: "Yet to be implemented."
-      onClicked: {
-        console.log("[Navigation] Yet to be implemented.")
-      }
+      font.pixelSize: 24
+      text: "Home"
     }
   }
 }

@@ -1,0 +1,35 @@
+pragma ComponentBehavior: Bound
+
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Effects
+
+Button {
+  id: iconButton
+
+  required property string iconPath
+  property bool isActive: false
+  required property string navPath
+  required property var pageArgs
+
+  background: Rectangle {
+    color: "#1A1A1A"
+  }
+  contentItem: Image {
+    id: icon
+
+    anchors.bottomMargin: 8
+    anchors.fill: iconButton
+    anchors.topMargin: 8
+    fillMode: Image.PreserveAspectFit
+    layer.enabled: true
+    // TODO: Check if modified sources exit, if not then load the `iconPath` as-is.
+    source: iconButton.iconPath + (iconButton.isActive ? "-active.svg" : "-inactive.svg")
+
+    layer.effect: MultiEffect {
+      brightness: 1.0
+      colorization: 1.0
+      colorizationColor: iconButton.isActive ? "#9F9FFF" : "#FFFFFF"
+    }
+  }
+}

@@ -64,6 +64,31 @@ set(CPP_INCLUDES
   src/dev
 )
 
+set(QML_FILES
+  src/qml/Main.qml
+  src/qml/MainShell.qml
+  src/qml/pages/Home.qml
+  src/qml/pages/Search.qml
+  src/qml/pages/Library.qml
+  src/qml/pages/Settings.qml
+  src/qml/widgets/BottomBar.qml
+  src/qml/components/IconButton.qml
+)
+
+set(QML_SOURCES
+  src/managers/YtController.h
+  src/managers/YtController.cpp
+  src/managers/PlayerController.h
+  src/managers/PlayerController.cpp
+  src/core/audio/PlayerState.h
+  src/core/audio/Track.h
+  src/models/TrackListModel.cpp
+  src/models/TrackListModel.h
+  src/dev/HotReloader.h
+  src/dev/HotReloader.cpp
+)
+
+file(GLOB_RECURSE APP_ICONS RELATIVE ${CMAKE_SOURCE_DIR} CONFIGURE_DEPENDS "assets/icons/*.svg")
 if(ANDROID)
   qt_add_executable(${ANDROID_TARGET} ${CPP_SOURCES} ${CPP_ANDROID_SOURCES})
   set_target_properties(${ANDROID_TARGET} PROPERTIES
@@ -81,17 +106,12 @@ if(ANDROID)
     URI ${PROJECT_NAME}
     VERSION 1.0
     QML_FILES
-    src/qml/Main.qml
+    ${QML_FILES}
     SOURCES
-    src/managers/YtController.h
-    src/managers/YtController.cpp
-    src/managers/PlayerController.h
-    src/managers/PlayerController.cpp
-    src/core/audio/PlayerState.h
-    src/core/audio/Track.h
-    src/models/TrackListModel.cpp
-    src/models/TrackListModel.h
+    ${QML_SOURCES}
     OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Vermilion
+    RESOURCES
+    ${APP_ICONS}
   )
 
   FetchContent_Declare(
@@ -102,7 +122,6 @@ if(ANDROID)
   FetchContent_MakeAvailable(custom_android_libs)
 
   set(ANDROID_PKG_DIR "${CMAKE_SOURCE_DIR}/packaging/android")
-
   target_include_directories(${ANDROID_TARGET} PRIVATE "${ANDROID_PKG_DIR}/include")
   target_link_libraries(${ANDROID_TARGET}
     PRIVATE Qt6::Quick
@@ -164,23 +183,12 @@ else()
     URI ${PROJECT_NAME}
     VERSION 1.0
     QML_FILES
-    src/qml/Main.qml
-    src/qml/MainShell.qml
-    src/qml/pages/Home.qml
-    src/qml/pages/Search.qml
-    src/qml/pages/Artist.qml
+    ${QML_FILES}
     SOURCES
-    src/managers/YtController.h
-    src/managers/YtController.cpp
-    src/managers/PlayerController.h
-    src/managers/PlayerController.cpp
-    src/core/audio/PlayerState.h
-    src/core/audio/Track.h
-    src/models/TrackListModel.cpp
-    src/models/TrackListModel.h
-    src/dev/HotReloader.h
-    src/dev/HotReloader.cpp
+    ${QML_SOURCES}
     OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Vermilion
+    RESOURCES
+    ${APP_ICONS}
   )
 
   target_compile_definitions(${LINUX_TARGET} PRIVATE QT_NO_KEYWORDS)

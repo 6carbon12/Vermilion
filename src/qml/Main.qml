@@ -2,27 +2,28 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls
-import Vermilion.Dev 
+import Vermilion
 
 ApplicationWindow {
   id: root
-  width: 800
+
   height: 600
-  visible: true
   title: "Vermilion"
+  visible: true
+  width: 800
 
   Loader {
     id: contentLoader
+
     anchors.fill: parent
     source: "MainShell.qml"
   }
-
   Connections {
-    target: HotReloader
-
     function onReloadUI() {
-      contentLoader.source = ""
-      contentLoader.source = "MainShell.qml"
+      contentLoader.source = "";
+      contentLoader.source = "MainShell.qml";
     }
+
+    target: HotReloader
   }
 }
