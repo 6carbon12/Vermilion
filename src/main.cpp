@@ -65,7 +65,11 @@ int main(int argc, char *argv[]) {
 #define XSTR(x) STR(x)
 #define STR(x) #x
     QString qmlSourceDir = QString::fromUtf8(XSTR(HOTRELOAD_QML_DIR)).remove('"');
+#ifdef Q_OS_ANDROID
+    engine.loadFromModule("Vermilion", "Main");
+#else
     engine.load(QUrl::fromLocalFile(qmlSourceDir + "/Main.qml"));
+#endif
 #else
     engine.loadFromModule("Vermilion", "Main");
 #endif
