@@ -1,13 +1,13 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
+import "../components"
 
-Page {
+BasePage {
   id: homePage
 
-  property var pageArgs: ({})
-  property string pageUrl: Qt.resolvedUrl("Home.qml")
+  pageArgs: ({})
+  pageUrl: Qt.resolvedUrl("Home.qml")
 
   background: Rectangle {
     color: "#000000"

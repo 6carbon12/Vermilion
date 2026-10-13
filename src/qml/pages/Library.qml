@@ -1,13 +1,13 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
+import "../components"
 
-Page {
+BasePage {
   id: libraryPage
 
-  property var pageArgs: ({})
-  property string pageUrl: Qt.resolvedUrl("Library.qml")
+  pageArgs: ({})
+  pageUrl: Qt.resolvedUrl("Library.qml")
 
   background: Rectangle {
     color: "#000000"
