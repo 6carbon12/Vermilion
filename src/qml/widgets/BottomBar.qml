@@ -4,48 +4,97 @@ import QtQuick
 import QtQuick.Layouts
 import "../components" as Componenets
 
-RowLayout {
+Rectangle {
   id: navBar
 
   property int currentIndex: 0
 
-  anchors.fill: parent
-  spacing: 0
+  Layout.fillHeight: true
+  Layout.fillWidth: true
+  clip: true
+  color: "#1A1A1A"
 
-  Repeater {
-    model: [
-      {
-        icon: "../../../assets/icons/home",
-        target: Qt.resolvedUrl("../pages/Home.qml")
-      },
-      {
-        icon: "../../../assets/icons/search",
-        target: Qt.resolvedUrl("../pages/Search.qml")
-      },
-      {
-        icon: "../../../assets/icons/library",
-        target: Qt.resolvedUrl("../pages/Library.qml")
-      },
-      {
-        icon: "../../../assets/icons/setting",
-        target: Qt.resolvedUrl("../pages/Settings.qml")
-      }
-    ]
+  RowLayout {
+    anchors.fill: navBar
+    spacing: 0
 
-    Componenets.IconButton {
-      required property int index
-      required property var modelData
+    Repeater {
+      model: [
+        {
+          icon: "../../../assets/icons/home",
+          target: Qt.resolvedUrl("../pages/Home.qml"),
+          text: "Home"
+        },
+        {
+          icon: "../../../assets/icons/search",
+          target: Qt.resolvedUrl("../pages/Search.qml"),
+          text: "Search"
+        },
+        {
+          icon: "../../../assets/icons/library",
+          target: Qt.resolvedUrl("../pages/Library.qml"),
+          text: "Library"
+        },
+        {
+          icon: "../../../assets/icons/setting",
+          target: Qt.resolvedUrl("../pages/Settings.qml"),
+          text: "Settings"
+        }
+      ]
 
-      Layout.fillWidth: true
-      Layout.preferredHeight: 48
-      Layout.preferredWidth: 1
-      iconPath: modelData.icon
-      isActive: navBar.currentIndex === index
-      navPath: modelData.target
-      pageArgs: {}
+      Rectangle {
+        id: iconTextContainer
 
-      onClicked: {
-        navBar.currentIndex = index;
+        required property int index
+        required property var modelData
+
+        Layout.fillHeight: true
+        Layout.fillWidth: true
+        Layout.preferredWidth: 1
+        Layout.topMargin: 4
+        color: "#1A1A1A"
+
+        ColumnLayout {
+          id: iconTextLayout
+
+          anchors.fill: iconTextContainer
+          spacing: 0
+
+          Componenets.IconButton {
+            id: icon
+
+            Layout.fillWidth: true
+            Layout.preferredHeight: 48
+            Layout.preferredWidth: 1
+            iconPath: iconTextContainer.modelData.icon
+            isActive: navBar.currentIndex === iconTextContainer.index
+            navPath: iconTextContainer.modelData.target
+            pageArgs: {}
+
+            background: Rectangle {
+              anchors.centerIn: icon
+              color: icon.isActive ? "#9F9FFF" : "transparent"
+              height: icon.height - 4
+              opacity: 0.1
+              radius: height / 2
+              width: Math.max(0, Math.min(icon.width - 32, 48 * 2))
+            }
+
+            onClicked: {
+              navBar.currentIndex = iconTextContainer.index;
+            }
+          }
+          Text {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 16
+            Layout.preferredWidth: 1
+            color: navBar.currentIndex === iconTextContainer.index ? "#9F9FFF" : "#FFFFFF"
+            font.pixelSize: 10
+            horizontalAlignment: Text.AlignHCenter
+            text: iconTextContainer.modelData.text
+            verticalAlignment: Text.AlignTop
+          }
+        }
       }
     }
   }

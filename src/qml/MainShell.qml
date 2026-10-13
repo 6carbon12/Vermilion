@@ -40,7 +40,7 @@ Item {
   }
   onActiveTabIndexChanged: {
     if (navigationLoader.item && "currentIndex" in navigationLoader.item) {
-      let navBar = navigationLoader.item as BottomBar
+      let navBar = navigationLoader.item as BottomBar;
       if (navBar.currentIndex !== activeTabIndex) {
         navBar.currentIndex = activeTabIndex;
       }
@@ -50,7 +50,7 @@ Item {
   Connections {
     function onCurrentIndexChanged() {
       if (navigationLoader.item && "currentIndex" in navigationLoader.item) {
-        let navBar = navigationLoader.item as BottomBar
+        let navBar = navigationLoader.item as BottomBar;
         if (rootContent.activeTabIndex !== navBar.currentIndex) {
           rootContent.activeTabIndex = navBar.currentIndex;
         }
@@ -86,8 +86,8 @@ Item {
       Layout.column: 0
       Layout.fillHeight: layoutState.state === "desktop"
       Layout.fillWidth: layoutState.state === "mobile"
-      Layout.preferredHeight: layoutState.state === "mobile" ? 48 : -1
-      Layout.preferredWidth: layoutState.state === "desktop" ? 48 : -1
+      Layout.preferredHeight: layoutState.state === "mobile" ? 68 : -1
+      Layout.preferredWidth: layoutState.state === "desktop" ? 68 : -1
       Layout.row: layoutState.state === "mobile" ? 1 : 0
       source: layoutState.state === "mobile" ? "widgets/BottomBar.qml" : "widgets/SideDrawer.qml"
     }
@@ -124,7 +124,6 @@ Item {
       }
     }
   }
-
   Connections {
     function onCurrentIndexChanged() {
       let bottomBar = navigationLoader.item as BottomBar;
