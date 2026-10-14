@@ -15,7 +15,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(pybind11)
 
-find_package(Qt6 6.11 REQUIRED COMPONENTS Core Qml Quick)
+find_package(Qt6 6.11 REQUIRED COMPONENTS Core Qml Quick QuickControls2)
 qt_standard_project_setup(REQUIRES 6.11)
 
 set(APP_NAME vermilion)
@@ -74,6 +74,7 @@ set(QML_FILES
   src/qml/widgets/BottomBar.qml
   src/qml/widgets/SideBar.qml
   src/qml/components/IconButton.qml
+  src/qml/components/BasePage.qml
 )
 
 set(QML_SOURCES
@@ -89,7 +90,13 @@ set(QML_SOURCES
   src/dev/HotReloader.cpp
 )
 
-file(GLOB_RECURSE APP_ICONS RELATIVE ${CMAKE_SOURCE_DIR} CONFIGURE_DEPENDS "assets/icons/*.svg")
+file(
+  GLOB_RECURSE
+  APP_ICONS
+  RELATIVE ${CMAKE_SOURCE_DIR}
+  CONFIGURE_DEPENDS "assets/icons/*.svg"
+)
+
 if(ANDROID)
   qt_add_executable(${ANDROID_TARGET} ${CPP_SOURCES} ${CPP_ANDROID_SOURCES})
   set_target_properties(${ANDROID_TARGET} PROPERTIES
@@ -117,17 +124,22 @@ if(ANDROID)
 
   FetchContent_Declare(
     custom_android_libs
-    URL "https://github.com/6carbon12/Vermilion/releases/download/v1.0/vermilion-extra-libs.tar.gz"
+    URL "https://github.com/6carbon12/Vermilion/releases/download/\
+v1.0/vermilion-extra-libs.tar.gz"
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   )
   FetchContent_MakeAvailable(custom_android_libs)
 
   set(ANDROID_PKG_DIR "${CMAKE_SOURCE_DIR}/packaging/android")
-  target_include_directories(${ANDROID_TARGET} PRIVATE "${ANDROID_PKG_DIR}/include")
+  target_include_directories(
+    ${ANDROID_TARGET}
+    PRIVATE "${ANDROID_PKG_DIR}/include"
+  )
   target_link_libraries(${ANDROID_TARGET}
     PRIVATE Qt6::Quick
     PRIVATE Qt6::Network
     PRIVATE pybind11::embed
+    PRIVATE Qt6::QuickControls2
     PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libpython3.11.so"
     PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libffi.so"
     PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libcrypto_3.so"
@@ -135,9 +147,17 @@ if(ANDROID)
     PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libsqlite3.so"
   )
 
-  set_property(TARGET ${ANDROID_TARGET} PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR ${ANDROID_PKG_DIR})
-  set_property(TARGET ${ANDROID_TARGET} PROPERTY QT_ANDROID_APP_NAME "Vermilion")
-  set_property(TARGET ${ANDROID_TARGET} PROPERTY QT_ANDROID_PACKAGE_NAME "io.github.x6carbon12.vermilion")
+  set_property(
+    TARGET ${ANDROID_TARGET}
+    PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR ${ANDROID_PKG_DIR}
+  )
+  set_property(
+    TARGET ${ANDROID_TARGET}
+    PROPERTY QT_ANDROID_APP_NAME "Vermilion"
+  )
+  set_property(TARGET ${ANDROID_TARGET}
+    PROPERTY QT_ANDROID_PACKAGE_NAME "io.github.x6carbon12.vermilion"
+  )
 
   set_property(TARGET ${ANDROID_TARGET} PROPERTY
     QT_ANDROID_EXTRA_LIBS
@@ -211,10 +231,12 @@ else()
   pkg_check_modules(MPV REQUIRED IMPORTED_TARGET mpv)
 
   target_link_libraries(${LINUX_TARGET} PRIVATE
-    Qt6::Quick
-    Qt6::DBus
+    PRIVATE Qt6::Quick
+    PRIVATE Qt6::DBus
     PRIVATE Qt6::Multimedia
-    pybind11::embed
-    PkgConfig::MPV
-    Python3::Python)
+    PRIVATE Qt6::QuickControls2
+    PRIVATE pybind11::embed
+    PRIVATE PkgConfig::MPV
+    PRIVATE Python3::Python
+  )
 endif()

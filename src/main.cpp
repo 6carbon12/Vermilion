@@ -1,8 +1,8 @@
-#include "HotReloader.h"
 #include "PyHelper.h"
 #include <QDir>
 #include <QFile>
 #include <QGuiApplication>
+#include <QQuickStyle>
 #include <QLoggingCategory>
 #include <QProcessEnvironment>
 #include <QQmlApplicationEngine>
@@ -27,6 +27,7 @@ Q_LOGGING_CATEGORY(vermilion, "Vermilion")
 int main(int argc, char *argv[]) {
   QGuiApplication app(argc, argv);
   app.setApplicationName("Vermilion");
+  QQuickStyle::setStyle("Fusion");
   qRegisterMetaType<QMap<QByteArray, QByteArray>>();
 
   if (auto result = PyHelper::init(); !result) {

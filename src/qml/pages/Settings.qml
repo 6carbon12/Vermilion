@@ -9,10 +9,6 @@ BasePage {
   pageArgs: ({})
   pageUrl: Qt.resolvedUrl("Settings.qml")
 
-  background: Rectangle {
-    color: "#000000"
-  }
-
   Column {
     anchors.centerIn: parent
     spacing: 20

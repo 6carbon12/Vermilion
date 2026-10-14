@@ -20,3 +20,5 @@ packaging/android/jdtls_libs/
 packaging/android/assets
 packaging/android/libs
 packaging/android/include
+
+packaging/linux/usr

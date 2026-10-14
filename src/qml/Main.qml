@@ -11,6 +11,7 @@ ApplicationWindow {
   title: "Vermilion"
   visible: true
   width: 800
+  palette.window: "#000000"
 
   Loader {
     id: contentLoader
