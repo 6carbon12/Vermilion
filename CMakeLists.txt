@@ -75,6 +75,7 @@ set(QML_FILES
   src/qml/widgets/SideBar.qml
   src/qml/components/IconButton.qml
   src/qml/components/BasePage.qml
+  src/qml/components/SearchBar.qml
 )
 
 set(QML_SOURCES
