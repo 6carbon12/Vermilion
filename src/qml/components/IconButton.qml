@@ -9,6 +9,7 @@ Button {
 
   required property string source
   property bool isActive: false
+  property bool hasState: true
   property alias size: icon.sourceSize
 
   background: Rectangle {
@@ -23,7 +24,25 @@ Button {
     fillMode: Image.PreserveAspectFit
     layer.enabled: true
     // TODO: Check if modified sources exit, if not then load the `iconPath` as-is.
-    source: iconButton.source + (iconButton.isActive ? "-active.svg" : "-inactive.svg")
+    source: {
+      if (!iconButton.hasState) {
+        return iconButton.source
+      } else {
+        let suffix = "";
+        if (iconButton.isActive) {
+          suffix = "-active.svg"
+        } else {
+          suffix = "-inactive.svg"
+        }
+        return iconButton.source + suffix
+      }
+    }
+
+    onStatusChanged: {
+      if (icon.status == Image.Error) {
+        icon.source = iconButton.source
+      }
+    }
 
     layer.effect: MultiEffect {
       brightness: 1.0
