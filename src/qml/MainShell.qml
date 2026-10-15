@@ -31,7 +31,7 @@ Item {
 
         let sv = stackRepeater.itemAt(history[i].index) as StackView;
         if (sv) {
-          sv.pushItem(history[i].url, history[i].args || {}, StackView.Immediate);
+          sv.pushItem(history[i].url, { pageArgs: history[i].args } || {}, StackView.Immediate);
         }
       }
       HotReloader.savedStackHistory = [];
@@ -145,9 +145,10 @@ Item {
         if (!sv)
           continue;
 
+        console.log("Stack depth:", sv.depth);
         for (let j = 0; j < sv.depth; j++) {
           let stackItem = sv.get(j); // Might be a loader OR the loaded component.
-          let pageObj = stackItem.item ? stackItem.item : stackItem;
+          let pageObj = stackItem && stackItem.item ? stackItem.item : stackItem;
           if (pageObj && pageObj.pageUrl) {
             historyArray.push({
               "url": pageObj.pageUrl,
