@@ -64,10 +64,8 @@ Rectangle {
           Layout.fillWidth: true
           Layout.preferredHeight: 48
           Layout.preferredWidth: 1
-          iconPath: iconTextLayout.modelData.icon
+          source: iconTextLayout.modelData.icon
           isActive: navBar.currentIndex === iconTextLayout.index
-          navPath: iconTextLayout.modelData.target
-          pageArgs: {}
 
           background: Rectangle {
             anchors.centerIn: icon

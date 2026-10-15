@@ -7,10 +7,9 @@ import QtQuick.Effects
 Button {
   id: iconButton
 
-  required property string iconPath
+  required property string source
   property bool isActive: false
-  required property string navPath
-  required property var pageArgs
+  property alias size: icon.sourceSize
 
   background: Rectangle {
     color: "#1A1A1A"
@@ -24,7 +23,7 @@ Button {
     fillMode: Image.PreserveAspectFit
     layer.enabled: true
     // TODO: Check if modified sources exit, if not then load the `iconPath` as-is.
-    source: iconButton.iconPath + (iconButton.isActive ? "-active.svg" : "-inactive.svg")
+    source: iconButton.source + (iconButton.isActive ? "-active.svg" : "-inactive.svg")
 
     layer.effect: MultiEffect {
       brightness: 1.0
