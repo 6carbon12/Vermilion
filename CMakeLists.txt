@@ -74,6 +74,7 @@ set(QML_FILES
   src/qml/pages/SearchResults.qml
   src/qml/widgets/BottomBar.qml
   src/qml/widgets/SideBar.qml
+  src/qml/widgets/MiniPlayer.qml
   src/qml/components/IconButton.qml
   src/qml/components/BasePage.qml
   src/qml/components/SearchBar.qml
