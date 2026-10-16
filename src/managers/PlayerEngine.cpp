@@ -113,4 +113,21 @@ void PlayerEngine::processExtraction(const QString &extractedUrl) {
 
   Core::Track currentTrack = tracks[currentTrackIndex];
   player->play(extractedUrl, currentTrack);
+  Q_EMIT currentTrackChanged();
+}
+
+Core::Track PlayerEngine::getCurrentTrack() {
+  if (!tracks.isEmpty()) {
+    return tracks[currentTrackIndex];
+  }
+
+  Core::Track track;
+  track.views = "N/A";
+  track.thumbnailUrl = "N/A";
+  track.duration = "N/A";
+  track.artist = "N/A";
+  track.url = "N/A";
+  track.title = "N/A";
+
+  return track;
 }

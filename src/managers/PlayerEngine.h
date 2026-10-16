@@ -37,6 +37,10 @@ public Q_SLOTS:
   /// @brief Seeks to `positionMs` in the track given in milliseconds.
   void seekTo(long positionMs);
 
+  /// @brief Gives currently playing track's info.
+  /// @see `currentTrackChanged`.
+  Core::Track getCurrentTrack();
+
 Q_SIGNALS:
   /// @brief Emitted when player state changes.
   /// @param state Current state of player.
@@ -51,6 +55,9 @@ Q_SIGNALS:
   /// @brief Emitted whenever any error occurs.
   /// @param error Human readable error message.
   void errorOccurred(const QString &error);
+
+  /// @brief Emitted when currently playing track is changed.
+  void currentTrackChanged();
 
 private:
   int currentTrackIndex{};
