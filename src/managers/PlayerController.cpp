@@ -34,6 +34,8 @@ PlayerController::PlayerController(QObject *parent) : QObject(parent) {
 
   connect(worker, &PlayerEngine::errorOccurred, this, [this](const QString &err) { Q_EMIT errorOccured(err); });
 
+  connect(worker, &PlayerEngine::currentTrackChanged, this, [this]() { Q_EMIT currentTrackChanged();});
+
   connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, [this]() {
     workerThread->quit();
     workerThread->wait();
@@ -56,6 +58,20 @@ PlayerController *PlayerController::create(QQmlEngine *qmlEngine, QJSEngine *jsE
   PlayerController *inst = PlayerController::instance();
   QQmlEngine::setObjectOwnership(inst, QQmlEngine::CppOwnership);
   return inst;
+}
+
+QVariantMap PlayerController::getCurrentTrack() {
+  Core::Track currentTrack = worker->getCurrentTrack();
+  QVariantMap track;
+
+  track["url"] = currentTrack.url;
+  track["artist"] = currentTrack.artist;
+  track["duration"] = currentTrack.duration;
+  track["thumbnailUrl"] = currentTrack.thumbnailUrl;
+  track["views"] = currentTrack.views;
+  track["title"] = currentTrack.title;
+
+  return track;
 }
 
 void PlayerController::play(const QString &url) { Q_EMIT requestPlay(url); }

@@ -16,6 +16,7 @@ class PlayerController : public QObject {
   QML_SINGLETON
   QML_NAMED_ELEMENT(Player)
   Q_PROPERTY(Core::PlayerState::State playerState READ getPlayerState NOTIFY playerStateChanged)
+  Q_PROPERTY(QVariantMap currentTrack READ getCurrentTrack NOTIFY currentTrackChanged)
   Q_PROPERTY(long position READ getPosition NOTIFY positionChanged)
   Q_PROPERTY(long duration READ getDuration NOTIFY durationChanged)
 
@@ -34,12 +35,14 @@ public:
   Q_INVOKABLE void seekTo(long positionMs);
   Q_INVOKABLE long getPosition();
   Q_INVOKABLE long getDuration();
+  Q_INVOKABLE QVariantMap getCurrentTrack();
   PlayerState getPlayerState();
 
 Q_SIGNALS:
   void playerStateChanged();
   void positionChanged();
   void durationChanged();
+  void currentTrackChanged();
   void errorOccured(const QString &error);
 
   void requestPlay(const QString &url);
