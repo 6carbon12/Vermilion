@@ -1,10 +1,13 @@
 pragma ComponentBehavior: Bound
+import QtQml
 
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import Vermilion
+
+import "./widgets"
 
 Item {
   id: rootContent
@@ -31,7 +34,9 @@ Item {
 
         let sv = stackRepeater.itemAt(history[i].index) as StackView;
         if (sv) {
-          sv.pushItem(history[i].url, { pageArgs: history[i].args } || {}, StackView.Immediate);
+          sv.pushItem(history[i].url, {
+            pageArgs: history[i].args
+          } || {}, StackView.Immediate);
         }
       }
       HotReloader.savedStackHistory = [];
@@ -90,36 +95,42 @@ Item {
       Layout.row: layoutState.state === "mobile" ? 1 : 0
       source: layoutState.state === "mobile" ? "widgets/BottomBar.qml" : "widgets/SideBar.qml"
     }
-    StackLayout {
-      id: mainContentLayout
+    Item {
+      id: contentContainer
 
       Layout.column: layoutState.state === "mobile" ? 0 : 1
       Layout.fillHeight: true
       Layout.fillWidth: true
-      Layout.row: layoutState.state === "mobile" ? 0 : 0
-      clip: true
+      Layout.row: 0
 
-      // Bind StackLayout to the hoisted root state
-      currentIndex: rootContent.activeTabIndex
+      StackLayout {
+        id: mainContentLayout
 
-      Repeater {
-        id: stackRepeater
+        anchors.fill: parent
+        clip: true
+        currentIndex: rootContent.activeTabIndex
 
-        model: ["pages/Home.qml", "pages/Search.qml", "pages/Library.qml", "pages/Settings.qml"]
+        Repeater {
+          id: stackRepeater
 
-        StackView {
-          id: page
+          model: ["pages/Home.qml", "pages/Search.qml", "pages/Library.qml", "pages/Settings.qml"]
 
-          required property string modelData
+          StackView {
+            id: page
 
-          Layout.fillHeight: true
-          Layout.fillWidth: true
+            required property string modelData
 
-          initialItem: Loader {
-            anchors.fill: parent
-            source: Qt.resolvedUrl(page.modelData)
+            initialItem: Loader {
+              anchors.fill: parent
+              source: Qt.resolvedUrl(page.modelData)
+            }
           }
         }
+      }
+      MiniPlayer {
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
       }
     }
   }
