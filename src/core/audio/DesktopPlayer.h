@@ -34,5 +34,6 @@ private:
   long duration;
   Core::Track currentTrack;
   MprisController* mprisController;
+  bool isReady{false};
 };
 } // namespace Core

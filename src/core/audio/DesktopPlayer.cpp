@@ -42,6 +42,7 @@ void DesktopPlayer::handleMpvState(mpv_handle *handle) {
 
     case MPV_EVENT_FILE_LOADED:
       qDebug() << "Player State: File loaded successfully, ready to play.";
+      isReady = true;
       state = PlayerState::Playing;
       break;
 
@@ -53,6 +54,7 @@ void DesktopPlayer::handleMpvState(mpv_handle *handle) {
         qCritical() << "Playback failed or crashed due to error:" << errorReason;
 
         state = PlayerState::Error;
+        isReady = false;
       } else if (end->reason == MPV_END_FILE_REASON_EOF) {
         Q_EMIT requestNext();
       }
@@ -61,7 +63,7 @@ void DesktopPlayer::handleMpvState(mpv_handle *handle) {
 
     case MPV_EVENT_PROPERTY_CHANGE: {
       mpv_event_property *prop = (mpv_event_property *)event->data;
-      if (strcmp(prop->name, "pause") == 0 && prop->format == MPV_FORMAT_FLAG) {
+      if (strcmp(prop->name, "pause") == 0 && prop->format == MPV_FORMAT_FLAG && isReady) {
         bool isPaused = *(int *)prop->data;
         if (isPaused) {
           state = PlayerState::Paused;
