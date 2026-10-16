@@ -22,3 +22,4 @@ packaging/android/libs
 packaging/android/include
 
 packaging/linux/usr
+packaging/linux/python

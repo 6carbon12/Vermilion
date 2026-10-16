@@ -3,7 +3,8 @@
 set -e
 
 PACKAGE_NAME="io.github.x6carbon12.vermilion"
-QT_CMAKE="$HOME/Qt/6.11.2/android_arm64_v8a/bin/qt-cmake"
+ANDROID_QT_CMAKE="$HOME/Qt/6.12.0/android_arm64_v8a/bin/qt-cmake"
+LINUX_QT_CMAKE="$HOME/Qt/6.12.0/gcc_64/bin/qt-cmake"
 ANDROID_SDK="${ANDROID_SDK:-$HOME/android/sdk}"
 ANDROID_NDK="${ANDROID_NDK:-$HOME/android/sdk/ndk}"
 
@@ -58,10 +59,11 @@ if [ "$TARGET" = "android" ]; then
     mkdir -p $BUILD_DIR
     touch $LOGFILE
     echo "Writing new build files."
-    "$QT_CMAKE" \
+    "$ANDROID_QT_CMAKE" \
       -DANDROID_SDK_ROOT="$ANDROID_SDK" \
       -DANDROID_NDK_ROOT="$ANDROID_NDK/27.2.12479018" \
       -DCMAKE_BUILD_TYPE=Debug \
+      -DQT_HOST_PATH="$HOME/Qt/6.12.0/gcc_64" \
       -S . \
       -B "$BUILD_DIR" \
       -GNinja >> $LOGFILE
@@ -111,11 +113,15 @@ elif [ "$TARGET" = "linux" ]; then
     mkdir -p $BUILD_DIR
     touch $LOGFILE
     echo "Writing new build files."
-    cmake -B $BUILD_DIR >> $LOGFILE
+    $LINUX_QT_CMAKE \
+      -DCMAKE_BUILD_TYPE=Debug \
+      -DSTANDALONE_PYTHON_DIR="packaging/linux/python" \
+      -GNinja \
+      -B $BUILD_DIR
   fi
 
   echo "Building Linux target..."
-  cmake --build "$BUILD_DIR" -j $(nproc) >> $LOGFILE
+  cmake --build "$BUILD_DIR" -j $(( $(nproc) / 2 )) 2>&1 | tee -a "$LOGFILE" | grep --line-buffered -E '^\['
 
 	updateLspFiles $BUILD_DIR
 

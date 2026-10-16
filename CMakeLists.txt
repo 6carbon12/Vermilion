@@ -15,8 +15,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(pybind11)
 
-find_package(Qt6 6.11 REQUIRED COMPONENTS Core Qml Quick QuickControls2)
-qt_standard_project_setup(REQUIRES 6.11)
+find_package(Qt6 6.12 REQUIRED COMPONENTS Core Qml Quick QuickControls2)
+qt_standard_project_setup(REQUIRES 6.12)
 
 set(APP_NAME vermilion)
 set(ANDROID_TARGET ${APP_NAME}_android)
@@ -166,7 +166,7 @@ v1.0/vermilion-extra-libs.tar.gz"
     "${custom_android_libs_SOURCE_DIR}/libqjs.so"
   )
 else()
-  find_package(Qt6 COMPONENTS Core DBus Multimedia REQUIRED)
+  find_package(Qt6 6.12 COMPONENTS Core DBus REQUIRED)
 
   qt_add_dbus_adaptor(generated_mpris_sources
     "src/dbus/org.mpris.MediaPlayer2.xml"
@@ -231,11 +231,13 @@ else()
   find_package(Python3 3.11 EXACT COMPONENTS Development.Embed REQUIRED)
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(MPV REQUIRED IMPORTED_TARGET mpv)
+  pkg_check_modules(AVUTIL REQUIRED IMPORTED_TARGET libavutil)
 
+  target_link_options(${LINUX_TARGET} PRIVATE "-Wl,--trace")
   target_link_libraries(${LINUX_TARGET} PRIVATE
+    PRIVATE PkgConfig::AVUTIL
     PRIVATE Qt6::Quick
     PRIVATE Qt6::DBus
-    PRIVATE Qt6::Multimedia
     PRIVATE Qt6::QuickControls2
     PRIVATE pybind11::embed
     PRIVATE PkgConfig::MPV

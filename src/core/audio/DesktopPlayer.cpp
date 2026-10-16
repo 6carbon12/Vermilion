@@ -1,13 +1,12 @@
 #include "MprisController.h"
 #include "DesktopPlayer.h"
-#include <QAudioOutput>
 #include <QThread>
+#include <QUrl>
 #include <QtConcurrent/QtConcurrentRun>
 #include <clocale>
 #include <cstdio>
 #include <mpv/client.h>
 #include <qfuture.h>
-#include <qmediaplayer.h>
 #include <QDBusConnection>
 
 namespace Core {

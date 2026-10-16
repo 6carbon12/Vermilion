@@ -2,7 +2,6 @@
 #include "Player.h"
 #include "PlayerState.h"
 #include <QTimer>
-#include <QMediaPlayer>
 #include <mpv/client.h>
 
 class MprisController;
