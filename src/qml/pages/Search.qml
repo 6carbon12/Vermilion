@@ -17,7 +17,7 @@ BasePage {
       rootContent.stack.pushItem(Qt.resolvedUrl("SearchResults.qml"), {
         pageArgs: {
           model: model,
-          searchQuery: searchBar.text
+          searchQuery: searchBar.query
         }
       }, StackView.Immediate);
       console.log("Searched");
@@ -37,7 +37,7 @@ BasePage {
       leftPadding: height
 
       onAccepted: {
-        YT.requestSearch(searchBar.text);
+        YT.requestSearch(searchBar.query);
       }
 
       IconButton {
@@ -97,7 +97,7 @@ BasePage {
 
         TapHandler {
           onTapped: {
-            searchBar.text = itm.query;
+            searchBar.query = itm.query;
             YT.requestSearch(itm.query);
           }
         }

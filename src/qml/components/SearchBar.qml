@@ -4,14 +4,9 @@ import QtQuick.Controls
 SearchField {
   id: searchBar
 
-  placeholderText: "Type to search"
   searchIndicator.indicator: null
+  property alias query: textInput.text
 
-  background: Rectangle {
-    anchors.fill: parent
-    color: palette.alternateBase
-    radius: parent.height / 2
-  }
   clearIndicator.indicator: IconButton {
     anchors.right: searchBar.right
     anchors.rightMargin: 8
@@ -23,6 +18,24 @@ SearchField {
     visible: searchBar.text !== ""
 
     background: Rectangle {
+      color: palette.alternateBase
+      radius: parent.height / 2
+    }
+  }
+  background: Rectangle {
+    anchors.fill: parent
+    color: palette.alternateBase
+    radius: parent.height / 2
+  }
+  contentItem: TextField {
+    id: textInput
+    color: palette.text
+    font.pixelSize: 14
+    placeholderText: "Type to search"
+    placeholderTextColor: Qt.darker(palette.text, 2)
+
+    background: Rectangle {
+      anchors.fill: parent
       color: palette.alternateBase
       radius: parent.height / 2
     }

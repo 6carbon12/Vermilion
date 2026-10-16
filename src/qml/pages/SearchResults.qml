@@ -10,7 +10,7 @@ BasePage {
   pageUrl: Qt.resolvedUrl("SearchResults.qml")
 
   Component.onCompleted: {
-    searchBar.text = searchResults.pageArgs.searchQuery;
+    searchBar.query = searchResults.pageArgs.searchQuery;
   }
 
   Connections {
@@ -64,6 +64,7 @@ BasePage {
       Layout.fillHeight: true
       Layout.fillWidth: true
       model: searchResults.pageArgs.model
+      clip: true
 
       delegate: Item {
         id: root
