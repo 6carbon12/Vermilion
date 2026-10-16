@@ -12,6 +12,8 @@ ApplicationWindow {
   visible: true
   width: 800
   palette.window: "#000000"
+  palette.alternateBase: "#1A1A1A"
+  palette.text: "#FFFFFF"
 
   Loader {
     id: contentLoader
