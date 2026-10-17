@@ -10,15 +10,6 @@ Rectangle {
   visible: Player.playerState != PlayerState.Initialized
   z: 10
 
-  TapHandler {
-    id: tapHandler
-
-    gesturePolicy: TapHandler.WithinBounds
-
-    onTapped: {
-      console.log("Open Player page.");
-    }
-  }
   ColumnLayout {
     id: mainLayout
 
