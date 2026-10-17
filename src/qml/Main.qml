@@ -14,6 +14,7 @@ ApplicationWindow {
   palette.window: "#000000"
   palette.alternateBase: "#1A1A1A"
   palette.text: "#FFFFFF"
+  palette.accent: "#9F9FFF"
 
   Loader {
     id: contentLoader
