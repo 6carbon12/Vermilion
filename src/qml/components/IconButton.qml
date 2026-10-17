@@ -13,7 +13,7 @@ Button {
   property alias size: icon.sourceSize
 
   background: Rectangle {
-    color: "#1A1A1A"
+    color: "transparent"
   }
   contentItem: Image {
     id: icon
@@ -23,7 +23,6 @@ Button {
     anchors.topMargin: 8
     fillMode: Image.PreserveAspectFit
     layer.enabled: true
-    // TODO: Check if modified sources exit, if not then load the `iconPath` as-is.
     source: {
       if (!iconButton.hasState) {
         return iconButton.source

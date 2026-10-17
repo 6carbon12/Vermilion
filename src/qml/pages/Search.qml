@@ -14,6 +14,7 @@ BasePage {
 
   Connections {
     id: ytConnection
+    enabled: searchPage.StackView.visible
     function onSearchSuccess(model) {
       rootContent.stack.pushItem(Qt.resolvedUrl("SearchResults.qml"), {
         pageArgs: {
@@ -21,8 +22,7 @@ BasePage {
           searchQuery: searchBar.query
         }
       }, StackView.Immediate);
-      console.log("Searched");
-      ytConnection.enabled = false
+      searchBar.query = ""
     }
 
     target: YT

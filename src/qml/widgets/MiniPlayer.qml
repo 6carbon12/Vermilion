@@ -110,7 +110,7 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.top: parent.top
-        color: palette.text
+        color: palette.accent
         width: Player.duration > 0 ? (Player.position / Player.duration) * parent.width : 0
       }
     }

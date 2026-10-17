@@ -9,6 +9,7 @@ import QtQuick.Window
 import Vermilion
 
 import "./widgets"
+import "./components"
 
 Item {
   id: rootContent
@@ -216,10 +217,7 @@ Item {
               Layout.preferredWidth: 40
               hasState: false
               source: Qt.resolvedUrl("../../assets/icons/caretDown.svg")
-
-              background: Rectangle {
-                color: "transparent"
-              }
+              Layout.leftMargin: -8
 
               onClicked: {
                 shrinkAnimation.start();
@@ -247,60 +245,22 @@ Item {
               Layout.preferredWidth: 40
               hasState: false
               source: Qt.resolvedUrl("../../assets/icons/hamburger.svg")
-
-              background: Rectangle {
-                color: "transparent"
-              }
+              Layout.rightMargin: -8
 
               onClicked: {
                 console.log("Three dots clicked");
               }
             }
           }
-          Rectangle {
-            id: albumCoverContainer
-
+          RoundedImage {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
             Layout.bottomMargin: 16
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.maximumWidth: 1920
             Layout.topMargin: 16
-            color: "transparent"
-
-            Item {
-              id: imageFrame
-
-              anchors.centerIn: parent
-              height: Math.min(parent.height, parent.width)
-              width: height
-
-              Image {
-                id: albumCover
-
-                anchors.fill: parent
-                fillMode: Image.PreserveAspectCrop
-                source: Player.currentTrack.thumbnailUrl
-                visible: false
-              }
-
-              Rectangle {
-                id: maskRect
-
-                anchors.fill: parent
-                color: "black"
-                radius: 12
-                layer.enabled: true
-                visible: false
-              }
-
-              MultiEffect {
-                anchors.fill: parent
-                maskEnabled: true
-                maskSource: maskRect
-                source: albumCover
-              }
-            }
+            source: Player.currentTrack.thumbnailUrl
+            cornerRadius: 24
           }
           RowLayout {
             id: trackInfo
@@ -348,10 +308,7 @@ Item {
               Layout.preferredWidth: 48
               hasState: false
               source: Qt.resolvedUrl("../../assets/icons/lyrics.svg")
-
-              background: Rectangle {
-                color: "transparent"
-              }
+              Layout.rightMargin: -8
 
               onClicked: {
                 console.log("Lyrics Pressed.");
@@ -442,12 +399,9 @@ Item {
               Layout.alignment: Qt.AlignLeft
               Layout.preferredHeight: 48
               Layout.preferredWidth: 48
+              Layout.leftMargin: -8
               hasState: false
               source: Qt.resolvedUrl("../../assets/icons/shuffle.svg")
-
-              background: Rectangle {
-                color: palette.window
-              }
 
               onClicked: {
                 console.log("Shuffle Pressed");
@@ -460,7 +414,7 @@ Item {
               spacing: 8
 
               Item {
-                id: alksdfjaksdljfaklsd
+                id: shufflePrevSpacer
 
                 Layout.fillWidth: true
               }
@@ -472,11 +426,6 @@ Item {
                 Layout.preferredWidth: 48
                 hasState: false
                 source: Qt.resolvedUrl("../../assets/icons/previous.svg")
-
-                background: Rectangle {
-                  color: palette.window
-                  // color: "white"
-                }
 
                 onClicked: {
                   Player.prev();
@@ -491,10 +440,6 @@ Item {
                 hasState: false
                 source: Qt.resolvedUrl("../../assets/icons/play-circle.svg")
 
-                background: Rectangle {
-                  color: palette.window
-                  // color: "white"
-                }
                 states: [
                   State {
                     name: "playing"
@@ -535,17 +480,12 @@ Item {
                 hasState: false
                 source: Qt.resolvedUrl("../../assets/icons/next.svg")
 
-                background: Rectangle {
-                  color: palette.window
-                  // color: "white"
-                }
-
                 onClicked: {
                   Player.next();
                 }
               }
               Item {
-                id: alfkj
+                id: nextShuffleSpacer
 
                 Layout.fillWidth: true
               }
@@ -556,12 +496,9 @@ Item {
               Layout.alignment: Qt.AlignRight
               Layout.preferredHeight: 48
               Layout.preferredWidth: 48
+              Layout.rightMargin: -8
               hasState: false
               source: Qt.resolvedUrl("../../assets/icons/loop.svg")
-
-              background: Rectangle {
-                color: palette.window
-              }
 
               onClicked: {
                 console.log("Loop Pressed");
@@ -575,11 +512,6 @@ Item {
             Layout.preferredHeight: 48
             hasState: false
             source: Qt.resolvedUrl("../../assets/icons/caretUp.svg")
-
-            background: Rectangle {
-              anchors.fill: parent
-              color: "transparent"
-            }
           }
         }
         Item {

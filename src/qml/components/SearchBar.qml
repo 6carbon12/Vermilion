@@ -27,6 +27,10 @@ SearchField {
       color: palette.alternateBase
       radius: parent.height / 2
     }
+
+    onClicked: {
+      searchBar.query = ""
+    }
   }
   contentItem: TextField {
     id: textInput
