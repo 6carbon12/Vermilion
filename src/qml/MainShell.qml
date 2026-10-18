@@ -3,13 +3,12 @@ import QtQml
 
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Effects
 import QtQuick.Layouts
 import QtQuick.Window
 import Vermilion
+import "./components"
 
 import "./widgets"
-import "./components"
 
 Item {
   id: rootContent
@@ -19,7 +18,6 @@ Item {
 
   Component.onCompleted: {
     let history = HotReloader.savedStackHistory;
-    console.log("Restoring history...");
     let openPlayer = false;
 
     if (history && history.length > 0) {
@@ -33,8 +31,8 @@ Item {
         if (history[i].isPlayerPageActive !== undefined) {
           if (history[i].isPlayerPageActive) {
             openPlayer = true;
-            continue;
           }
+          continue;
         }
         if (history[i].currentIndex !== undefined) {
           rootContent.activeTabIndex = history[i].currentIndex;
@@ -53,6 +51,7 @@ Item {
         player.openPlayer();
       }
       HotReloader.savedStackHistory = [];
+      console.log("History restored.");
     }
   }
   onActiveTabIndexChanged: {
@@ -213,11 +212,11 @@ Item {
 
             IconButton {
               Layout.alignment: Qt.AlignLeft
+              Layout.leftMargin: -8
               Layout.preferredHeight: 40
               Layout.preferredWidth: 40
               hasState: false
               source: Qt.resolvedUrl("../../assets/icons/caretDown.svg")
-              Layout.leftMargin: -8
 
               onClicked: {
                 shrinkAnimation.start();
@@ -243,9 +242,9 @@ Item {
               Layout.alignment: Qt.AlignRight
               Layout.preferredHeight: 40
               Layout.preferredWidth: 40
+              Layout.rightMargin: -8
               hasState: false
               source: Qt.resolvedUrl("../../assets/icons/hamburger.svg")
-              Layout.rightMargin: -8
 
               onClicked: {
                 console.log("Three dots clicked");
@@ -259,8 +258,8 @@ Item {
             Layout.fillWidth: true
             Layout.maximumWidth: 1920
             Layout.topMargin: 16
-            source: Player.currentTrack.thumbnailUrl
             cornerRadius: 24
+            source: Player.currentTrack.thumbnailUrl
           }
           RowLayout {
             id: trackInfo
@@ -306,9 +305,9 @@ Item {
 
               Layout.preferredHeight: 48
               Layout.preferredWidth: 48
+              Layout.rightMargin: -8
               hasState: false
               source: Qt.resolvedUrl("../../assets/icons/lyrics.svg")
-              Layout.rightMargin: -8
 
               onClicked: {
                 console.log("Lyrics Pressed.");
@@ -397,9 +396,9 @@ Item {
               id: shuffle
 
               Layout.alignment: Qt.AlignLeft
+              Layout.leftMargin: -8
               Layout.preferredHeight: 48
               Layout.preferredWidth: 48
-              Layout.leftMargin: -8
               hasState: false
               source: Qt.resolvedUrl("../../assets/icons/shuffle.svg")
 
@@ -533,7 +532,7 @@ Item {
   }
   Connections {
     function onFileChanged() {
-      console.log("MainShell: File changes detected...");
+      console.log("File changes detected...");
       let historyArray = [];
       historyArray.push({
         "currentIndex": rootContent.activeTabIndex
@@ -544,7 +543,6 @@ Item {
         if (!sv)
           continue;
 
-        console.log("Stack depth:", sv.depth);
         for (let j = 0; j < sv.depth; j++) {
           let stackItem = sv.get(j); // Might be a loader OR the loaded component.
           let pageObj = stackItem && stackItem.item ? stackItem.item : stackItem;
@@ -563,7 +561,7 @@ Item {
           "isPlayerPageActive": player.visible
         });
       }
-      console.log("MainShell: History Size:", historyArray.length);
+      console.log("Serialized history size:", historyArray.length);
       HotReloader.savedStackHistory = historyArray;
       HotReloader.requestReload();
     }
