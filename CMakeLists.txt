@@ -67,17 +67,18 @@ set(CPP_INCLUDES
 set(QML_FILES
   src/qml/Main.qml
   src/qml/MainShell.qml
-  src/qml/pages/Home.qml
-  src/qml/pages/Search.qml
-  src/qml/pages/Library.qml
-  src/qml/pages/Settings.qml
-  src/qml/pages/SearchResults.qml
-  src/qml/widgets/BottomBar.qml
-  src/qml/widgets/SideBar.qml
-  src/qml/widgets/MiniPlayer.qml
-  src/qml/components/IconButton.qml
   src/qml/components/BasePage.qml
+  src/qml/components/IconButton.qml
   src/qml/components/SearchBar.qml
+  src/qml/components/SongItem.qml
+  src/qml/pages/Home.qml
+  src/qml/pages/Library.qml
+  src/qml/pages/Search.qml
+  src/qml/pages/SearchResults.qml
+  src/qml/pages/Settings.qml
+  src/qml/widgets/BottomBar.qml
+  src/qml/widgets/MiniPlayer.qml
+  src/qml/widgets/SideBar.qml
 )
 
 set(QML_SOURCES
