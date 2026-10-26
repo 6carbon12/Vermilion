@@ -63,98 +63,44 @@ BasePage {
 
       Layout.fillHeight: true
       Layout.fillWidth: true
-      model: searchResults.pageArgs.model
       clip: true
+      model: searchResults.pageArgs.model
 
-      delegate: Item {
-        id: root
-
-        required property string duration
-        required property int index
-        required property string thumbnailUrl
-        required property string title
-        required property string views
+      delegate: SongItem {
+        id: songItem
 
         height: 80
         width: ListView.view ? ListView.view.width : parent.width
 
-        RowLayout {
-          id: trackLayout
+        // TODO: Add working items to this.
+        rightContent: Item {
+          id: contextMenuDots
 
-          anchors.fill: parent
-          spacing: 16
+          Layout.alignment: Qt.AlignVCenter
+          Layout.preferredHeight: 48
+          Layout.preferredWidth: 40
 
-          Rectangle {
-            id: albumCoverContainer
-
-            Layout.preferredHeight: 64
-            Layout.preferredWidth: 64
-            clip: true
-            color: palette.alternateBase
-
-            Image {
-              id: albumCover
-
-              anchors.fill: parent
-              fillMode: Image.PreserveAspectCrop
-              source: root.thumbnailUrl
-            }
-          }
-
-          // Middle Text Column
-          ColumnLayout {
-            id: content
-
-            Layout.alignment: Qt.AlignVCenter
-            Layout.fillWidth: true
-            spacing: 4
-
-            Text {
-              Layout.fillWidth: true
-              color: "white"
-              elide: Text.ElideRight
-              font.pixelSize: 16
-              font.weight: Font.Medium
-              text: root.title
-            }
-            Text {
-              Layout.fillWidth: true
-              color: "#B3B3B3" // Light gray for subtitle text
-              elide: Text.ElideRight
-              font.pixelSize: 14
-              text: root.duration + " • " + root.views
-            }
-          }
-
-          // TODO: Add working items to this.
-          Item {
-            id: contextMenuDots
-
-            Layout.alignment: Qt.AlignVCenter
-            Layout.preferredHeight: 48
-            Layout.preferredWidth: 40
-
-            Text {
-              anchors.centerIn: parent
-              color: "white"
-              font.pixelSize: 20
-              font.weight: Font.Bold
-              text: "⋮"
-            }
-            TapHandler {
-              target: parent
-
-              onSingleTapped: {
-                console.log("Context Menu open requested.");
-              }
-            }
+          Text {
+            anchors.centerIn: parent
+            color: "white"
+            font.pixelSize: 20
+            font.weight: Font.Bold
+            text: "⋮"
           }
           TapHandler {
             target: parent
 
             onSingleTapped: {
-              resultsView.model.playTrackAtIndex(root.index);
+              console.log("Context Menu open requested.");
             }
+          }
+        }
+
+        TapHandler {
+          target: parent
+
+          onSingleTapped: {
+            resultsView.model.playTrackAtIndex(songItem.index);
           }
         }
       }
