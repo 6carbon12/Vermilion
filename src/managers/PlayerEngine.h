@@ -41,6 +41,8 @@ public Q_SLOTS:
   /// @see `currentTrackChanged`.
   Core::Track getCurrentTrack();
 
+  QList<Core::Track> getCurrentPlaylist();
+
 Q_SIGNALS:
   /// @brief Emitted when player state changes.
   /// @param state Current state of player.
@@ -58,6 +60,9 @@ Q_SIGNALS:
 
   /// @brief Emitted when currently playing track is changed.
   void currentTrackChanged();
+
+  /// @brief Emitted when currently playing playlist is changed.
+  void currentPlaylistChanged();
 
 private:
   int currentTrackIndex{};

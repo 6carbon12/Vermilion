@@ -33,6 +33,7 @@ PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
     std::lock_guard<std::mutex> lock(queueMutex);
     currentTrackIndex = 0;
     tracks = relatedTracks;
+    Q_EMIT currentPlaylistChanged();
 
     waitingForRelatedTracks = false;
     if (!pendingExtractionUrl.isEmpty()) {
@@ -130,4 +131,8 @@ Core::Track PlayerEngine::getCurrentTrack() {
   track.title = "N/A";
 
   return track;
+}
+
+QList<Core::Track> PlayerEngine::getCurrentPlaylist() {
+  return tracks;
 }
