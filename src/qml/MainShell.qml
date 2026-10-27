@@ -48,7 +48,7 @@ Item {
       }
 
       if (openPlayer) {
-        player.openPlayer();
+        playerFull.openPlayer();
       }
       HotReloader.savedStackHistory = [];
       console.log("History restored.");
@@ -160,12 +160,12 @@ Item {
 
           onTapped: {
             console.log("Open Player page.");
-            player.openPlayer();
+            playerFull.openPlayer();
           }
         }
       }
       Rectangle {
-        id: player
+        id: playerFull
 
         function openPlayer() {
           anchors.top = parent.top;
@@ -188,16 +188,16 @@ Item {
           duration: 300
           easing.type: Easing.InOutQuad
           property: "height"
-          target: player
+          target: playerFull
           to: 80
 
           onFinished: {
-            player.visible = false;
+            playerFull.visible = false;
             navigationLoader.visible = true;
             miniPlayer.visible = true;
           }
           onStarted: {
-            player.anchors.top = undefined;
+            playerFull.anchors.top = undefined;
           }
         }
         ColumnLayout {
@@ -511,12 +511,79 @@ Item {
             Layout.preferredHeight: 48
             hasState: false
             source: Qt.resolvedUrl("../../assets/icons/caretUp.svg")
+
+            onClicked: {
+              console.log("[ACTION] Open current queue");
+              playerQueueExpanded.visible = true;
+              playerFull.visible = false;
+            }
           }
         }
         Item {
           id: playerBottonSpacer
 
           Layout.fillHeight: true
+        }
+      }
+      ColumnLayout {
+        id: playerQueueExpanded
+
+        anchors.fill: parent
+        spacing: 0
+        visible: false
+
+        MiniPlayer {
+          Layout.alignment: Qt.AlignTop
+          Layout.fillWidth: true
+          Layout.maximumWidth: 1920
+        }
+        IconButton {
+          Layout.fillWidth: true
+          Layout.maximumWidth: 1920
+          Layout.preferredHeight: 48
+          hasState: false
+          source: Qt.resolvedUrl("../../assets/icons/caretDown.svg")
+
+          background: Rectangle {
+            anchors.fill: parent
+            color: palette.window
+          }
+
+          onClicked: {
+            console.log("[ACTION] Close current queue");
+            playerQueueExpanded.visible = false;
+            playerFull.visible = true;
+          }
+        }
+        Rectangle {
+          Layout.fillHeight: true
+          Layout.fillWidth: true
+          color: palette.window
+
+          ListView {
+            id: playlistView
+
+            anchors.fill: parent
+            anchors.margins: 8
+            clip: true
+            model: Player.playlist
+
+            delegate: SongItem {
+              id: songItem
+
+              focus: true
+              height: 80
+              width: ListView.view ? ListView.view.width : parent.width
+
+              MouseArea {
+                anchors.fill: parent
+
+                onClicked: {
+                  playlistView.model.playTrackAtIndex(songItem.index);
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -556,9 +623,9 @@ Item {
         }
       }
 
-      if (player) {
+      if (playerFull) {
         historyArray.push({
-          "isPlayerPageActive": player.visible
+          "isPlayerPageActive": playerFull.visible
         });
       }
       console.log("Serialized history size:", historyArray.length);
