@@ -30,4 +30,11 @@ ApplicationWindow {
 
     target: HotReloader
   }
+
+  Connections {
+    function onErrorOccured(err) {
+      console.log("Player Error:", err)
+    }
+    target: Player
+  }
 }
