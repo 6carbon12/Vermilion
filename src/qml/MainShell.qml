@@ -117,9 +117,11 @@ Item {
     Item {
       id: contentContainer
 
+      Layout.alignment: Qt.AlignHCenter
       Layout.column: layoutState.state === "mobile" ? 0 : 1
       Layout.fillHeight: true
       Layout.fillWidth: true
+      Layout.maximumWidth: 1920
       Layout.row: 0
 
       StackLayout {
@@ -182,6 +184,9 @@ Item {
         color: palette.window
         visible: false
 
+        MouseArea {
+          anchors.fill: parent
+        }
         NumberAnimation {
           id: shrinkAnimation
 
@@ -327,9 +332,8 @@ Item {
               Layout.alignment: Qt.AlignHCenter
               Layout.fillWidth: true
               from: 0
-              handle: null
               to: Player.duration
-              value: Player.position
+              value: pressed ? value : Player.position
 
               background: Rectangle {
                 color: Qt.alpha(palette.text, 0.1)
@@ -341,11 +345,42 @@ Item {
                 x: progressBar.leftPadding
                 y: progressBar.topPadding + progressBar.availableHeight / 2 - height / 2
 
+                Behavior on implicitHeight {
+                  NumberAnimation {
+                    duration: 200
+                    easing.type: Easing.InOutQuad
+                  }
+                }
+
                 Rectangle {
                   color: palette.accent
                   height: parent.height
                   radius: parent.radius
                   width: progressBar.visualPosition * parent.width
+                }
+              }
+              handle: Rectangle {
+                implicitHeight: 16
+                implicitWidth: 16
+                radius: implicitHeight / 2
+                x: progressBar.position * progressBar.width - (implicitWidth / 2)
+
+                Behavior on opacity {
+                  NumberAnimation {
+                    duration: 200
+                    easing.type: Easing.InOutQuad
+                  }
+                }
+              }
+
+              onPressedChanged: {
+                if (!pressed) {
+                  progressBar.background.implicitHeight = 4;
+                  progressBar.handle.opacity = 1;
+                  Player.seekTo(progressBar.value);
+                } else {
+                  progressBar.background.implicitHeight = 8;
+                  progressBar.handle.opacity = 0;
                 }
               }
             }
