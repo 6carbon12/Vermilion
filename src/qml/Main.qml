@@ -8,13 +8,26 @@ ApplicationWindow {
   id: root
 
   height: 600
+  palette.accent: "#9F9FFF"
+  palette.alternateBase: "#1A1A1A"
+  palette.text: "#FFFFFF"
+  palette.window: "#000000"
   title: "Vermilion"
   visible: true
   width: 800
-  palette.window: "#000000"
-  palette.alternateBase: "#1A1A1A"
-  palette.text: "#FFFFFF"
-  palette.accent: "#9F9FFF"
+
+  contentItem.Keys.onPressed: event => {
+    if (event.key === Qt.Key_Back) {
+      event.accepted = true;
+      if (contentLoader.item && contentLoader.item.stack) {
+        if (contentLoader.item.stack.depth <= 1) {
+          Qt.quit();
+        } else {
+          contentLoader.item.stack.pop();
+        }
+      }
+    }
+  }
 
   Loader {
     id: contentLoader
@@ -30,11 +43,11 @@ ApplicationWindow {
 
     target: HotReloader
   }
-
   Connections {
     function onErrorOccured(err) {
-      console.log("Player Error:", err)
+      console.log("Player Error:", err);
     }
+
     target: Player
   }
 }
