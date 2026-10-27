@@ -306,16 +306,16 @@ Item {
               }
             }
             IconButton {
-              id: lyricsButton
+              id: likeButton
 
               Layout.preferredHeight: 48
               Layout.preferredWidth: 48
               Layout.rightMargin: -8
               hasState: false
-              source: Qt.resolvedUrl("../../assets/icons/lyrics.svg")
+              source: Qt.resolvedUrl("../../assets/icons/heart.svg")
 
               onClicked: {
-                console.log("Lyrics Pressed.");
+                console.log("Like Pressed.");
               }
             }
           }
