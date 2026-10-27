@@ -35,6 +35,7 @@ PlayerController::PlayerController(QObject *parent) : QObject(parent) {
   connect(worker, &PlayerEngine::errorOccurred, this, [this](const QString &err) { Q_EMIT errorOccured(err); });
 
   connect(worker, &PlayerEngine::currentTrackChanged, this, [this]() { Q_EMIT currentTrackChanged();});
+  connect(worker, &PlayerEngine::currentPlaylistChanged, this, [this]() { Q_EMIT currentPlaylistChanged();});
 
   connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, [this]() {
     workerThread->quit();
@@ -84,3 +85,10 @@ void PlayerController::seekTo(long positionMs) { Q_EMIT requestSeekTo(positionMs
 PlayerController::PlayerState PlayerController::getPlayerState() { return cachedState; }
 long PlayerController::getPosition() { return cachedPosition; }
 long PlayerController::getDuration() { return cachedDuration; }
+
+Models::TrackListModel* PlayerController::getCurrentPlaylist() {
+  Models::TrackListModel *model = new Models::TrackListModel();
+  QQmlEngine::setObjectOwnership(model, QQmlEngine::JavaScriptOwnership);
+  model->setTracks(worker->getCurrentPlaylist());
+  return model;
+}
