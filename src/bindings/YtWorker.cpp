@@ -260,11 +260,12 @@ Core::Track YtWorker::getTrackFromDict(py::object dict) {
     int i = 0;
     if (!artists.empty()) {
       for (auto &artist : artists) {
-        track.artists[i].name = QString::fromStdString(artist["name"].cast<std::string>());
-        track.artists[i].id = QString::fromStdString(artist["id"].cast<std::string>());
+        py::dict artistDict = artist.cast<py::dict>();
+        track.artists[i].name = getStrMember(artistDict, "name");
+        track.artists[i].id = getStrMember(artistDict, "id");
         i++;
       }
-      track.artistsNum = ++i;
+      track.artistsNum = i;
     } else {
       qCWarning(YtWorker_l) << "artists array empty";
     }
@@ -278,7 +279,7 @@ QString YtWorker::getStrMember(py::object dict, const char *member) {
   if (dict.contains(member) && !dict[member].is_none()) {
     return QString::fromStdString(dict[member].cast<std::string>());
   } else {
-    qCWarning(YtWorker_l) << "Unable to get member: " << member << ". From a result of ytmusicapi";
+    qCWarning(YtWorker_l) << "Unable to get member:" << member << ". From a result of ytmusicapi";
     return "";
   }
 }
