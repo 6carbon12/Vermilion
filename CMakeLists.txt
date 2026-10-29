@@ -95,6 +95,10 @@ set(QML_SOURCES
   src/dev/HotReloader.cpp
 )
 
+set(PYTHON_SCRIPTS
+  src/bindings/python/yt_helpers.py
+)
+
 file(
   GLOB_RECURSE
   APP_ICONS
@@ -106,6 +110,12 @@ if(ANDROID)
   qt_add_executable(${ANDROID_TARGET} ${CPP_SOURCES} ${CPP_ANDROID_SOURCES})
   set_target_properties(${ANDROID_TARGET} PROPERTIES
     OUTPUT_NAME "vermilion"
+  )
+
+  qt_add_resources(${ANDROID_TARGET} "PythonScripts"
+    PREFIX "/python"
+    BASE "src/bindings/python"
+    FILES ${PYTHON_SCRIPTS}
   )
 
   # `slots` is a macro used by QT
@@ -198,6 +208,13 @@ else()
     ${generated_mpris_sources}
     ${generated_player_sources}
   )
+
+  qt_add_resources(${LINUX_TARGET} "PythonScripts"
+    PREFIX "/python"
+    BASE "src/bindings/python"
+    FILES ${PYTHON_SCRIPTS}
+  )
+
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${LINUX_TARGET} PRIVATE
       HOTRELOAD_QML_DIR="${CMAKE_CURRENT_SOURCE_DIR}/src/qml"

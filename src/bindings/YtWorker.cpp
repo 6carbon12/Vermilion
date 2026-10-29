@@ -121,35 +121,7 @@ void YtWorker::search(const QString &query, int maxResults) {
 
     for (py::handle result : results) {
       py::dict resultDict = result.cast<py::dict>();
-
-      auto getStrMember = [&](const char *member) -> QString {
-        if (resultDict.contains(member) && !resultDict[member].is_none()) {
-          return QString::fromStdString(resultDict[member].cast<std::string>());
-        } else {
-          qCWarning(YtWorker_l) << "Unable to get member: " << member << ". From a result of ytmusicapi";
-          return "N/A";
-        }
-      };
-
-      Core::Track resultData;
-      resultData.title = getStrMember("title");
-      resultData.url = "https://youtube.com/watch?v=" + getStrMember("videoId");
-      resultData.views = getStrMember("views");
-      resultData.durationString = getStrMember("duration");
-
-      if (resultDict.contains("thumbnails") && !resultDict["thumbnails"].is_none()) {
-        py::list thumbs = resultDict["thumbnails"].cast<py::list>();
-        if (!thumbs.empty()) {
-          py::dict bestThumb = thumbs[thumbs.size() - 1].cast<py::dict>();
-          std::string thumbUrl = bestThumb["url"].cast<std::string>();
-          resultData.coverArtUrl = QString::fromStdString(thumbUrl);
-        } else {
-          qCWarning(YtWorker_l) << "Thumbnails empty";
-        }
-      } else {
-        qCWarning(YtWorker_l) << "Unable to get member: " << "thumbnails" << ". From a result of ytmusicapi";
-      }
-
+      Core::Track resultData = getTrackFromDict(resultDict);
       resultsList.append(resultData);
     }
 
@@ -216,40 +188,25 @@ void YtWorker::getRelatedTracks(const QString &url) {
 
   std::string videoIdStd = videoId.toStdString();
   try {
-    py::object output = YTMusic.attr("get_watch_playlist")("videoId"_a = videoIdStd, "radio"_a = true);
-    py::list tracks = output["tracks"].cast<py::list>();
+    auto result = PyHelper::loadScript(":/python/yt_helpers.py");
 
+    if (!result) {
+      const PyHelper::Error &err = result.error();
+      qCCritical(YtWorker_l) << "Failed to load Python script!";
+      qCCritical(YtWorker_l) << "Reason code:" << static_cast<int>(err.reason);
+      qCCritical(YtWorker_l) << "Details:" << err.debugContext;
+
+      Q_EMIT getRelatedTracksFailed(err.debugContext);
+    }
+    py::object scope = py::module_::import("__main__").attr("__dict__");
+    py::object getWatchPlaylistWithExplicit = scope["get_watch_playlist_normalized"];
+
+    py::object watchPlaylist = getWatchPlaylistWithExplicit(YTMusic, videoIdStd);
+
+    py::list tracks = watchPlaylist["tracks"].cast<py::list>();
     for (py::handle track : tracks) {
       py::dict trackDict = track.cast<py::dict>();
-
-      auto getStrMember = [&](const char *member) -> QString {
-        if (trackDict.contains(member) && !trackDict[member].is_none()) {
-          return QString::fromStdString(trackDict[member].cast<std::string>());
-        } else {
-          qCWarning(YtWorker_l) << "Unable to get member: " << member << ". From a result of ytmusicapi";
-          return "N/A";
-        }
-      };
-
-      Core::Track resultData;
-      resultData.title = getStrMember("title");
-      resultData.url = "https://youtube.com/watch?v=" + getStrMember("videoId");
-      resultData.views = "N/A";
-      resultData.durationString = getStrMember("length");
-
-      if (trackDict.contains("thumbnail") && !trackDict["thumbnail"].is_none()) {
-        py::list thumbs = trackDict["thumbnail"].cast<py::list>();
-        if (!thumbs.empty()) {
-          py::dict bestThumb = thumbs[thumbs.size() - 1].cast<py::dict>();
-          std::string thumbUrl = bestThumb["url"].cast<std::string>();
-          resultData.coverArtUrl = QString::fromStdString(thumbUrl);
-        } else {
-          qCWarning(YtWorker_l) << "Thumbnails empty";
-        }
-      } else {
-        qCWarning(YtWorker_l) << "Unable to get member: " << "thumbnails" << ". From a result of ytmusicapi";
-      }
-
+      Core::Track resultData = getTrackFromDict(trackDict);
       relatedTracks.append(resultData);
     }
 
@@ -261,5 +218,51 @@ void YtWorker::getRelatedTracks(const QString &url) {
   } catch (const std::exception &e) {
     qCDebug(YtWorker_l) << "Related tracks failed to get\n" << e.what();
     Q_EMIT getRelatedTracksFailed(QString::fromStdString(e.what()));
+  }
+}
+
+Core::Track YtWorker::getTrackFromDict(py::object dict) {
+  Core::Track track;
+
+  track.durationString = getStrMember(dict, "duration");
+  track.id = getStrMember(dict, "videoId");
+  track.title = getStrMember(dict, "title");
+  track.url = "https://youtube.com/watch?v=" + getStrMember(dict, "videoId");
+  track.views = getStrMember(dict, "views");
+
+  if (dict.contains("thumbnails") && !dict["thumbnails"].is_none()) {
+    py::list thumbs = dict["thumbnails"].cast<py::list>();
+    if (!thumbs.empty()) {
+      py::dict bestThumb = thumbs[thumbs.size() - 1].cast<py::dict>();
+      std::string thumbUrl = bestThumb["url"].cast<std::string>();
+      track.coverArtUrl = QString::fromStdString(thumbUrl);
+    } else {
+      qCWarning(YtWorker_l) << "Thumbnails empty";
+    }
+  } else {
+    qCWarning(YtWorker_l) << "Unable to get member: " << "thumbnails" << ". From a result of ytmusicapi";
+  }
+
+  if (dict.contains("isExplicit") && !dict["isExplicit"].is_none()) {
+    track.isExplict = dict["isExplicit"].cast<bool>();
+  } else {
+    qCWarning(YtWorker_l) << "Unable to get member: " << "isExplicit" << ". From a result of ytmusicapi";
+  }
+
+  if (dict.contains("duration_seconds") && !dict["duration_seconds"].is_none()) {
+    track.duration = dict["duration_seconds"].cast<long>() * 1000;
+  } else {
+    qCWarning(YtWorker_l) << "Unable to get member: " << "duration_seconds" << ". From a result of ytmusicapi";
+  }
+
+  return track;
+}
+
+QString YtWorker::getStrMember(py::object dict, const char *member) {
+  if (dict.contains(member) && !dict[member].is_none()) {
+    return QString::fromStdString(dict[member].cast<std::string>());
+  } else {
+    qCWarning(YtWorker_l) << "Unable to get member: " << member << ". From a result of ytmusicapi";
+    return "";
   }
 }

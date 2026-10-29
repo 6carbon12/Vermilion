@@ -84,4 +84,14 @@ Q_SIGNALS:
   /// @brief Emitted when fetching related tracks fails.
   /// @param error Error message generated.
   void getRelatedTracksFailed(const QString &error);
+
+private:
+  /// @brief Helper function to get track data from a python dictionary.
+  /// @param dict Python dictionary.
+  Core::Track getTrackFromDict(py::object dict);
+
+  /// @brief Helper function to get a member of type `string` from python dictionary.
+  /// @param dict Python dictionary.
+  /// @returns Value of `member` in `obj`. Returns empty string if `member` is not found.
+  QString getStrMember(py::object obj, const char* member);
 };
