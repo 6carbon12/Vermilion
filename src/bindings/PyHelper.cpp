@@ -9,6 +9,7 @@
 namespace PyHelper {
 
 Q_LOGGING_CATEGORY(PyHelper, "PyHelper")
+namespace py = pybind11;
 
 std::expected<void, Error> init() {
 #if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
@@ -21,7 +22,8 @@ std::expected<void, Error> init() {
 
   if (!QDir().exists(PYTHONHOME)) {
     qCWarning(PyHelper) << "PYTHONHOME is not valid.";
-    return std::unexpected(Error({ErrorReason::FileError, "Given PYTHONHOME path doesn't exist. PYTHONHOME=" + PYTHONHOME}));
+    return std::unexpected(
+        Error({ErrorReason::FileError, "Given PYTHONHOME path doesn't exist. PYTHONHOME=" + PYTHONHOME}));
   }
 
   qCDebug(PyHelper) << "Python initalized.";
@@ -80,7 +82,8 @@ std::expected<void, Error> installModule(const QString &modulePath, const QStrin
 #if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
   if (!QDir(moduleTgtPath).exists() || QDir(moduleTgtPath).isEmpty()) {
     qCDebug(PyHelper) << "Module does not exit. Bad things might happen.";
-    return std::unexpected(Error({ErrorReason::FileError, "Module not installed. Package might not be installed correctly."}));
+    return std::unexpected(
+        Error({ErrorReason::FileError, "Module not installed. Package might not be installed correctly."}));
   }
 
   return {};
@@ -117,5 +120,24 @@ std::expected<void, Error> installModule(const QString &modulePath, const QStrin
   qCDebug(PyHelper) << "Failed to install module" << modulePath;
   qCDebug(PyHelper) << errStr;
   return std::unexpected(Error({errReason, errStr}));
+}
+
+std::expected<void, Error> loadScript(const QString &scriptPath) {
+  QFile file(scriptPath);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    return std::unexpected(Error({ErrorReason::FileError, "Failed to open script at: " + scriptPath}));
+  }
+
+  std::string scriptContent = file.readAll().toStdString();
+  file.close();
+
+  try {
+    py::object scope = py::module_::import("__main__").attr("__dict__");
+    py::exec(scriptContent, scope);
+    return {};
+  } catch (const py::error_already_set &e) {
+    return std::unexpected(
+        Error({ErrorReason::PythonError, "Python execution error in " + scriptPath + ":\n" + e.what()}));
+  }
 }
 } // namespace PyHelper

@@ -2,11 +2,12 @@
 
 #include <QString>
 #include <expected>
+#include <pybind11/embed.h>
 #include <source_location>
 
 namespace PyHelper {
 
-enum class ErrorReason { ModuleNotFound, FileError, PyNotInit, ImportFailed };
+enum class ErrorReason { ModuleNotFound, FileError, PyNotInit, ImportFailed, PythonError };
 
 struct Error {
   ErrorReason reason;
@@ -25,4 +26,8 @@ std::expected<void, Error> init();
 /// @param moduleName Name of the module. Can be anything, but this is the name that must be used when importing.
 /// Defaults to name of the folder if left empty. Example `~/mouleName` becomes available as `moduleName`.
 std::expected<void, Error> installModule(const QString &modulePath, const QString &moduleName = "");
+
+/// @bried Loads a give script file to interpreter's current context. Useful to load small scripts.
+/// @param scriptPath Path of the script to load.
+std::expected<void, Error> loadScript(const QString &scriptPath);
 } // namespace PyHelper
