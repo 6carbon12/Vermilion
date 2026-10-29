@@ -66,11 +66,19 @@ QVariantMap PlayerController::getCurrentTrack() {
   QVariantMap track;
 
   track["url"] = currentTrack.url;
-  track["artist"] = currentTrack.artist;
   track["duration"] = currentTrack.durationString;
   track["thumbnailUrl"] = currentTrack.coverArtUrl;
   track["views"] = currentTrack.views;
   track["title"] = currentTrack.title;
+
+  QVariantList artistList;
+  for (const auto &artist : currentTrack.artists) {
+    QVariantMap artistMap;
+    artistMap["name"] = artist.name;
+    artistMap["id"] = artist.id;
+    artistList.append(artistMap);
+  }
+  track["artists"] = artistList;
 
   return track;
 }

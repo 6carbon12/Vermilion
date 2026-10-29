@@ -126,7 +126,6 @@ Core::Track PlayerEngine::getCurrentTrack() {
   track.views = "N/A";
   track.coverArtUrl = "N/A";
   track.durationString = "N/A";
-  track.artist = "N/A";
   track.url = "N/A";
   track.title = "N/A";
 

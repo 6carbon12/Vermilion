@@ -41,6 +41,7 @@ set(CPP_SOURCES
   src/bindings/YtEngine.cpp
   src/core/audio/PlayerState.h
   src/core/audio/Track.h
+  src/core/audio/Artist.h
 )
 
 set(CPP_ANDROID_SOURCES

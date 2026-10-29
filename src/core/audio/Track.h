@@ -2,6 +2,7 @@
 
 #include <QMetaType>
 #include <QString>
+#include "Artist.h"
 
 namespace Core {
 
@@ -11,13 +12,12 @@ struct Track {
   QString url;
   QString title;
   QString views;
-  QString artist;
   QString coverArtUrl;
   QString durationString;
   long duration;
-
-  bool operator==(const Track &other) const { return url == other.url; }
-  bool operator!=(const Track &other) const { return !(*this == other); }
+  // 8 is just an arbitrary large number.
+  Artist artists[8];
+  int artistsNum;
 };
 
 } // namespace Core

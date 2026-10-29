@@ -42,7 +42,13 @@ QVariantMap MprisController::metadata() const {
 
   metadata.insert("mpris:trackid", QVariant::fromValue(QDBusObjectPath(trackIdStr)));
   metadata.insert("xesam:title", track.title);
-  metadata.insert("xesam:artist", QStringList() << track.artist);
+
+  QStringList artistList;
+  for (const auto &artist : track.artists) {
+    artistList.append(artist.name);
+  }
+
+  metadata.insert("xesam:artist", artistList);
   qlonglong lengthMicroseconds = m_player->getDuration() * 1000LL;
   metadata.insert("mpris:length", lengthMicroseconds);
   if (!track.coverArtUrl.isEmpty()) {

@@ -30,7 +30,7 @@ QHash<int, QByteArray> TrackListModel::roleNames() const {
   roles[UrlRole] = "url";
   roles[TitleRole] = "title";
   roles[ViewsRole] = "views";
-  roles[ArtistRole] = "artist";
+  roles[ArtistsRole] = "artists";
   roles[ThumbnailUrlRole] = "thumbnailUrl";
   roles[DurationRole] = "duration";
 
@@ -43,6 +43,7 @@ QVariant TrackListModel::data(const QModelIndex &index, int role) const {
   }
 
   const Core::Track &track = m_tracks[index.row()];
+  QVariantList artistList;
   switch (role) {
   case UrlRole:
     return track.url;
@@ -50,8 +51,14 @@ QVariant TrackListModel::data(const QModelIndex &index, int role) const {
     return track.title;
   case ViewsRole:
     return track.views;
-  case ArtistRole:
-    return track.artist;
+  case ArtistsRole:
+    for (const auto &artist : track.artists) {
+      QVariantMap artistMap;
+      artistMap["name"] = artist.name;
+      artistMap["id"] = artist.id;
+      artistList.append(artistMap);
+    }
+    return artistList;
   case ThumbnailUrlRole:
     return track.coverArtUrl;
   case DurationRole:

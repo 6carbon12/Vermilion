@@ -20,7 +20,7 @@ public:
     UrlRole = Qt::UserRole + 1,
     TitleRole,
     ViewsRole,
-    ArtistRole,
+    ArtistsRole,
     ThumbnailUrlRole,
     DurationRole,
   };
