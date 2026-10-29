@@ -600,9 +600,24 @@ Item {
             delegate: SongItem {
               id: songItem
 
+              required property var artists
+              required property string artistsSize
+
               focus: true
               height: 80
               width: ListView.view ? ListView.view.width : parent.width
+
+              subText: RowLayout {
+                Artists {
+                  artists: songItem.artists
+                  artistsSize: songItem.artistsSize
+                  fontSize: 14
+                  textColor: Qt.darker(palette.text, 2)
+                }
+                Text {
+                  text: " • " + Player.currentTrack.duration
+                }
+              }
 
               MouseArea {
                 anchors.fill: parent

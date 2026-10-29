@@ -1,15 +1,22 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 
 Item {
   id: root
 
-  required property int index
   required property string duration
+  required property int index
+  property Component rightContent
+  property Component subText: Text {
+    color: "#B3B3B3"
+    elide: Text.ElideRight
+    font.pixelSize: 14
+    text: root.duration + " • " + root.views
+  }
   required property string thumbnailUrl
   required property string title
   required property string views
-  property Component rightContent
 
   RowLayout {
     id: trackLayout
@@ -33,7 +40,6 @@ Item {
         source: root.thumbnailUrl
       }
     }
-
     ColumnLayout {
       id: content
 
@@ -49,15 +55,11 @@ Item {
         font.weight: Font.Medium
         text: root.title
       }
-      Text {
+      Loader {
         Layout.fillWidth: true
-        color: "#B3B3B3"
-        elide: Text.ElideRight
-        font.pixelSize: 14
-        text: root.duration + " • " + root.views
+        sourceComponent: root.subText
       }
     }
-
     Loader {
       Layout.alignment: Qt.AlignVCenter
       Layout.preferredHeight: 48

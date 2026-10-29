@@ -48,6 +48,7 @@ Rectangle {
         Artists {
           id: artists
 
+          Layout.topMargin: -4
           artists: Player.currentTrack.artists
           artistsSize: Player.currentTrack.artistsNum
           textColor: Qt.darker(palette.text, 2)
