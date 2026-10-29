@@ -25,12 +25,21 @@ import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.session.MediaSession;
 import androidx.media3.session.MediaSessionService;
 import androidx.media3.session.MediaStyleNotificationHelper;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class PlaybackService extends MediaSessionService {
   private static PlaybackService instance;
 
   private MediaSession mediaSession;
   private ExoPlayer basePlayer;
+  private final ExecutorService imageExecutor = Executors.newSingleThreadExecutor();
+  private Bitmap currentArtworkBitmap = null;
 
   private CharSequence currentTitle = "Vermilion Engine";
   private CharSequence currentArtist = "Ready to play";
@@ -68,8 +77,8 @@ public class PlaybackService extends MediaSessionService {
     createNotificationChannel();
 
     basePlayer = new ExoPlayer.Builder(this)
-        .setHandleAudioBecomingNoisy(true)
-        .build();
+      .setHandleAudioBecomingNoisy(true)
+      .build();
 
     basePlayer.addListener(new Player.Listener() {
       @Override
@@ -93,7 +102,7 @@ public class PlaybackService extends MediaSessionService {
             Log.d("PlayerService", "Hit dummy item! Requesting next track from C++.");
 
             requestNext();
-          }
+              }
         }
       }
 
@@ -128,7 +137,7 @@ public class PlaybackService extends MediaSessionService {
         if (error.getCause() instanceof java.io.EOFException ||
             error.errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED) {
           requestNext();
-        }
+            }
         playerStateChanged();
       }
     });
@@ -160,24 +169,21 @@ public class PlaybackService extends MediaSessionService {
 
     currentTitle = (title != null && !title.isEmpty()) ? title : "Unknown Title";
     currentArtist = (artist != null && !artist.isEmpty()) ? artist : "Unknown Artist";
+    currentArtworkBitmap = null;
 
     MediaMetadata.Builder metaBuilder = new MediaMetadata.Builder()
-        .setTitle(currentTitle)
-        .setArtist(currentArtist);
-
-    if (artUrl != null && !artUrl.isEmpty()) {
-      metaBuilder.setArtworkUri(Uri.parse(artUrl));
-    }
+      .setTitle(currentTitle)
+      .setArtist(currentArtist);
 
     MediaItem mainItem = new MediaItem.Builder()
-        .setUri(Uri.parse(url))
-        .setMediaMetadata(metaBuilder.build())
-        .build();
+      .setUri(Uri.parse(url))
+      .setMediaMetadata(metaBuilder.build())
+      .build();
 
     MediaItem dummyNextItem = new MediaItem.Builder()
-        .setUri(Uri.parse(url))
-        .setMediaMetadata(new MediaMetadata.Builder().setTitle("LOADING...").build())
-        .build();
+      .setUri(Uri.parse(url))
+      .setMediaMetadata(new MediaMetadata.Builder().setTitle("LOADING...").build())
+      .build();
 
     mediaSession.getPlayer().setMediaItems(java.util.Arrays.asList(mainItem, dummyNextItem));
     mediaSession.getPlayer().prepare();
@@ -186,33 +192,63 @@ public class PlaybackService extends MediaSessionService {
     if (manager != null) {
       manager.notify(NOTIFICATION_ID, buildPlaybackNotification());
     }
+
+    if (artUrl != null && !artUrl.isEmpty()) {
+      imageExecutor.execute(() -> {
+        Bitmap bitmap = downloadBitmap(artUrl);
+        if (bitmap != null) {
+          new Handler(Looper.getMainLooper()).post(() -> {
+            currentArtworkBitmap = bitmap;
+            byte[] artworkData = bitmapToByteArray(bitmap);
+
+            MediaMetadata updatedMetadata = metaBuilder
+              .setArtworkData(artworkData, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
+              .build();
+
+            MediaItem updatedItem = mainItem.buildUpon()
+              .setMediaMetadata(updatedMetadata)
+              .build();
+
+            if (basePlayer != null && basePlayer.getMediaItemCount() > 0) {
+              basePlayer.replaceMediaItem(0, updatedItem);
+            }
+
+            if (manager != null) {
+              manager.notify(NOTIFICATION_ID, buildPlaybackNotification());
+            }
+          });
+        }
+      });
+    }
   }
 
   private Notification buildPlaybackNotification() {
     boolean isPlaying = mediaSession != null && mediaSession.getPlayer() != null
-        && mediaSession.getPlayer().getPlayWhenReady();
+      && mediaSession.getPlayer().getPlayWhenReady();
 
-    Bitmap genericAlbumArt = BitmapFactory.decodeResource(getResources(), android.R.drawable.ic_menu_gallery);
+    Bitmap displayArt = (currentArtworkBitmap != null) 
+      ? currentArtworkBitmap 
+      : BitmapFactory.decodeResource(getResources(), android.R.drawable.ic_menu_gallery);
 
     NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-        .setContentTitle(currentTitle)
-        .setContentText(currentArtist)
-        .setSmallIcon(android.R.drawable.ic_media_play)
-        .setLargeIcon(genericAlbumArt)
-        .setPriority(NotificationCompat.PRIORITY_LOW)
-        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        .setOngoing(true);
+      .setContentTitle(currentTitle)
+      .setContentText(currentArtist)
+      .setSmallIcon(android.R.drawable.ic_media_play)
+      .setLargeIcon(displayArt)
+      .setPriority(NotificationCompat.PRIORITY_LOW)
+      .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+      .setOngoing(true);
 
     if (mediaSession != null) {
       builder.setStyle(new MediaStyleNotificationHelper.MediaStyle(mediaSession)
           .setShowActionsInCompactView(0, 1, 2));
 
       builder
-          .addAction(android.R.drawable.ic_media_previous, "Previous",
-              buildMediaIntent(Player.COMMAND_SEEK_TO_PREVIOUS))
-          .addAction(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
-              isPlaying ? "Pause" : "Play", buildMediaIntent(Player.COMMAND_PLAY_PAUSE))
-          .addAction(android.R.drawable.ic_media_next, "Next", buildMediaIntent(Player.COMMAND_SEEK_TO_NEXT));
+        .addAction(android.R.drawable.ic_media_previous, "Previous",
+            buildMediaIntent(Player.COMMAND_SEEK_TO_PREVIOUS))
+        .addAction(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
+            isPlaying ? "Pause" : "Play", buildMediaIntent(Player.COMMAND_PLAY_PAUSE))
+        .addAction(android.R.drawable.ic_media_next, "Next", buildMediaIntent(Player.COMMAND_SEEK_TO_NEXT));
     }
 
     return builder.build();
@@ -268,20 +304,25 @@ public class PlaybackService extends MediaSessionService {
 
       @Override
       public MediaMetadata getMediaMetadata() {
-        return new MediaMetadata.Builder()
-            .setTitle(currentTitle)
-            .setArtist(currentArtist)
-            .build();
+        MediaMetadata.Builder builder = new MediaMetadata.Builder()
+          .setTitle(currentTitle)
+          .setArtist(currentArtist);
+
+        if (currentArtworkBitmap != null) {
+          builder.setArtworkData(bitmapToByteArray(currentArtworkBitmap), MediaMetadata.PICTURE_TYPE_FRONT_COVER);
+        }
+
+        return builder.build();
       }
 
       @Override
       public Player.Commands getAvailableCommands() {
         return super.getAvailableCommands().buildUpon()
-            .add(Player.COMMAND_SEEK_TO_NEXT)
-            .add(Player.COMMAND_SEEK_TO_PREVIOUS)
-            .add(Player.COMMAND_CHANGE_MEDIA_ITEMS)
-            .add(Player.COMMAND_PLAY_PAUSE)
-            .build();
+          .add(Player.COMMAND_SEEK_TO_NEXT)
+          .add(Player.COMMAND_SEEK_TO_PREVIOUS)
+          .add(Player.COMMAND_CHANGE_MEDIA_ITEMS)
+          .add(Player.COMMAND_PLAY_PAUSE)
+          .build();
       }
     };
   }
@@ -304,6 +345,28 @@ public class PlaybackService extends MediaSessionService {
     }
     instance = null;
     super.onDestroy();
+  }
+
+  private byte[] bitmapToByteArray(Bitmap bitmap) {
+    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream);
+    return stream.toByteArray();
+  }
+
+  private Bitmap downloadBitmap(String urlString) {
+    try {
+      URL url = new URL(urlString);
+      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+      connection.setDoInput(true);
+      connection.setConnectTimeout(5000);
+      connection.setReadTimeout(5000);
+      connection.connect();
+      InputStream input = connection.getInputStream();
+      return BitmapFactory.decodeStream(input);
+    } catch (IOException e) {
+      Log.e("PlaybackService", "Failed to download artwork from: " + urlString, e);
+      return null;
+    }
   }
 
   private native void requestNext();
