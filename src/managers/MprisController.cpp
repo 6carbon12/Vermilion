@@ -45,8 +45,8 @@ QVariantMap MprisController::metadata() const {
   metadata.insert("xesam:artist", QStringList() << track.artist);
   qlonglong lengthMicroseconds = m_player->getDuration() * 1000LL;
   metadata.insert("mpris:length", lengthMicroseconds);
-  if (!track.thumbnailUrl.isEmpty()) {
-    metadata.insert("mpris:artUrl", track.thumbnailUrl);
+  if (!track.coverArtUrl.isEmpty()) {
+    metadata.insert("mpris:artUrl", track.coverArtUrl);
   }
   metadata.insert("xesam:album", "");
 

@@ -40,7 +40,7 @@ void AndroidPlayer::play(const QString &url, const Core::Track &track) {
   QJniObject jUrl = QJniObject::fromString(url);
   QJniObject jTitle = QJniObject::fromString(track.title);
   QJniObject jArtist = QJniObject::fromString(track.artist);
-  QJniObject jArtUrl = QJniObject::fromString(track.thumbnailUrl);
+  QJniObject jArtUrl = QJniObject::fromString(track.coverArtUrl);
 
   player.callMethod<void>("loadTrack", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
                           jUrl.object<jstring>(), jTitle.object<jstring>(), jArtist.object<jstring>(),

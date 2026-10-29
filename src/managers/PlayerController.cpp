@@ -67,8 +67,8 @@ QVariantMap PlayerController::getCurrentTrack() {
 
   track["url"] = currentTrack.url;
   track["artist"] = currentTrack.artist;
-  track["duration"] = currentTrack.duration;
-  track["thumbnailUrl"] = currentTrack.thumbnailUrl;
+  track["duration"] = currentTrack.durationString;
+  track["thumbnailUrl"] = currentTrack.coverArtUrl;
   track["views"] = currentTrack.views;
   track["title"] = currentTrack.title;
 

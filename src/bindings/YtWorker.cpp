@@ -135,14 +135,14 @@ void YtWorker::search(const QString &query, int maxResults) {
       resultData.title = getStrMember("title");
       resultData.url = "https://youtube.com/watch?v=" + getStrMember("videoId");
       resultData.views = getStrMember("views");
-      resultData.duration = getStrMember("duration");
+      resultData.durationString = getStrMember("duration");
 
       if (resultDict.contains("thumbnails") && !resultDict["thumbnails"].is_none()) {
         py::list thumbs = resultDict["thumbnails"].cast<py::list>();
         if (!thumbs.empty()) {
           py::dict bestThumb = thumbs[thumbs.size() - 1].cast<py::dict>();
           std::string thumbUrl = bestThumb["url"].cast<std::string>();
-          resultData.thumbnailUrl = QString::fromStdString(thumbUrl);
+          resultData.coverArtUrl = QString::fromStdString(thumbUrl);
         } else {
           qCWarning(YtWorker_l) << "Thumbnails empty";
         }
@@ -235,14 +235,14 @@ void YtWorker::getRelatedTracks(const QString &url) {
       resultData.title = getStrMember("title");
       resultData.url = "https://youtube.com/watch?v=" + getStrMember("videoId");
       resultData.views = "N/A";
-      resultData.duration = getStrMember("length");
+      resultData.durationString = getStrMember("length");
 
       if (trackDict.contains("thumbnail") && !trackDict["thumbnail"].is_none()) {
         py::list thumbs = trackDict["thumbnail"].cast<py::list>();
         if (!thumbs.empty()) {
           py::dict bestThumb = thumbs[thumbs.size() - 1].cast<py::dict>();
           std::string thumbUrl = bestThumb["url"].cast<std::string>();
-          resultData.thumbnailUrl = QString::fromStdString(thumbUrl);
+          resultData.coverArtUrl = QString::fromStdString(thumbUrl);
         } else {
           qCWarning(YtWorker_l) << "Thumbnails empty";
         }

@@ -53,9 +53,9 @@ QVariant TrackListModel::data(const QModelIndex &index, int role) const {
   case ArtistRole:
     return track.artist;
   case ThumbnailUrlRole:
-    return track.thumbnailUrl;
+    return track.coverArtUrl;
   case DurationRole:
-    return track.duration;
+    return track.durationString;
   }
 
   qCWarning(trackListModel) << "Requesting unknown role. Returning default QVariant";
