@@ -289,20 +289,14 @@ Item {
                 font.pixelSize: 24
                 text: Player.currentTrack.title
               }
-              Text {
-                id: artist
+              Artists {
+                id: artists
 
-                Layout.fillWidth: true
-                color: Qt.darker(palette.text, 2.0)
-                elide: Text.ElideRight
-                font.pixelSize: 16
-                text: {
-                  if (Player.currentTrack.artist !== "") {
-                    return Player.currentTrack.artist;
-                  } else {
-                    return "Arist Unavailable";
-                  }
-                }
+                artists: Player.currentTrack.artists
+                artistsSize: Player.currentTrack.artistsNum
+                fontSize: 16
+                interactive: true
+                textColor: Qt.darker(palette.text, 2)
               }
             }
             IconButton {

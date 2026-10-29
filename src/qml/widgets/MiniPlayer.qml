@@ -1,9 +1,11 @@
 import QtQuick
 import QtQuick.Layouts
 import Vermilion
+import "../components"
 
 Rectangle {
   id: root
+
   color: palette.alternateBase
   focus: true
   height: 80
@@ -43,19 +45,12 @@ Rectangle {
           font.pixelSize: 14
           text: Player.currentTrack.title
         }
-        Text {
-          id: artist
+        Artists {
+          id: artists
 
-          Layout.fillWidth: true
-          color: Qt.darker(palette.text, 2.0)
-          elide: Text.ElideRight
-          text: {
-            if (Player.currentTrack.artist !== "") {
-              return Player.currentTrack.artist;
-            } else {
-              return "Arist Unavailable";
-            }
-          }
+          artists: Player.currentTrack.artists
+          artistsSize: Player.currentTrack.artistsNum
+          textColor: Qt.darker(palette.text, 2)
         }
       }
       IconButton {

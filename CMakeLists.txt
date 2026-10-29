@@ -73,6 +73,7 @@ set(QML_FILES
   src/qml/components/SearchBar.qml
   src/qml/components/SongItem.qml
   src/qml/components/RoundedImage.qml
+  src/qml/components/Artists.qml
   src/qml/pages/Home.qml
   src/qml/pages/Library.qml
   src/qml/pages/Search.qml
