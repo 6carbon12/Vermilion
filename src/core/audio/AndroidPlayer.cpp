@@ -37,9 +37,22 @@ void AndroidPlayer::play(const QString &url, const Core::Track &track) {
     return;
   }
 
+  QString artistStr;
+  const int count = track.artistsNum;
+
+  if (count == 1) {
+    artistStr = track.artists[0].name;
+  } else if (count > 1) {
+    QStringList names;
+    for (int i = 0; i < count - 1; ++i) {
+      names.append(track.artists[i].name);
+    }
+    artistStr = names.join(", ") + " & " + track.artists[count - 1].name;
+  }
+
   QJniObject jUrl = QJniObject::fromString(url);
   QJniObject jTitle = QJniObject::fromString(track.title);
-  QJniObject jArtist = QJniObject::fromString(track.artist);
+  QJniObject jArtist = QJniObject::fromString(artistStr);
   QJniObject jArtUrl = QJniObject::fromString(track.coverArtUrl);
 
   player.callMethod<void>("loadTrack", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
