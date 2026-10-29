@@ -79,6 +79,7 @@ QVariantMap PlayerController::getCurrentTrack() {
     artistList.append(artistMap);
   }
   track["artists"] = artistList;
+  track["artistsNum"] = currentTrack.artistsNum;
 
   return track;
 }
