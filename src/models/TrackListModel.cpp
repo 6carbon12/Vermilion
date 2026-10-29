@@ -31,6 +31,7 @@ QHash<int, QByteArray> TrackListModel::roleNames() const {
   roles[TitleRole] = "title";
   roles[ViewsRole] = "views";
   roles[ArtistsRole] = "artists";
+  roles[ArtistsNumRole] = "artistsSize";
   roles[ThumbnailUrlRole] = "thumbnailUrl";
   roles[DurationRole] = "duration";
 
@@ -59,6 +60,8 @@ QVariant TrackListModel::data(const QModelIndex &index, int role) const {
       artistList.append(artistMap);
     }
     return artistList;
+  case ArtistsNumRole:
+    return track.artistsNum;
   case ThumbnailUrlRole:
     return track.coverArtUrl;
   case DurationRole:

@@ -21,6 +21,7 @@ public:
     TitleRole,
     ViewsRole,
     ArtistsRole,
+    ArtistsNumRole,
     ThumbnailUrlRole,
     DurationRole,
   };
