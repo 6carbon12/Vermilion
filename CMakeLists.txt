@@ -42,6 +42,7 @@ set(CPP_SOURCES
   src/core/audio/PlayerState.h
   src/core/audio/Track.h
   src/core/audio/Artist.h
+  src/core/audio/Playlist.h
 )
 
 set(CPP_ANDROID_SOURCES
