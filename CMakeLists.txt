@@ -15,7 +15,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(pybind11)
 
-find_package(Qt6 6.12 REQUIRED COMPONENTS Core Qml Quick QuickControls2)
+find_package(Qt6 6.12 REQUIRED COMPONENTS Core Qml Quick Sql QuickControls2)
 qt_standard_project_setup(REQUIRES 6.12)
 
 set(APP_NAME vermilion)
@@ -37,6 +37,8 @@ set(CPP_SOURCES
   src/core/audio/Player.h
   src/managers/PlayerEngine.h
   src/managers/PlayerEngine.cpp
+  src/managers/PlaylistEngine.cpp
+  src/managers/PlaylistEngine.h
   src/bindings/YtEngine.h
   src/bindings/YtEngine.cpp
   src/core/audio/PlayerState.h
@@ -156,8 +158,9 @@ v1.0/vermilion-extra-libs.tar.gz"
   target_link_libraries(${ANDROID_TARGET}
     PRIVATE Qt6::Quick
     PRIVATE Qt6::Network
-    PRIVATE pybind11::embed
+    PRIVATE Qt6::Sql
     PRIVATE Qt6::QuickControls2
+    PRIVATE pybind11::embed
     PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libpython3.11.so"
     PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libffi.so"
     PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libcrypto_3.so"
@@ -262,6 +265,7 @@ else()
     PRIVATE Qt6::Quick
     PRIVATE Qt6::DBus
     PRIVATE Qt6::QuickControls2
+    PRIVATE Qt6::Sql
     PRIVATE pybind11::embed
     PRIVATE PkgConfig::MPV
     PRIVATE Python3::Python
