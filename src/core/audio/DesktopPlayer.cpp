@@ -125,10 +125,9 @@ void DesktopPlayer::seekTo(long positionMs) {
 long DesktopPlayer::getCurrentPosition() { return position; }
 
 long DesktopPlayer::getDuration() {
-  double *d_duration = new double;
-  mpv_get_property(mpvHandle, "duration/full", MPV_FORMAT_DOUBLE, d_duration);
-  duration = std::lround((*d_duration) * 1000);
-  delete d_duration;
+  double d_duration;
+  mpv_get_property(mpvHandle, "duration/full", MPV_FORMAT_DOUBLE, &d_duration);
+  duration = std::lround((d_duration) * 1000);
   return duration;
 }
 
