@@ -61,27 +61,8 @@ PlayerController *PlayerController::create(QQmlEngine *qmlEngine, QJSEngine *jsE
   return inst;
 }
 
-QVariantMap PlayerController::getCurrentTrack() {
-  Core::Track currentTrack = worker->getCurrentTrack();
-  QVariantMap track;
-
-  track["url"] = currentTrack.url;
-  track["duration"] = currentTrack.durationString;
-  track["thumbnailUrl"] = currentTrack.coverArtUrl;
-  track["views"] = currentTrack.views;
-  track["title"] = currentTrack.title;
-
-  QVariantList artistList;
-  for (const auto &artist : currentTrack.artists) {
-    QVariantMap artistMap;
-    artistMap["name"] = artist.name;
-    artistMap["id"] = artist.id;
-    artistList.append(artistMap);
-  }
-  track["artists"] = artistList;
-  track["artistsNum"] = currentTrack.artistsNum;
-
-  return track;
+Core::Track PlayerController::getCurrentTrack() {
+  return worker->getCurrentTrack();
 }
 
 void PlayerController::play(const QString &url) { Q_EMIT requestPlay(url); }
