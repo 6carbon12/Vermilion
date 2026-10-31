@@ -19,6 +19,7 @@ public:
   enum TrackRoles {
     UrlRole = Qt::UserRole + 1,
     TitleRole,
+    TrackRole,
     ViewsRole,
     ArtistsRole,
     ArtistsNumRole,
@@ -30,7 +31,6 @@ public:
   QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
   QHash<int, QByteArray> roleNames() const override;
 
-  Q_INVOKABLE void playTrackAtIndex(const int index);
   void setTracks(const QList<Core::Track> &tracks);
 
 private:

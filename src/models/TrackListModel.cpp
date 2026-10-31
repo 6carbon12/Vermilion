@@ -1,5 +1,4 @@
 #include "TrackListModel.h"
-#include "PlayerController.h"
 #include <qloggingcategory.h>
 
 namespace Models {
@@ -29,6 +28,7 @@ QHash<int, QByteArray> TrackListModel::roleNames() const {
 
   roles[UrlRole] = "url";
   roles[TitleRole] = "title";
+  roles[TrackRole] = "track";
   roles[ViewsRole] = "views";
   roles[ArtistsRole] = "artists";
   roles[ArtistsNumRole] = "artistsSize";
@@ -44,8 +44,10 @@ QVariant TrackListModel::data(const QModelIndex &index, int role) const {
   }
 
   const Core::Track &track = m_tracks[index.row()];
-  QVariantList artistList;
+  QList<Core::Artist> artistList;
   switch (role) {
+  case TrackRole:
+    return QVariant::fromValue(track);
   case UrlRole:
     return track.url;
   case TitleRole:
@@ -53,13 +55,10 @@ QVariant TrackListModel::data(const QModelIndex &index, int role) const {
   case ViewsRole:
     return track.views;
   case ArtistsRole:
-    for (const auto &artist : track.artists) {
-      QVariantMap artistMap;
-      artistMap["name"] = artist.name;
-      artistMap["id"] = artist.id;
-      artistList.append(artistMap);
+    for (int i = 0; i < track.artistsNum; i++) {
+      artistList.append(track.artists[i]);
     }
-    return artistList;
+    return QVariant::fromValue(artistList);
   case ArtistsNumRole:
     return track.artistsNum;
   case ThumbnailUrlRole:
@@ -70,13 +69,5 @@ QVariant TrackListModel::data(const QModelIndex &index, int role) const {
 
   qCWarning(trackListModel) << "Requesting unknown role. Returning default QVariant";
   return QVariant();
-}
-
-void TrackListModel::playTrackAtIndex(const int index) {
-  if (index < 0 || index >= m_tracks.count()) {
-    qCWarning(trackListModel) << "Play requested for invalid index:" << index << ". Not doing anything";
-    return;
-  }
-  PlayerController::instance()->play(m_tracks[index].url);
 }
 } // namespace Models
