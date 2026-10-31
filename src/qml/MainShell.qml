@@ -289,7 +289,7 @@ Item {
                 font.pixelSize: 24
                 text: Player.currentTrack.title
               }
-              Artists {
+              ArtistsText {
                 id: artists
 
                 artists: Player.currentTrack.artists
@@ -607,7 +607,7 @@ Item {
               width: ListView.view ? ListView.view.width : parent.width
 
               subText: RowLayout {
-                Artists {
+                ArtistsText {
                   artists: songItem.artists
                   fontSize: 14
                   textColor: Qt.darker(palette.text, 2)

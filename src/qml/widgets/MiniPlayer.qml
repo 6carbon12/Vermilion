@@ -45,7 +45,7 @@ Rectangle {
           font.pixelSize: 14
           text: Player.currentTrack.title
         }
-        Artists {
+        ArtistsText {
           id: artists
 
           Layout.topMargin: -4
