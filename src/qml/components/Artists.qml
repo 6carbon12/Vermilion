@@ -2,11 +2,12 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import Vermilion
 
 Flow {
   id: root
 
-  property var artists: []
+  property list<Artist> artists
   property int artistsSize: root.artists ? root.artists.length : 0
   property int fontSize: 14
   property bool interactive: false

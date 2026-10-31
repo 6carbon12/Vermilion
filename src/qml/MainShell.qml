@@ -264,7 +264,7 @@ Item {
             Layout.maximumWidth: 1920
             Layout.topMargin: 16
             cornerRadius: 24
-            source: Player.currentTrack.thumbnailUrl
+            source: Player.currentTrack.coverArtUrl
           }
           RowLayout {
             id: trackInfo
@@ -293,7 +293,6 @@ Item {
                 id: artists
 
                 artists: Player.currentTrack.artists
-                artistsSize: Player.currentTrack.artistsNum
                 fontSize: 16
                 interactive: true
                 textColor: Qt.darker(palette.text, 2)
@@ -409,7 +408,7 @@ Item {
               Text {
                 color: Qt.alpha(palette.text, 0.5)
                 font.pixelSize: 12
-                text: Player.currentTrack.duration
+                text: Player.currentTrack.durationString
               }
             }
           }
@@ -600,8 +599,8 @@ Item {
             delegate: SongItem {
               id: songItem
 
-              required property var artists
-              required property string artistsSize
+              required property list<Artist> artists
+              required property string url;
 
               focus: true
               height: 80
@@ -610,7 +609,6 @@ Item {
               subText: RowLayout {
                 Artists {
                   artists: songItem.artists
-                  artistsSize: songItem.artistsSize
                   fontSize: 14
                   textColor: Qt.darker(palette.text, 2)
                 }
@@ -623,7 +621,7 @@ Item {
                 anchors.fill: parent
 
                 onClicked: {
-                  playlistView.model.playTrackAtIndex(songItem.index);
+                  Player.play(songItem.url)
                 }
               }
             }

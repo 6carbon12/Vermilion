@@ -68,6 +68,7 @@ BasePage {
 
       delegate: SongItem {
         id: songItem
+        required property string url;
 
         height: 80
         width: ListView.view ? ListView.view.width : parent.width
@@ -100,7 +101,7 @@ BasePage {
           target: parent
 
           onSingleTapped: {
-            resultsView.model.playTrackAtIndex(songItem.index);
+            Player.play(songItem.url)
           }
         }
       }

@@ -29,7 +29,7 @@ Rectangle {
         id: trackThumbnail
 
         Layout.preferredWidth: parent.height
-        source: Player.currentTrack.thumbnailUrl
+        source: Player.currentTrack.coverArtUrl
         sourceSize: Qt.size(parent.height, parent.height)
       }
       ColumnLayout {
@@ -50,7 +50,7 @@ Rectangle {
 
           Layout.topMargin: -4
           artists: Player.currentTrack.artists
-          artistsSize: Player.currentTrack.artistsNum
+          fontSize: 12
           textColor: Qt.darker(palette.text, 2)
         }
       }
