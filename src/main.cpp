@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
   app.setApplicationName("Vermilion");
   QQuickStyle::setStyle("Fusion");
   qRegisterMetaType<QMap<QByteArray, QByteArray>>();
+  QLoggingCategory::setFilterRules("qt.qpa.wayland.textinput.warning=false");
 
   if (auto result = PyHelper::init(); !result) {
     auto e = result.error();
