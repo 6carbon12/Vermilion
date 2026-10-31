@@ -2,6 +2,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QLoggingCategory>
+#include <QRandomGenerator>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -399,6 +400,15 @@ QList<Core::Track> PlaylistEngine::getTracksFromPlaylist(const QString &playlist
   }
 
   return tracks;
+}
+
+QString PlaylistEngine::generateLocalPlaylistId() {
+  QByteArray bytes;
+  for (int i = 0; i < 24; i++) {
+    bytes.append(static_cast<char>(QRandomGenerator::global()->bounded(256)));
+  }
+  // VL = Vermilion Local
+  return "VL" + bytes.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
 }
 
 QString PlaylistEngine::getLastError() const { return m_lastError; }
