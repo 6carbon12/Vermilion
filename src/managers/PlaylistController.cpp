@@ -1,4 +1,5 @@
 #include "PlaylistController.h"
+#include "TrackListModel.h"
 #include <QLoggingCategory>
 
 Q_LOGGING_CATEGORY(PlaylistController_l, "PlaylistController")
@@ -65,8 +66,12 @@ bool PlaylistsController::updatePlaylistArt(const QString &playlistId, const QSt
 
 QList<Core::Playlist> PlaylistsController::getPlaylists() const { return m_engine.getPlaylists(); }
 
-QList<Core::Track> PlaylistsController::getTracksFromPlaylist(const QString &playlistId) const {
-  return m_engine.getTracksFromPlaylist(playlistId);
+Models::TrackListModel* PlaylistsController::getTracksFromPlaylist(const QString &playlistId) const {
+  QList<Core::Track> tracks = m_engine.getTracksFromPlaylist(playlistId);
+  Models::TrackListModel* tracksModel = new Models::TrackListModel;
+  QQmlEngine::setObjectOwnership(tracksModel, QQmlEngine::JavaScriptOwnership);
+  tracksModel->setTracks(tracks);
+  return tracksModel;
 }
 
 QString PlaylistsController::getLastError() const { return m_engine.getLastError(); }

@@ -3,6 +3,7 @@
 #include "Playlist.h"
 #include "PlaylistEngine.h"
 #include "PlaylistsModel.h"
+#include "TrackListModel.h"
 #include "Track.h"
 #include <QList>
 #include <QObject>
@@ -31,7 +32,7 @@ public:
   Q_INVOKABLE bool updatePlaylistArt(const QString &playlistId, const QString &artPath);
 
   Q_INVOKABLE QList<Core::Playlist> getPlaylists() const;
-  Q_INVOKABLE QList<Core::Track> getTracksFromPlaylist(const QString &playlistId) const;
+  Q_INVOKABLE Models::TrackListModel* getTracksFromPlaylist(const QString &playlistId) const;
   Q_INVOKABLE QString getLastError() const;
 
 Q_SIGNALS:
