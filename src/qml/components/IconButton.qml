@@ -7,10 +7,14 @@ import QtQuick.Effects
 Button {
   id: iconButton
 
-  required property string source
-  property bool isActive: false
+  property int bottomMargin: 8
   property bool hasState: true
+  property bool isActive: false
+  property int leftMargin: 0
+  property int rightMargin: 0
   property alias size: icon.sourceSize
+  required property string source
+  property int topMargin: 8
 
   background: Rectangle {
     color: "transparent"
@@ -18,28 +22,24 @@ Button {
   contentItem: Image {
     id: icon
 
-    anchors.bottomMargin: 8
+    anchors.bottomMargin: iconButton.bottomMargin
     anchors.fill: iconButton
-    anchors.topMargin: 8
+    anchors.leftMargin: iconButton.leftMargin
+    anchors.rightMargin: iconButton.rightMargin
+    anchors.topMargin: iconButton.topMargin
     fillMode: Image.PreserveAspectFit
     layer.enabled: true
     source: {
       if (!iconButton.hasState) {
-        return iconButton.source
+        return iconButton.source;
       } else {
         let suffix = "";
         if (iconButton.isActive) {
-          suffix = "-active.svg"
+          suffix = "-active.svg";
         } else {
-          suffix = "-inactive.svg"
+          suffix = "-inactive.svg";
         }
-        return iconButton.source + suffix
-      }
-    }
-
-    onStatusChanged: {
-      if (icon.status == Image.Error) {
-        icon.source = iconButton.source
+        return iconButton.source + suffix;
       }
     }
 
@@ -47,6 +47,12 @@ Button {
       brightness: 1.0
       colorization: 1.0
       colorizationColor: iconButton.isActive ? "#9F9FFF" : "#FFFFFF"
+    }
+
+    onStatusChanged: {
+      if (icon.status == Image.Error) {
+        icon.source = iconButton.source;
+      }
     }
   }
 }
