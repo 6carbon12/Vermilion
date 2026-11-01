@@ -29,8 +29,9 @@ Rectangle {
         id: trackThumbnail
 
         Layout.preferredWidth: parent.height
+        Layout.preferredHeight: parent.height
         source: Player.currentTrack.coverArtUrl
-        sourceSize: Qt.size(parent.height, parent.height)
+        sourceSize: Qt.size(56, 56)
       }
       ColumnLayout {
         Layout.fillWidth: true
