@@ -1,5 +1,8 @@
 #include <HotReloader.h>
+#include <QLoggingCategory>
 #include <QQmlEngine>
+
+Q_LOGGING_CATEGORY(HotReloader_l, "HotReloader")
 
 HotReloader::HotReloader(QObject *parent) : QObject(parent) {
 #ifdef QT_DEBUG
@@ -13,7 +16,6 @@ HotReloader::HotReloader(QObject *parent) : QObject(parent) {
   m_watcher.addPath(qmlPath + "/components");
 
   connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, [this]() { Q_EMIT fileChanged(); });
-  qDebug() << "Initalized HotReloader.";
 #endif
 }
 

@@ -1,7 +1,10 @@
 #include "YtEngine.h"
 #include <QCoreApplication>
 #include <QDebug>
+#include <QLoggingCategory>
 #include <QThread>
+
+Q_LOGGING_CATEGORY(YtEngine_l, "YtEngine")
 
 YtEngine::YtEngine(QObject *parent) : QObject(parent), workerThread(nullptr), worker(nullptr) {
   workerThread = new QThread(this);
@@ -40,6 +43,8 @@ YtEngine::YtEngine(QObject *parent) : QObject(parent), workerThread(nullptr), wo
   connect(
       worker, &YtWorker::getRelatedTracksSuccess, this,
       [this](const QList<Core::Track> &track) { Q_EMIT getRelatedTracksSuccess(track); }, Qt::QueuedConnection);
+
+  connect(worker, &YtWorker::initFailed, this, []() { qCDebug(YtEngine_l) << "Worker initialisation failed."; });
 
   workerThread->start();
   Q_EMIT startWorkerInit();

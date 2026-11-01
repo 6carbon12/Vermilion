@@ -8,7 +8,7 @@
 #include <QSqlQuery>
 #include <QStandardPaths>
 
-Q_LOGGING_CATEGORY(playlistEngine, "PlaylistEngine")
+Q_LOGGING_CATEGORY(PlaylistEngine_l, "PlaylistEngine")
 
 PlaylistEngine::PlaylistEngine(QObject *parent) : QObject(parent) {
   QString dbPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/playlists.db";
@@ -322,7 +322,7 @@ QList<Core::Playlist> PlaylistEngine::getPlaylists() const {
     )");
 
   if (!query.exec()) {
-    qCCritical(playlistEngine) << "Failed to fetch playlists.\nDB:" << query.lastError().text();
+    qCCritical(PlaylistEngine_l) << "Failed to fetch playlists.\nDB:" << query.lastError().text();
     return playlists;
   }
 
@@ -361,8 +361,8 @@ QList<Core::Track> PlaylistEngine::getTracksFromPlaylist(const QString &playlist
   query.bindValue(":playlistId", playlistId);
 
   if (!query.exec()) {
-    qCCritical(playlistEngine) << "Failed to fetch tracks for playlist:" << playlistId
-                               << "\nDB:" << query.lastError().text();
+    qCCritical(PlaylistEngine_l) << "Failed to fetch tracks for playlist:" << playlistId
+                                 << "\nDB:" << query.lastError().text();
     return tracks;
   }
 

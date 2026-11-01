@@ -1,8 +1,10 @@
 #include "PlayerEngine.h"
-#include "PlaylistEngine.h"
 #include "Track.h"
 #include "YtController.h"
 #include <QDebug>
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY(PlayerEngine_l, "PlayerEngine")
 
 PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
   player = Core::Player::create();
@@ -26,9 +28,8 @@ PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
     processExtraction(extractedUrl);
   });
 
-  connect(YT, &YtEngine::extractionFailed, this, [this](const QString &error) {
-    Q_EMIT errorOccurred("Extraction failed: " + error);
-  });
+  connect(YT, &YtEngine::extractionFailed, this,
+          [this](const QString &error) { Q_EMIT errorOccurred("Extraction failed: " + error); });
 
   connect(YT, &YtEngine::getRelatedTracksSuccess, this, [this](const QList<Core::Track> &relatedTracks) {
     std::lock_guard<std::mutex> lock(queueMutex);
@@ -43,10 +44,10 @@ PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
     }
   });
 
-  connect(YT, &YtEngine::getRelatedTracksFailed, this, [this](const QString &error) { 
-      waitingForRelatedTracks = false;
-      Q_EMIT errorOccurred(error);
-      });
+  connect(YT, &YtEngine::getRelatedTracksFailed, this, [this](const QString &error) {
+    waitingForRelatedTracks = false;
+    Q_EMIT errorOccurred(error);
+  });
 }
 
 void PlayerEngine::play(const QString &url) {
@@ -137,6 +138,4 @@ Core::Track PlayerEngine::getCurrentTrack() {
   return track;
 }
 
-QList<Core::Track> PlayerEngine::getCurrentPlaylist() {
-  return tracks;
-}
+QList<Core::Track> PlayerEngine::getCurrentPlaylist() { return tracks; }

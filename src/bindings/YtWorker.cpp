@@ -101,7 +101,6 @@ void YtWorker::init() {
       YoutubeDL = yt_dlp.attr("YoutubeDL");
       yt_dlp = py::module_::import("ytmusicapi");
       YTMusic = yt_dlp.attr("YTMusic")();
-      qCDebug(YtWorker_l) << "Initializtion success.";
     } catch (py::error_already_set &e) {
       qCWarning(YtWorker_l) << "Initializtion failed.";
       qCWarning(YtWorker_l) << e.what();

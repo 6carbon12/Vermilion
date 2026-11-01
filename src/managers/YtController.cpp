@@ -1,6 +1,9 @@
 #include "YtController.h"
 #include "TrackListModel.h"
+#include <QLoggingCategory>
 #include <QQmlEngine>
+
+Q_LOGGING_CATEGORY(YtController_l, "YtController")
 
 YtController::YtController(QObject *parent) : QObject(parent) {
   core = new YtEngine();
@@ -27,7 +30,6 @@ YtController *YtController::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
 }
 
 void YtController::handleSearchResults(const QList<Core::Track> &results) {
-  qDebug() << "handing search";
   Models::TrackListModel *model = new Models::TrackListModel();
   QQmlEngine::setObjectOwnership(model, QQmlEngine::JavaScriptOwnership);
   model->setTracks(results);

@@ -1,4 +1,7 @@
 #include "PlaylistController.h"
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY(PlaylistController_l, "PlaylistController")
 
 PlaylistsController::PlaylistsController(QObject *parent) : QObject(parent) {
   connect(&m_engine, &PlaylistEngine::tracksUpdated, this, &PlaylistsController::tracksUpdated);
