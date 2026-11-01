@@ -1,4 +1,5 @@
 #include "PlayerEngine.h"
+#include "PlaylistEngine.h"
 #include "Track.h"
 #include "YtController.h"
 #include <QDebug>
@@ -123,11 +124,15 @@ Core::Track PlayerEngine::getCurrentTrack() {
   }
 
   Core::Track track;
-  track.views = "N/A";
-  track.coverArtUrl = "N/A";
-  track.durationString = "N/A";
+  track.views = "0";
+  track.coverArtUrl = "qrc:/icons/defaultPlaylist.svg";
+  track.durationString = "00:00";
+  track.duration = 0;
   track.url = "N/A";
   track.title = "N/A";
+  track.isExplict = false;
+  track.id = "undefined";
+  track.artistsNum = 0;
 
   return track;
 }
