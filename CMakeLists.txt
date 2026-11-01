@@ -39,6 +39,8 @@ set(CPP_SOURCES
   src/managers/PlayerEngine.cpp
   src/managers/PlaylistEngine.cpp
   src/managers/PlaylistEngine.h
+  src/managers/PlaylistController.cpp
+  src/managers/PlaylistController.h
   src/bindings/YtEngine.h
   src/bindings/YtEngine.cpp
   src/core/audio/PlayerState.h
@@ -76,7 +78,7 @@ set(QML_FILES
   src/qml/components/SearchBar.qml
   src/qml/components/SongItem.qml
   src/qml/components/RoundedImage.qml
-  src/qml/components/Artists.qml
+  src/qml/components/ArtistsText.qml
   src/qml/pages/Home.qml
   src/qml/pages/Library.qml
   src/qml/pages/Search.qml
@@ -96,6 +98,8 @@ set(QML_SOURCES
   src/core/audio/Track.h
   src/models/TrackListModel.cpp
   src/models/TrackListModel.h
+  src/models/PlaylistsModel.cpp
+  src/models/PlaylistsModel.h
   src/dev/HotReloader.h
   src/dev/HotReloader.cpp
 )
@@ -111,8 +115,20 @@ file(
   CONFIGURE_DEPENDS "assets/icons/*.svg"
 )
 
+file(WRITE "${CMAKE_BINARY_DIR}/clean_qmlls.sh" 
+"#!/bin/bash\n"
+"sed -i '/workspaces/d; s/^1.//; /size=/d' .qt/.qmlls.build.ini\n"
+)
+
+add_custom_target(CleanQMLLS ALL
+  COMMAND bash clean_qmlls.sh
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+  COMMENT "Sanitizing .qmlls.build.ini for QMLLS"
+)
+
 if(ANDROID)
   qt_add_executable(${ANDROID_TARGET} ${CPP_SOURCES} ${CPP_ANDROID_SOURCES})
+  add_dependencies(CleanQMLLS ${ANDROID_TARGET})
   set_target_properties(${ANDROID_TARGET} PROPERTIES
     OUTPUT_NAME "vermilion"
   )
@@ -123,6 +139,11 @@ if(ANDROID)
     FILES ${PYTHON_SCRIPTS}
   )
 
+  qt_add_resources(${ANDROID_TARGET} "Icons"
+    PREFIX "/icons"
+    BASE "assets/icons"
+    FILES ${APP_ICONS}
+  )
   # `slots` is a macro used by QT
   # but `slots` is used as a variable in Python C API
   # So we disable that keyword with this:
@@ -179,11 +200,11 @@ v1.0/vermilion-extra-libs.tar.gz"
   set_property(TARGET ${ANDROID_TARGET}
     PROPERTY QT_ANDROID_PACKAGE_NAME "io.github.x6carbon12.vermilion"
   )
-
   set_property(TARGET ${ANDROID_TARGET} PROPERTY
     QT_ANDROID_EXTRA_LIBS
     "${custom_android_libs_SOURCE_DIR}/libqjs.so"
   )
+
 else()
   find_package(Qt6 6.12 COMPONENTS Core DBus REQUIRED)
 
@@ -214,11 +235,18 @@ else()
     ${generated_mpris_sources}
     ${generated_player_sources}
   )
+  add_dependencies(CleanQMLLS ${LINUX_TARGET})
 
   qt_add_resources(${LINUX_TARGET} "PythonScripts"
     PREFIX "/python"
     BASE "src/bindings/python"
     FILES ${PYTHON_SCRIPTS}
+  )
+
+  qt_add_resources(${LINUX_TARGET} "Icons"
+    PREFIX "/icons"
+    BASE "assets/icons"
+    FILES ${APP_ICONS}
   )
 
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
