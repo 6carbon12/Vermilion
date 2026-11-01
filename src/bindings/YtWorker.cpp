@@ -110,7 +110,6 @@ void YtWorker::init() {
 }
 
 void YtWorker::search(const QString &query, int maxResults) {
-  qCDebug(YtWorker_l) << "Searching query: " << query;
   using namespace pybind11::literals;
   py::gil_scoped_acquire acquire;
 
@@ -125,6 +124,7 @@ void YtWorker::search(const QString &query, int maxResults) {
     }
 
     Q_EMIT searchSuccess(resultsList);
+    qCDebug(YtWorker_l) << "Search successful for:" << query;
   } catch (const py::error_already_set &e) {
     qCDebug(YtWorker_l) << "Search failed" << e.what();
     Q_EMIT searchFailed(QString::fromStdString(e.what()));
@@ -138,14 +138,12 @@ void YtWorker::extractUrl(const QString &url) {
   using namespace pybind11::literals;
   py::gil_scoped_acquire acquire;
 
-  qCDebug(YtWorker_l) << "Extracting info";
   py::dict ydlOpts = getGeneralYdlOpts();
   py::object ydl = YoutubeDL(ydlOpts);
   py::object info = ydl.attr("extract_info")(url.toStdString(), "download"_a = false);
 
   if (info.contains("url") && !info["url"].is_none()) {
     QString audioURL = QString::fromStdString(info["url"].cast<std::string>());
-    qCDebug(YtWorker_l) << "Audio URL extraction success:" << audioURL;
 
     QMap<QByteArray, QByteArray> headersMap;
     if (info.contains("http_headers")) {
@@ -155,7 +153,6 @@ void YtWorker::extractUrl(const QString &url) {
         QByteArray value = QByteArray::fromStdString(item.second.cast<std::string>());
         headersMap.insert(key, value);
       }
-      qCDebug(YtWorker_l) << "Headers extraction success:" << headersMap;
     }
 
     Q_EMIT extractSuccess(audioURL, headersMap);

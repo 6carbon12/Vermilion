@@ -36,23 +36,17 @@ void DesktopPlayer::handleMpvState(mpv_handle *handle) {
 
     switch (event->event_id) {
     case MPV_EVENT_START_FILE:
-      qDebug() << "Player State: Loading file...";
       state = PlayerState::Initialized;
       break;
 
     case MPV_EVENT_FILE_LOADED:
-      qDebug() << "Player State: File loaded successfully, ready to play.";
       isReady = true;
       state = PlayerState::Playing;
       break;
 
     case MPV_EVENT_END_FILE: {
       mpv_event_end_file *end = (mpv_event_end_file *)event->data;
-      qDebug() << "Player State: Playback finished. Reason code:" << end->reason;
       if (end->reason == MPV_END_FILE_REASON_ERROR) {
-        const char *errorReason = mpv_error_string(end->error);
-        qCritical() << "Playback failed or crashed due to error:" << errorReason;
-
         state = PlayerState::Error;
         isReady = false;
       } else if (end->reason == MPV_END_FILE_REASON_EOF) {
