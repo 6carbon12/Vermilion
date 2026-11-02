@@ -464,6 +464,7 @@ Item {
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredHeight: 96
                 Layout.preferredWidth: 96
+                size: Qt.size(Design.iconSize.large, Design.iconSize.large)
                 hasState: false
                 source: Qt.resolvedUrl("../../assets/icons/play-circle.svg")
 

@@ -46,10 +46,10 @@ BasePage {
         id: backButton
 
         anchors.left: parent.left
-        anchors.leftMargin: 8
         anchors.verticalCenter: parent.verticalCenter
         hasState: false
-        height: 42
+        height: parent.height
+        width: parent.height
         size: Qt.size(32, 32)
         source: "../../../assets/icons/left-arrow.svg"
 

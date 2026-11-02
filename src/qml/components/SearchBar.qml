@@ -15,11 +15,9 @@ SearchField {
   }
   clearIndicator.indicator: IconButton {
     anchors.right: searchBar.right
-    anchors.rightMargin: 8
+    anchors.rightMargin: 24
     anchors.verticalCenter: parent.verticalCenter
     hasState: false
-    height: 42
-    size: Qt.size(32, 32)
     source: "../../../assets/icons/cross.svg"
     visible: searchBar.text !== ""
 
