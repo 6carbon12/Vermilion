@@ -133,6 +133,7 @@ Item {
 
         Repeater {
           id: stackRepeater
+          Layout.maximumWidth: 1920
 
           model: ["pages/Home.qml", "pages/Search.qml", "pages/Library.qml", "pages/Settings.qml"]
 
@@ -614,7 +615,8 @@ Item {
                   textColor: Qt.darker(palette.text, 2)
                 }
                 Text {
-                  text: " • " + Player.currentTrack.duration
+                  text: " • " + songItem.duration
+                  color: Qt.darker(palette.text, 2)
                 }
               }
 

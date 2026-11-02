@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import Vermilion
 import QtQuick.Layouts
 
 Item {
@@ -11,7 +12,7 @@ Item {
   property Component subText: Text {
     color: "#B3B3B3"
     elide: Text.ElideRight
-    font.pixelSize: 14
+    font.pixelSize: Design.fontSize.base
     text: root.duration + " • " + root.views
   }
   required property string thumbnailUrl
@@ -51,7 +52,7 @@ Item {
         Layout.fillWidth: true
         color: "white"
         elide: Text.ElideRight
-        font.pixelSize: 16
+        font.pixelSize: Design.fontSize.base
         font.weight: Font.Medium
         text: root.title
       }

@@ -70,7 +70,11 @@ set(CPP_INCLUDES
   src/dev
 )
 
-set(QML_FILES
+set(SINGLETON_QML_FILES
+  src/qml/globals/Design.qml
+)
+
+set(PLAIN_QML_FILES
   src/qml/Main.qml
   src/qml/MainShell.qml
   src/qml/components/BasePage.qml
@@ -79,6 +83,7 @@ set(QML_FILES
   src/qml/components/SongItem.qml
   src/qml/components/RoundedImage.qml
   src/qml/components/ArtistsText.qml
+  src/qml/components/StandardSizes.qml
   src/qml/pages/Home.qml
   src/qml/pages/Library.qml
   src/qml/pages/Search.qml
@@ -87,6 +92,15 @@ set(QML_FILES
   src/qml/widgets/BottomBar.qml
   src/qml/widgets/MiniPlayer.qml
   src/qml/widgets/SideBar.qml
+)
+
+set_source_files_properties(${SINGLETON_QML_FILES}
+  PROPERTIES QT_QML_SINGLETON_TYPE TRUE
+)
+
+set(QML_FILES
+  ${PLAIN_QML_FILES}
+  ${SINGLETON_QML_FILES}
 )
 
 set(QML_SOURCES

@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import Vermilion
 import "../components" as Componenets
 
 Rectangle {
@@ -87,7 +88,7 @@ Rectangle {
             Layout.preferredHeight: 16
             Layout.preferredWidth: 1
             color: navBar.currentIndex === iconTextContainer.index ? "#9F9FFF" : "#FFFFFF"
-            font.pixelSize: 10
+            font.pixelSize: Design.fontSize.small
             horizontalAlignment: Text.AlignHCenter
             text: iconTextContainer.modelData.text
             verticalAlignment: Text.AlignTop

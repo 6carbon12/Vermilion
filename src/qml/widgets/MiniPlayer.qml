@@ -23,19 +23,20 @@ Rectangle {
       Layout.fillHeight: true
       Layout.fillWidth: true
       Layout.margins: 12
-      spacing: 16
+      spacing: 12
 
-      Image {
+      RoundedImage {
         id: trackThumbnail
 
-        Layout.preferredWidth: parent.height
-        Layout.preferredHeight: parent.height
+        Layout.fillHeight: true
+        Layout.preferredWidth: height
         source: Player.currentTrack.coverArtUrl
-        sourceSize: Qt.size(56, 56)
+        cornerRadius: 8
       }
       ColumnLayout {
         Layout.fillWidth: true
         clip: true
+        spacing: 2
 
         Text {
           id: title
@@ -43,7 +44,7 @@ Rectangle {
           Layout.fillWidth: true
           color: palette.text
           elide: Text.ElideRight
-          font.pixelSize: 14
+          font.pixelSize: Design.fontSize.base
           text: Player.currentTrack.title
         }
         ArtistsText {
@@ -51,7 +52,7 @@ Rectangle {
 
           Layout.topMargin: -4
           artists: Player.currentTrack.artists
-          fontSize: 12
+          fontSize: Design.fontSize.base
           textColor: Qt.darker(palette.text, 2)
         }
       }
@@ -62,6 +63,7 @@ Rectangle {
         Layout.preferredHeight: 40
         Layout.preferredWidth: 40
         hasState: false
+        size: Qt.size(Design.iconSize.small, Design.iconSize.small)
         source: Qt.resolvedUrl("../../../assets/icons/pause.svg")
 
         states: [
