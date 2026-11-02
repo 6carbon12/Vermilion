@@ -126,7 +126,7 @@ Core::Track PlayerEngine::getCurrentTrack() {
 
   Core::Track track;
   track.views = "0";
-  track.coverArtUrl = "qrc:/icons/defaultPlaylist.svg";
+  track.coverArtUrl = "qrc:/icons/default-playlist.svg";
   track.durationString = "00:00";
   track.duration = 0;
   track.url = "N/A";
