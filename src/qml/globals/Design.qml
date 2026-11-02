@@ -4,7 +4,8 @@ import "../components"
 
 QtObject {
   property StandardSizes fontSize: StandardSizes {
-    small: 10
+    xSmall: 10
+    small: 14
     base: 16
     large: 24
   }

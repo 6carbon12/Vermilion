@@ -88,7 +88,7 @@ Rectangle {
             Layout.preferredHeight: 16
             Layout.preferredWidth: 1
             color: navBar.currentIndex === iconTextContainer.index ? "#9F9FFF" : "#FFFFFF"
-            font.pixelSize: Design.fontSize.small
+            font.pixelSize: Design.fontSize.xSmall
             horizontalAlignment: Text.AlignHCenter
             text: iconTextContainer.modelData.text
             verticalAlignment: Text.AlignTop

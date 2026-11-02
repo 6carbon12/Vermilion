@@ -618,6 +618,10 @@ Item {
                   text: " • " + songItem.duration
                   color: Qt.darker(palette.text, 2)
                 }
+                Item {
+                  id: songItemSubTextRightSpacer
+                  Layout.fillWidth: true
+                }
               }
 
               MouseArea {

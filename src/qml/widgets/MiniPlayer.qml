@@ -36,7 +36,7 @@ Rectangle {
       ColumnLayout {
         Layout.fillWidth: true
         clip: true
-        spacing: 2
+        spacing: 0
 
         Text {
           id: title
@@ -50,9 +50,8 @@ Rectangle {
         ArtistsText {
           id: artists
 
-          Layout.topMargin: -4
           artists: Player.currentTrack.artists
-          fontSize: Design.fontSize.base
+          fontSize: Design.fontSize.small
           textColor: Qt.darker(palette.text, 2)
         }
       }
