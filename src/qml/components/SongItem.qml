@@ -41,7 +41,7 @@ Item {
         source: root.thumbnailUrl
       }
     }
-    ColumnLayout {
+    Column {
       id: content
 
       Layout.alignment: Qt.AlignVCenter
@@ -49,7 +49,6 @@ Item {
       spacing: 4
 
       Text {
-        Layout.fillWidth: true
         color: "white"
         elide: Text.ElideRight
         font.pixelSize: Design.fontSize.base
@@ -57,7 +56,6 @@ Item {
         text: root.title
       }
       Loader {
-        Layout.fillWidth: true
         sourceComponent: root.subText
       }
     }
