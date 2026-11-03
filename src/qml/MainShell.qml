@@ -133,8 +133,8 @@ Item {
 
         Repeater {
           id: stackRepeater
-          Layout.maximumWidth: 1920
 
+          Layout.maximumWidth: 1920
           model: ["pages/Home.qml", "pages/Search.qml", "pages/Library.qml", "pages/Settings.qml"]
 
           StackView {
@@ -465,8 +465,8 @@ Item {
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredHeight: 96
                 Layout.preferredWidth: 96
-                size: Qt.size(Design.iconSize.large, Design.iconSize.large)
                 hasState: false
+                size: Qt.size(Design.iconSize.large, Design.iconSize.large)
                 source: Qt.resolvedUrl("../../assets/icons/play-circle.svg")
 
                 states: [
@@ -590,48 +590,13 @@ Item {
           Layout.fillWidth: true
           color: palette.window
 
-          ListView {
+          SongListView {
             id: playlistView
 
             anchors.fill: parent
             anchors.margins: 8
             clip: true
             model: Player.playlist
-
-            delegate: SongItem {
-              id: songItem
-
-              required property list<Artist> artists
-              required property string url;
-
-              focus: true
-              height: 80
-              width: ListView.view ? ListView.view.width : parent.width
-
-              subText: RowLayout {
-                ArtistsText {
-                  artists: songItem.artists
-                  fontSize: 14
-                  textColor: Qt.darker(palette.text, 2)
-                }
-                Text {
-                  text: " • " + songItem.duration
-                  color: Qt.darker(palette.text, 2)
-                }
-                Item {
-                  id: songItemSubTextRightSpacer
-                  Layout.fillWidth: true
-                }
-              }
-
-              MouseArea {
-                anchors.fill: parent
-
-                onClicked: {
-                  Player.play(songItem.url)
-                }
-              }
-            }
           }
         }
       }

@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import Vermilion
 import "../components"
+import "../widgets"
 
 BasePage {
   id: searchResults
@@ -44,9 +45,9 @@ BasePage {
         anchors.verticalCenter: parent.verticalCenter
         hasState: false
         height: parent.height
-        width: parent.height
         size: Qt.size(32, 32)
         source: "../../../assets/icons/left-arrow.svg"
+        width: parent.height
 
         background: Rectangle {
           color: palette.alternateBase
@@ -58,53 +59,14 @@ BasePage {
         }
       }
     }
-    ListView {
+    SongListView {
       id: resultsView
 
       Layout.fillHeight: true
       Layout.fillWidth: true
+      Layout.topMargin: 12
       clip: true
       model: searchResults.pageArgs.model
-
-      delegate: SongItem {
-        id: songItem
-        required property string url;
-
-        height: 80
-        width: ListView.view ? ListView.view.width : parent.width
-
-        // TODO: Add working items to this.
-        rightContent: Item {
-          id: contextMenuDots
-
-          Layout.alignment: Qt.AlignVCenter
-          Layout.preferredHeight: 48
-          Layout.preferredWidth: 40
-
-          Text {
-            anchors.centerIn: parent
-            color: "white"
-            font.pixelSize: 20
-            font.weight: Font.Bold
-            text: "⋮"
-          }
-          TapHandler {
-            target: parent
-
-            onSingleTapped: {
-              console.log("Context Menu open requested.");
-            }
-          }
-        }
-
-        TapHandler {
-          target: parent
-
-          onSingleTapped: {
-            Player.play(songItem.url)
-          }
-        }
-      }
     }
   }
 }
