@@ -1,7 +1,9 @@
 pragma ComponentBehavior: Bound
+import QtCore
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Effects
 import QtQuick.Layouts
 import Vermilion
@@ -12,7 +14,8 @@ Popup {
 
   property int numTracks
   property Playlist playlist
-  signal editNameRequested();
+
+  signal editNameRequested
 
   function deletePlaylist() {
     PlaylistsController.deletePlaylist(root.playlist.id);
@@ -20,10 +23,9 @@ Popup {
     root.close();
     rootContent.stack.pop();
   }
-
   function editName() {
     root.close();
-    editNameRequested()
+    editNameRequested();
   }
 
   height: contentLayout.implicitHeight
@@ -180,7 +182,7 @@ Popup {
 
             TapHandler {
               onSingleTapped: {
-                console.log(parent.text);
+                artFilePickDialog.open();
               }
             }
           }
@@ -314,6 +316,15 @@ Popup {
           }
         }
       }
+    }
+  }
+  FileDialog {
+    id: artFilePickDialog
+
+    currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
+
+    onAccepted: {
+      PlaylistsController.updatePlaylistArt(root.playlist.id, selectedFile);
     }
   }
 }

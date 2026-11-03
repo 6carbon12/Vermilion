@@ -25,11 +25,15 @@ using namespace py::literals;
 Q_LOGGING_CATEGORY(vermilion, "Vermilion")
 
 int main(int argc, char *argv[]) {
+#ifdef Q_OS_LINUX
+  qputenv("QT_QPA_PLATFORMTHEME", "xdgdesktopportal");
+#endif
   QGuiApplication app(argc, argv);
   app.setApplicationName("Vermilion");
   QQuickStyle::setStyle("Fusion");
   qRegisterMetaType<QMap<QByteArray, QByteArray>>();
   QLoggingCategory::setFilterRules("qt.qpa.wayland.textinput.warning=false");
+
 
   if (auto result = PyHelper::init(); !result) {
     auto e = result.error();

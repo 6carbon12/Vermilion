@@ -77,21 +77,36 @@ set(SINGLETON_QML_FILES
 set(PLAIN_QML_FILES
   src/qml/Main.qml
   src/qml/MainShell.qml
+  src/qml/components/ArtistsText.qml
   src/qml/components/BasePage.qml
+  src/qml/components/BigButton.qml
+  src/qml/components/CircleIconButton.qml
+  src/qml/components/ContextMenuItem.qml
   src/qml/components/IconButton.qml
+  src/qml/components/PlaylistItem.qml
+  src/qml/components/RoundedImage.qml
   src/qml/components/SearchBar.qml
   src/qml/components/SongItem.qml
-  src/qml/components/RoundedImage.qml
-  src/qml/components/ArtistsText.qml
   src/qml/components/StandardSizes.qml
+  src/qml/components/VmModal.qml
+  src/qml/components/VmTextField.qml
   src/qml/pages/Home.qml
   src/qml/pages/Library.qml
+  src/qml/pages/Playlist.qml
   src/qml/pages/Search.qml
   src/qml/pages/SearchResults.qml
   src/qml/pages/Settings.qml
   src/qml/widgets/BottomBar.qml
   src/qml/widgets/MiniPlayer.qml
+  src/qml/widgets/PlaylistContextMenu.qml
+  src/qml/widgets/PlaylistControls.qml
   src/qml/widgets/SideBar.qml
+  src/qml/widgets/SongListView.qml
+  src/qml/widgets/TwoButtonBar.qml
+  src/qml/widgets/library/Artists.qml
+  src/qml/widgets/library/Downloaded.qml
+  src/qml/widgets/library/Liked.qml
+  src/qml/widgets/library/Playlists.qml
 )
 
 set_source_files_properties(${SINGLETON_QML_FILES}
