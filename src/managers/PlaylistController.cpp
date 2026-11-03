@@ -2,11 +2,13 @@
 #include "TrackListModel.h"
 #include <QLoggingCategory>
 
+using Core::Playlist;
+
 Q_LOGGING_CATEGORY(PlaylistController_l, "PlaylistController")
 
 PlaylistsController::PlaylistsController(QObject *parent) : QObject(parent) {
   connect(&m_engine, &PlaylistEngine::tracksUpdated, this, &PlaylistsController::tracksUpdated);
-  connect(&m_engine, &PlaylistEngine::playlistUpdated, this, &PlaylistsController::modelChanged);
+  connect(&m_engine, &PlaylistEngine::playlistUpdated, this, &PlaylistsController::playlistUpdated);
 }
 
 Models::PlaylistsModel *PlaylistsController::getModel() {
@@ -66,12 +68,16 @@ bool PlaylistsController::updatePlaylistArt(const QString &playlistId, const QSt
 
 QList<Core::Playlist> PlaylistsController::getPlaylists() const { return m_engine.getPlaylists(); }
 
-Models::TrackListModel* PlaylistsController::getTracksFromPlaylist(const QString &playlistId) const {
+Models::TrackListModel *PlaylistsController::getTracksFromPlaylist(const QString &playlistId) const {
   QList<Core::Track> tracks = m_engine.getTracksFromPlaylist(playlistId);
-  Models::TrackListModel* tracksModel = new Models::TrackListModel;
+  Models::TrackListModel *tracksModel = new Models::TrackListModel;
   QQmlEngine::setObjectOwnership(tracksModel, QQmlEngine::JavaScriptOwnership);
   tracksModel->setTracks(tracks);
   return tracksModel;
+}
+
+Core::Playlist PlaylistsController::getPlaylistFromId(const QString &playlistId) const {
+  return m_engine.getPlaylistFromId(playlistId);
 }
 
 QString PlaylistsController::getLastError() const { return m_engine.getLastError(); }

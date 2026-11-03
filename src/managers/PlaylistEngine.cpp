@@ -316,7 +316,7 @@ QList<Core::Playlist> PlaylistEngine::getPlaylists() const {
 
   QSqlQuery query(m_db);
   query.prepare(R"(
-      SELECT id, name, cover_uri, type
+      SELECT id, name, cover_uri, type, created_at
       FROM playlists
       ORDER BY created_at ASC;
     )");
@@ -334,11 +334,41 @@ QList<Core::Playlist> PlaylistEngine::getPlaylists() const {
 
     QString typeStr = query.value("type").toString();
     playlist.type = Core::playlistTypeFromString(typeStr);
+    playlist.createdAt = query.value("created_at").toDateTime();
 
     playlists.append(playlist);
   }
 
   return playlists;
+}
+
+Core::Playlist PlaylistEngine::getPlaylistFromId(const QString &playlistId) const {
+  Core::Playlist playlist;
+  QSqlQuery query(m_db);
+  query.prepare(R"(
+      SELECT id, name, cover_uri, type, created_at
+      FROM playlists
+      WHERE id = :playlistId
+    )");
+
+  query.bindValue(":playlistId", playlistId);
+
+  if (!query.exec()) {
+    qCCritical(PlaylistEngine_l) << "Failed to fetch tracks for playlist:" << playlistId
+                                 << "\nDB:" << query.lastError().text();
+    return playlist;
+  }
+
+  query.next();
+
+  playlist.id = query.value("id").toString();
+  playlist.name = query.value("name").toString();
+  playlist.artUrl = query.value("cover_uri").toString();
+  QString typeStr = query.value("type").toString();
+  playlist.type = Core::playlistTypeFromString(typeStr);
+  playlist.createdAt = query.value("created_at").toDateTime();
+
+  return playlist;
 }
 
 QList<Core::Track> PlaylistEngine::getTracksFromPlaylist(const QString &playlistId) const {

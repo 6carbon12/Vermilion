@@ -60,6 +60,8 @@ public:
   /// @return List of playlists.
   QList<Playlist> getPlaylists() const;
 
+  Playlist getPlaylistFromId(const QString& playlistId) const;
+
   /// @brief Fetches all the tracks in a given playlist.
   /// @param playlistId id of target playlist.
   /// @return List of tracks in the given playlist.

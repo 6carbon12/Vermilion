@@ -15,7 +15,7 @@ class PlaylistsController : public QObject {
   QML_SINGLETON
   QML_NAMED_ELEMENT(PlaylistsController)
 
-  Q_PROPERTY(Models::PlaylistsModel *model READ getModel NOTIFY modelChanged)
+  Q_PROPERTY(Models::PlaylistsModel *model READ getModel NOTIFY playlistUpdated)
   Q_PROPERTY(QString lastError READ lastError NOTIFY errorOccurred)
 
 public:
@@ -32,11 +32,11 @@ public:
   Q_INVOKABLE bool updatePlaylistArt(const QString &playlistId, const QString &artPath);
 
   Q_INVOKABLE QList<Core::Playlist> getPlaylists() const;
+  Q_INVOKABLE Core::Playlist getPlaylistFromId(const QString &playlistId) const;
   Q_INVOKABLE Models::TrackListModel* getTracksFromPlaylist(const QString &playlistId) const;
   Q_INVOKABLE QString getLastError() const;
 
 Q_SIGNALS:
-  void modelChanged();
   void errorOccurred();
   void tracksUpdated(const QString &playlistId);
   void playlistUpdated(const QString &playlistId);
