@@ -44,6 +44,10 @@ public:
     }
     return list;
   }
+
+  bool operator==(const Track& other) const {
+    return id == other.id;
+  }
 };
 
 } // namespace Core
