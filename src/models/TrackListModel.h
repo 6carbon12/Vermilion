@@ -32,6 +32,7 @@ public:
   QHash<int, QByteArray> roleNames() const override;
 
   void setTracks(const QList<Core::Track> &tracks);
+  QList<Core::Track> getTracks() const;
 
 private:
   QList<Core::Track> m_tracks;
