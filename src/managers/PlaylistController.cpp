@@ -96,6 +96,10 @@ Models::TrackListModel *PlaylistsController::getTracksFromPlaylist(const QString
   return tracksModel;
 }
 
+QList<Core::Track> PlaylistsController::getTracksListFromPlaylist(const QString &playlistId) const {
+  return m_engine.getTracksFromPlaylist(playlistId);
+}
+
 Core::Playlist PlaylistsController::getPlaylistFromId(const QString &playlistId) const {
   return m_engine.getPlaylistFromId(playlistId);
 }

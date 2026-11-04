@@ -37,6 +37,7 @@ public:
   Q_INVOKABLE QList<Core::Playlist> getPlaylists() const;
   Q_INVOKABLE Core::Playlist getPlaylistFromId(const QString &playlistId) const;
   Q_INVOKABLE Models::TrackListModel* getTracksFromPlaylist(const QString &playlistId) const;
+  Q_INVOKABLE QList<Core::Track> getTracksListFromPlaylist(const QString &playlistId) const;
   Q_INVOKABLE QString getLastError() const;
 
 Q_SIGNALS:
