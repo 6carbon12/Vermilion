@@ -161,6 +161,100 @@ bool PlaylistEngine::addToPlaylist(const Core::Track &track, const QString &play
   return true;
 }
 
+bool PlaylistEngine::addToPlaylist(const QList<Core::Track> &tracks, const QString &playlistId) {
+  if (tracks.isEmpty() || playlistId.isEmpty()) {
+    m_lastError = "addToPlaylist: Tracks list or Playlist ID cannot be empty.";
+    return false;
+  }
+
+  if (!m_db.transaction()) {
+    m_lastError = "Failed to start transaction.\nDB: " + m_db.lastError().text();
+    return false;
+  }
+
+  QSqlQuery maxPosQuery(m_db);
+  maxPosQuery.prepare("SELECT COALESCE(MAX(position), 0) FROM playlist_tracks WHERE playlist_id = :playlist_id");
+  maxPosQuery.bindValue(":playlist_id", playlistId);
+  int currentPosition = 0;
+  if (maxPosQuery.exec() && maxPosQuery.next()) {
+    currentPosition = maxPosQuery.value(0).toInt();
+  }
+
+  QSqlQuery trackQuery(m_db);
+  trackQuery.prepare(R"(
+    INSERT INTO tracks (
+      id, is_explicit, url, title, views,
+      cover_art_url, duration_string, duration, artists_json
+    ) VALUES (
+      :id, :is_explicit, :url, :title, :views,
+      :cover_art_url, :duration_string, :duration, :artists_json
+    )
+    ON CONFLICT(id) DO UPDATE SET
+      url = excluded.url,
+      title = excluded.title,
+      views = excluded.views,
+      cover_art_url = excluded.cover_art_url,
+      duration_string = excluded.duration_string,
+      duration = excluded.duration,
+      artists_json = excluded.artists_json;
+  )");
+
+  QSqlQuery playlistQuery(m_db);
+  playlistQuery.prepare(R"(
+      INSERT OR IGNORE INTO playlist_tracks (playlist_id, track_id, position)
+      VALUES (:playlist_id, :track_id, :position);
+  )");
+
+  for (const Core::Track &track : tracks) {
+    if (track.id.isEmpty()) continue;
+
+    QJsonArray artistsArray;
+    for (int i = 0; i < track.artistsNum && i < 8; ++i) {
+      QJsonObject obj;
+      obj["id"] = track.artists[i].id;
+      obj["name"] = track.artists[i].name;
+      artistsArray.append(obj);
+    }
+    QString jsonString = QString::fromUtf8(QJsonDocument(artistsArray).toJson(QJsonDocument::Compact));
+
+    trackQuery.bindValue(":id", track.id);
+    trackQuery.bindValue(":is_explicit", track.isExplict);
+    trackQuery.bindValue(":url", track.url);
+    trackQuery.bindValue(":title", track.title);
+    trackQuery.bindValue(":views", track.views);
+    trackQuery.bindValue(":cover_art_url", track.coverArtUrl);
+    trackQuery.bindValue(":duration_string", track.durationString);
+    trackQuery.bindValue(":duration", static_cast<qint64>(track.duration));
+    trackQuery.bindValue(":artists_json", jsonString);
+
+    if (!trackQuery.exec()) {
+      m_lastError = "Failed to insert into tracks table.\nDB: " + trackQuery.lastError().text();
+      m_db.rollback();
+      return false;
+    }
+
+    currentPosition++;
+    playlistQuery.bindValue(":playlist_id", playlistId);
+    playlistQuery.bindValue(":track_id", track.id);
+    playlistQuery.bindValue(":position", currentPosition);
+
+    if (!playlistQuery.exec()) {
+      m_lastError = "Failed to add track to playlist.\nDB: " + playlistQuery.lastError().text();
+      m_db.rollback();
+      return false;
+    }
+  }
+
+  if (!m_db.commit()) {
+    m_lastError = "Failed to commit transaction.\nDB: " + m_db.lastError().text();
+    m_db.rollback();
+    return false;
+  }
+
+  Q_EMIT tracksUpdated(playlistId);
+  return true;
+}
+
 bool PlaylistEngine::removeFromPlaylist(const QString &trackId, const QString &playlistId) {
   if (trackId.isEmpty() || playlistId.isEmpty()) {
     m_lastError = "removeFromPlaylis: Track ID or Playlist ID cannot be empty.";

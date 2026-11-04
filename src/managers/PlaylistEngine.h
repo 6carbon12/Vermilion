@@ -23,6 +23,13 @@ public:
   /// @retval false Error occurred.
   bool addToPlaylist(const Track &track, const QString &playlistId);
 
+  /// @brief An efficient function to insert multiple songs into a playlist.
+  /// @param playlistId id of target playlist.
+  /// @param tracks list of tracks to be inserted.
+  /// @retval true All tracks successfully added or updated.
+  /// @retval false Error occurred.
+  bool addToPlaylist(const QList<Track> &tracks, const QString &playlistId);
+
   /// @brief Inserts a new playlist in the database.
   /// @param playlist `Playlist` object holding data of the playlist to be inserted.
   /// @retval true Playlist successfully inserted or if the playlist already existed
