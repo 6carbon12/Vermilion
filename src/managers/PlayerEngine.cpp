@@ -1,4 +1,6 @@
 #include "PlayerEngine.h"
+#include "Playlist.h"
+#include "PlaylistController.h"
 #include "Track.h"
 #include "YtController.h"
 #include <QDebug>
@@ -9,6 +11,10 @@ Q_LOGGING_CATEGORY(PlayerEngine_l, "PlayerEngine")
 PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
   player = Core::Player::create();
   YT = YtController::instance()->getCore();
+  // TODO: Find better way to have consistent id for special playlists.
+  currentPlaylist.id = "current";
+  currentPlaylist.name = "Current Mix";
+  currentPlaylist.type = Core::PlaylistType::Current;
 
   connect(player.get(), &Core::Player::requestNext, this, [this]() { next(); });
   connect(player.get(), &Core::Player::requestPrev, this, [this]() { prev(); });
@@ -31,19 +37,7 @@ PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
   connect(YT, &YtEngine::extractionFailed, this,
           [this](const QString &error) { Q_EMIT errorOccurred("Extraction failed: " + error); });
 
-  connect(YT, &YtEngine::getRelatedTracksSuccess, this, [this](const QList<Core::Track> &relatedTracks) {
-    std::lock_guard<std::mutex> lock(queueMutex);
-    currentTrackIndex = 0;
-    tracks = relatedTracks;
-    Q_EMIT currentPlaylistChanged();
-
-    waitingForRelatedTracks = false;
-    if (!pendingExtractionUrl.isEmpty()) {
-      processExtraction(pendingExtractionUrl);
-      pendingExtractionUrl.clear();
-    }
-  });
-
+  connect(YT, &YtEngine::getRelatedTracksSuccess, this, &PlayerEngine::handleRelatedTracks);
   connect(YT, &YtEngine::getRelatedTracksFailed, this, [this](const QString &error) {
     waitingForRelatedTracks = false;
     Q_EMIT errorOccurred(error);
@@ -52,7 +46,6 @@ PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
 
 void PlayerEngine::play(const QString &url) {
   std::lock_guard<std::mutex> lock(queueMutex);
-  currentUrl = url;
   currentTrackIndex = 0;
   tracks.clear();
 
@@ -61,6 +54,25 @@ void PlayerEngine::play(const QString &url) {
 
   YT->getRelatedTracks(url);
   YT->requestExtraction(url);
+}
+
+void PlayerEngine::playFromPlaylist(const Core::Track track, const Core::Playlist playlist) {
+  updateCurrentPlaylist(plctl->getTracksListFromPlaylist(playlist.id));
+  int idx = tracks.indexOf(track);
+  if (idx >= 0) {
+    currentTrackIndex = idx;
+  }
+  YT->requestExtraction(tracks[currentTrackIndex].url);
+}
+
+void PlayerEngine::playFromPlaylist(const Core::Playlist playlist) {
+  waitingForRelatedTracks = false;
+  QList<Core::Track> newTracks = plctl->getTracksListFromPlaylist(playlist.id);
+  if (newTracks.isEmpty()) {
+    return;
+  }
+  updateCurrentPlaylist(plctl->getTracksListFromPlaylist(playlist.id));
+  YT->requestExtraction(tracks[currentTrackIndex].url);
 }
 
 void PlayerEngine::pause() {
@@ -82,8 +94,7 @@ void PlayerEngine::next() {
     return;
   }
   currentTrackIndex++;
-  currentUrl = tracks[currentTrackIndex].url;
-  YT->requestExtraction(currentUrl);
+  YT->requestExtraction(tracks[currentTrackIndex].url);
 }
 
 void PlayerEngine::prev() {
@@ -93,14 +104,36 @@ void PlayerEngine::prev() {
     return;
   }
   currentTrackIndex--;
-  currentUrl = tracks[currentTrackIndex].url;
-  YT->requestExtraction(currentUrl);
+  YT->requestExtraction(tracks[currentTrackIndex].url);
 }
 
 void PlayerEngine::seekTo(long positionMs) {
   if (player) {
     player->seekTo(positionMs);
   }
+}
+
+void PlayerEngine::handleRelatedTracks(const QList<Core::Track> &relatedTracks) {
+  updateCurrentPlaylist(relatedTracks);
+  waitingForRelatedTracks = false;
+  if (!pendingExtractionUrl.isEmpty()) {
+    processExtraction(pendingExtractionUrl);
+    pendingExtractionUrl.clear();
+  }
+}
+
+void PlayerEngine::updateCurrentPlaylist(const QList<Core::Track> &relatedTracks) {
+  std::lock_guard<std::mutex> lock(queueMutex);
+  currentTrackIndex = 0;
+
+  plctl->deletePlaylist(currentPlaylist.id);
+  plctl->createPlaylist(currentPlaylist);
+  plctl->addToPlaylist(relatedTracks, currentPlaylist.id);
+
+  tracks.clear();
+  tracks = plctl->getTracksListFromPlaylist(currentPlaylist.id);
+
+  Q_EMIT currentPlaylistChanged();
 }
 
 void PlayerEngine::processExtraction(const QString &extractedUrl) {
@@ -138,4 +171,4 @@ Core::Track PlayerEngine::getCurrentTrack() {
   return track;
 }
 
-QList<Core::Track> PlayerEngine::getCurrentPlaylist() { return tracks; }
+Core::Playlist PlayerEngine::getCurrentPlaylist() { return currentPlaylist; }

@@ -2,6 +2,8 @@
 
 #include "Player.h"
 #include "PlayerState.h"
+#include "Playlist.h"
+#include "PlaylistController.h"
 #include "YtEngine.h"
 #include <QList>
 #include <QObject>
@@ -22,6 +24,22 @@ public Q_SLOTS:
   /// @param url YouTube URL of song to prepare.
   void play(const QString &url);
 
+  // TODO: Report empty/invalid playlists somehow.
+
+  /// @brief Plays a given track from a given playlist.
+  /// @param track Track object of the song that needs to be played.
+  /// @param playlist Playlist object of the playlist that `track` is a part of.
+  ///
+  /// If `track` is not found in `playlist`, first song from playlist is played.
+  /// If `playlist` doesn't exit, nothing happens.
+  void playFromPlaylist(const Core::Track track, const Core::Playlist playlist);
+
+  /// @brief Starts playing the given playlist.
+  /// @param playlist Playlist object of the playlist to be played.
+  ///
+  /// If `playlist` doesn't exit, nothing happens.
+  void playFromPlaylist(const Core::Playlist playlist);
+
   /// @brief Resumes playback.
   void resume();
 
@@ -41,7 +59,7 @@ public Q_SLOTS:
   /// @see `currentTrackChanged`.
   Core::Track getCurrentTrack();
 
-  QList<Core::Track> getCurrentPlaylist();
+  Core::Playlist getCurrentPlaylist();
 
 Q_SIGNALS:
   /// @brief Emitted when player state changes.
@@ -67,12 +85,15 @@ Q_SIGNALS:
 private:
   int currentTrackIndex{};
   QList<Core::Track> tracks{};
-  QString currentUrl{};
+  Core::Playlist currentPlaylist;
   std::mutex queueMutex;
   std::unique_ptr<Core::Player> player;
   YtEngine *YT;
+  PlaylistsController* plctl{PlaylistsController::instance()};
 
   QString pendingExtractionUrl;
   bool waitingForRelatedTracks = false;
   void processExtraction(const QString &extractedUrl);
+  void handleRelatedTracks(const QList<Core::Track> &relatedTracks);
+  void updateCurrentPlaylist(const QList<Core::Track> &relatedTracks);
 };
