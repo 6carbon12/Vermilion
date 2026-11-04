@@ -46,7 +46,7 @@ Rectangle {
     TapHandler {
       onSingleTapped: {
         console.log("Opening playlist.")
-        rootContent.stack.pushItem(Qt.resolvedUrl("../pages/Playlist.qml"), {
+        rootContent.stack.pushItem(Qt.resolvedUrl("../pages/PlaylistView.qml"), {
           pageArgs: {
             playlist: root.playlist
           }

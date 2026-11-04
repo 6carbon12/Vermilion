@@ -92,7 +92,7 @@ set(PLAIN_QML_FILES
   src/qml/components/VmTextField.qml
   src/qml/pages/Home.qml
   src/qml/pages/Library.qml
-  src/qml/pages/Playlist.qml
+  src/qml/pages/PlaylistView.qml
   src/qml/pages/Search.qml
   src/qml/pages/SearchResults.qml
   src/qml/pages/Settings.qml
