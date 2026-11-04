@@ -58,6 +58,13 @@ bool PlaylistsController::createPlaylist(const QString &playlistName) {
   return ok;
 }
 
+bool PlaylistsController::createPlaylist(const Core::Playlist &playlist) {
+  bool ok = m_engine.createPlaylist(playlist);
+  if (!ok)
+    Q_EMIT errorOccurred();
+  return ok;
+}
+
 bool PlaylistsController::deletePlaylist(const QString &playlistId) {
   bool ok = m_engine.deletePlaylist(playlistId);
   if (!ok)
