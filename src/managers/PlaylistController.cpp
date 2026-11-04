@@ -39,6 +39,13 @@ bool PlaylistsController::addToPlaylist(const Core::Track &track, const QString 
   return ok;
 }
 
+bool PlaylistsController::addToPlaylist(const QList<Core::Track> &track, const QString &playlistId) {
+  bool ok = m_engine.addToPlaylist(track, playlistId);
+  if (!ok)
+    Q_EMIT errorOccurred();
+  return ok;
+}
+
 bool PlaylistsController::createPlaylist(const QString &playlistName) {
   Core::Playlist pt;
   pt.name = playlistName;

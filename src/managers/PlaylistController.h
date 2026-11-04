@@ -27,6 +27,7 @@ public:
   QString lastError() const;
 
   Q_INVOKABLE bool addToPlaylist(const Core::Track &track, const QString &playlistId);
+  Q_INVOKABLE bool addToPlaylist(const QList<Core::Track> &track, const QString &playlistId);
   Q_INVOKABLE bool createPlaylist(const QString &playlistName);
   Q_INVOKABLE bool deletePlaylist(const QString &playlistId);
   Q_INVOKABLE bool removeFromPlaylist(const QString &trackId, const QString &playlistId);
