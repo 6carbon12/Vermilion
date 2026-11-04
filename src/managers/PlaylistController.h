@@ -19,7 +19,9 @@ class PlaylistsController : public QObject {
   Q_PROPERTY(QString lastError READ lastError NOTIFY errorOccurred)
 
 public:
-  explicit PlaylistsController(QObject *parent = nullptr);
+  ~PlaylistsController() override = default;
+  static PlaylistsController *instance();
+  static PlaylistsController *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
   Models::PlaylistsModel *getModel();
   QString lastError() const;
@@ -42,6 +44,7 @@ Q_SIGNALS:
   void playlistUpdated(const QString &playlistId);
 
 private:
+  explicit PlaylistsController(QObject *parent = nullptr);
   PlaylistEngine m_engine;
   Models::PlaylistsModel m_model;
 };

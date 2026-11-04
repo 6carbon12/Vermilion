@@ -11,6 +11,19 @@ PlaylistsController::PlaylistsController(QObject *parent) : QObject(parent) {
   connect(&m_engine, &PlaylistEngine::playlistUpdated, this, &PlaylistsController::playlistUpdated);
 }
 
+PlaylistsController *PlaylistsController::instance() {
+  static PlaylistsController _instance;
+  return &_instance;
+}
+
+PlaylistsController *PlaylistsController::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
+  Q_UNUSED(qmlEngine);
+  Q_UNUSED(jsEngine);
+  PlaylistsController *inst = PlaylistsController::instance();
+  QQmlEngine::setObjectOwnership(inst, QQmlEngine::CppOwnership);
+  return inst;
+}
+
 Models::PlaylistsModel *PlaylistsController::getModel() {
   QList<Core::Playlist> playlists = getPlaylists();
   m_model.setPlaylists(playlists);
