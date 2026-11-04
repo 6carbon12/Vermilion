@@ -11,6 +11,13 @@ PlayerController::PlayerController(QObject *parent) : QObject(parent) {
 
   connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
 
+  connect(
+      this, &PlayerController::requestPlayTrackFromPlaylist, worker,
+      [this](const Core::Track &track, const Core::Playlist &pl) { worker->playFromPlaylist(track, pl); },
+      Qt::QueuedConnection);
+  connect(
+      this, &PlayerController::requestPlayPlaylist, worker,
+      [this](const Core::Playlist &pl) { worker->playFromPlaylist(pl); }, Qt::QueuedConnection);
   connect(this, &PlayerController::requestPlay, worker, &PlayerEngine::play, Qt::QueuedConnection);
   connect(this, &PlayerController::requestPause, worker, &PlayerEngine::pause, Qt::QueuedConnection);
   connect(this, &PlayerController::requestResume, worker, &PlayerEngine::resume, Qt::QueuedConnection);
@@ -66,14 +73,13 @@ void PlayerController::resume() { Q_EMIT requestResume(); }
 void PlayerController::next() { Q_EMIT requestNext(); }
 void PlayerController::prev() { Q_EMIT requestPrev(); }
 void PlayerController::seekTo(long positionMs) { Q_EMIT requestSeekTo(positionMs); }
+void PlayerController::playTrackFromPlaylist(const Core::Track& track, const Core::Playlist& pl) {
+  Q_EMIT requestPlayTrackFromPlaylist(track, pl);
+}
+void PlayerController::playPlaylist(const Core::Playlist& pl) { Q_EMIT requestPlayPlaylist(pl); }
 
 PlayerController::PlayerState PlayerController::getPlayerState() { return cachedState; }
 long PlayerController::getPosition() { return cachedPosition; }
 long PlayerController::getDuration() { return cachedDuration; }
 
-Models::TrackListModel *PlayerController::getCurrentPlaylist() {
-  Models::TrackListModel *model = new Models::TrackListModel();
-  QQmlEngine::setObjectOwnership(model, QQmlEngine::JavaScriptOwnership);
-  model->setTracks(worker->getCurrentPlaylist());
-  return model;
-}
+Core::Playlist PlayerController::getCurrentPlaylist() { return worker->getCurrentPlaylist(); }

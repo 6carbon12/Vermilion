@@ -18,7 +18,7 @@ class PlayerController : public QObject {
   QML_NAMED_ELEMENT(Player)
   Q_PROPERTY(Core::PlayerState::State playerState READ getPlayerState NOTIFY playerStateChanged)
   Q_PROPERTY(Core::Track currentTrack READ getCurrentTrack NOTIFY currentTrackChanged)
-  Q_PROPERTY(Models::TrackListModel* playlist READ getCurrentPlaylist NOTIFY currentPlaylistChanged)
+  Q_PROPERTY(Core::Playlist playlist READ getCurrentPlaylist NOTIFY currentPlaylistChanged)
   Q_PROPERTY(long position READ getPosition NOTIFY positionChanged)
   Q_PROPERTY(long duration READ getDuration NOTIFY durationChanged)
 
@@ -30,6 +30,8 @@ public:
   static PlayerController *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
   Q_INVOKABLE void play(const QString &url);
+  Q_INVOKABLE void playTrackFromPlaylist(const Core::Track& track, const Core::Playlist& pl);
+  Q_INVOKABLE void playPlaylist(const Core::Playlist& pl);
   Q_INVOKABLE void pause();
   Q_INVOKABLE void resume();
   Q_INVOKABLE void next();
@@ -38,7 +40,7 @@ public:
   Q_INVOKABLE long getPosition();
   Q_INVOKABLE long getDuration();
   Q_INVOKABLE Core::Track getCurrentTrack();
-  Q_INVOKABLE Models::TrackListModel* getCurrentPlaylist();
+  Q_INVOKABLE Core::Playlist getCurrentPlaylist();
   PlayerState getPlayerState();
 
 Q_SIGNALS:
@@ -49,6 +51,8 @@ Q_SIGNALS:
   void currentPlaylistChanged();
   void errorOccured(const QString &error);
 
+  void requestPlayTrackFromPlaylist(const Core::Track &track, const Core::Playlist &pl);
+  void requestPlayPlaylist(const Core::Playlist &pl);
   void requestPlay(const QString &url);
   void requestPause();
   void requestResume();
