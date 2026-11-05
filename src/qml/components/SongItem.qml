@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Vermilion
 import QtQuick.Layouts
+import Vermilion
 
 Item {
   id: root
@@ -19,6 +19,9 @@ Item {
   required property string title
   required property string views
 
+  signal mainContentClicked
+  signal rightContentClicked
+
   RowLayout {
     id: trackLayout
 
@@ -26,37 +29,51 @@ Item {
     spacing: 16
 
     Rectangle {
-      id: albumCoverContainer
-
-      Layout.preferredHeight: 64
-      Layout.preferredWidth: 64
-      clip: true
-      color: palette.alternateBase
-
-      Image {
-        id: albumCover
-
-        anchors.fill: parent
-        fillMode: Image.PreserveAspectCrop
-        source: root.thumbnailUrl
-      }
-    }
-    Column {
-      id: content
-
-      Layout.alignment: Qt.AlignVCenter
       Layout.fillWidth: true
-      spacing: 4
+      Layout.preferredHeight: 64
+      color: "transparent"
 
-      Text {
-        color: "white"
-        elide: Text.ElideRight
-        font.pixelSize: Design.fontSize.base
-        font.weight: Font.Medium
-        text: root.title
+      Rectangle {
+        id: albumCoverContainer
+
+        clip: true
+        color: palette.alternateBase
+        height: parent.height
+        width: parent.height
+
+        Image {
+          id: albumCover
+
+          anchors.fill: parent
+          fillMode: Image.PreserveAspectCrop
+          source: root.thumbnailUrl
+        }
       }
-      Loader {
-        sourceComponent: root.subText
+      Column {
+        id: content
+
+        anchors.left: albumCoverContainer.right
+        anchors.leftMargin: trackLayout.spacing
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 4
+
+        Text {
+          color: "white"
+          elide: Text.ElideRight
+          font.pixelSize: Design.fontSize.base
+          font.weight: Font.Medium
+          text: root.title
+        }
+        Loader {
+          sourceComponent: root.subText
+        }
+      }
+      MouseArea {
+        anchors.fill: parent
+
+        onClicked: {
+          root.mainContentClicked();
+        }
       }
     }
     Loader {
@@ -64,6 +81,14 @@ Item {
       Layout.preferredHeight: 48
       Layout.preferredWidth: 40
       sourceComponent: root.rightContent
+
+      MouseArea {
+        anchors.fill: parent
+
+        onClicked: {
+          root.rightContentClicked();
+        }
+      }
     }
   }
 }
