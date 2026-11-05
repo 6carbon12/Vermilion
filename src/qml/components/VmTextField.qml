@@ -7,12 +7,12 @@ TextField {
   EnterKey.type: Qt.EnterKeySearch
   font.pixelSize: 14
   color: palette.text
-  leftPadding: 12
-  rightPadding: 12
+  leftPadding: height / 2
+  rightPadding: height
 
   background: Rectangle {
     anchors.fill: parent
     color: palette.window
-    radius: parent.height / 4
+    radius: parent.height / 2
   }
 }
