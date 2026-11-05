@@ -34,6 +34,8 @@ public:
   Q_INVOKABLE bool removeFromPlaylist(const QString &trackId, const QString &playlistId);
   Q_INVOKABLE bool renamePlaylist(const QString &playlistId, const QString &newName);
   Q_INVOKABLE bool updatePlaylistArt(const QString &playlistId, const QString &artPath);
+  Q_INVOKABLE bool isLiked(const QString trackId);
+  Q_INVOKABLE bool toggleLike(const Core::Track track);
 
   Q_INVOKABLE QList<Core::Playlist> getPlaylists() const;
   Q_INVOKABLE Core::Playlist getPlaylistFromId(const QString &playlistId) const;

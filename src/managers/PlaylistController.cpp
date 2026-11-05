@@ -93,6 +93,17 @@ bool PlaylistsController::updatePlaylistArt(const QString &playlistId, const QSt
   return ok;
 }
 
+bool PlaylistsController::isLiked(const QString trackId) {
+  return m_engine.isLiked(trackId);
+}
+
+bool PlaylistsController::toggleLike(const Core::Track track) {
+  bool ok = m_engine.toggleLike(track);
+  if (!ok)
+    Q_EMIT errorOccurred();
+  return ok;
+}
+
 QList<Core::Playlist> PlaylistsController::getPlaylists() const { return m_engine.getPlaylists(); }
 
 Models::TrackListModel *PlaylistsController::getTracksFromPlaylist(const QString &playlistId) const {
