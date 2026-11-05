@@ -14,8 +14,18 @@ BasePage {
   property TrackListModel model: PlaylistsController.getTracksFromPlaylist(root.pt.id)
   property Playlist pt: pageArgs.playlist
 
+  Connections {
+    target: PlaylistsController
+
+    function onTracksUpdated(playlistId) {
+      if (root.pt.id === playlistId) {
+        root.model = PlaylistsController.getTracksFromPlaylist(root.pt.id)
+      }
+    }
+  }
+
   pageArgs: ({})
-  pageUrl: Qt.resolvedUrl("Playlist.qml")
+  pageUrl: Qt.resolvedUrl("PlaylistView.qml")
 
   background: Rectangle {
     color: "transparent"
@@ -219,6 +229,7 @@ BasePage {
 
         onClicked: {
           console.log("[ACTION] Play Playlist:", root.pt.id);
+          Player.playPlaylist(root.pt);
         }
       }
       CircleIconButton {
@@ -269,6 +280,8 @@ BasePage {
       }
       SongListView {
         id: tracksList
+        fromPlaylist: true
+        pl: root.pt
 
         Layout.fillHeight: true
         Layout.fillWidth: true
