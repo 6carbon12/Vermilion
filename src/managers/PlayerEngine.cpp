@@ -126,14 +126,23 @@ void PlayerEngine::updateCurrentPlaylist(const QList<Core::Track> &relatedTracks
   std::lock_guard<std::mutex> lock(queueMutex);
   currentTrackIndex = 0;
 
+  // Prevent the controller from flooding QML with UI update signals
+  plctl->blockSignals(true);
+
   plctl->deletePlaylist(currentPlaylist.id);
   plctl->createPlaylist(currentPlaylist);
   plctl->addToPlaylist(relatedTracks, currentPlaylist.id);
 
+  // Re-enable signals now that the database operations are complete
+  plctl->blockSignals(false);
+
   tracks.clear();
   tracks = plctl->getTracksListFromPlaylist(currentPlaylist.id);
 
+  // Manually send the updates.
   Q_EMIT currentPlaylistChanged();
+  Q_EMIT plctl->playlistUpdated(currentPlaylist.id);
+  Q_EMIT plctl->tracksUpdated(currentPlaylist.id);
 }
 
 void PlayerEngine::processExtraction(const QString &extractedUrl) {
