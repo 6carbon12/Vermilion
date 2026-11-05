@@ -83,14 +83,34 @@ Popup {
           Layout.fillWidth: true
         }
         IconButton {
+          id: likeButton
           Layout.preferredHeight: 28
           Layout.preferredWidth: 28
           // TODO: Add proper way to get to know if song is liked
-          isActive: true
+          isActive: root.track && PlaylistsController.isLiked(root.track.id)
           source: Qt.resolvedUrl("../../../assets/icons/heart")
 
           onClicked: {
-            console.log("[ACTION] LIKE/UNLIKE");
+            PlaylistsController.toggleLike(root.track);
+          }
+
+          Connections {
+            target: PlaylistsController
+
+            function onTracksUpdated(plId) {
+              if (plId == "liked") {
+                console.log("Liked updated")
+                likeButton.isActive = PlaylistsController.isLiked(root.track.id)
+              }
+            }
+          }
+
+          Connections {
+            target: root
+
+            function onTrackChanged() {
+              likeButton.isActive = PlaylistsController.isLiked(root.track.id)
+            }
           }
         }
       }
