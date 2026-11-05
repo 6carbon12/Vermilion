@@ -9,6 +9,7 @@ Button {
   id: iconButton
 
   property color color: palette.text
+  property color activeColor: palette.accent
   property bool hasState: true
   property bool isActive: false
   property size size: Qt.size(Design.iconSize.base, Design.iconSize.base)
@@ -44,7 +45,7 @@ Button {
       layer.effect: MultiEffect {
         brightness: 1.0
         colorization: 1.0
-        colorizationColor: iconButton.isActive ? "#9F9FFF" : iconButton.color
+        colorizationColor: iconButton.isActive ? iconButton.activeColor : iconButton.color
       }
 
       onStatusChanged: {
