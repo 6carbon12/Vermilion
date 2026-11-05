@@ -7,6 +7,9 @@ import "../components"
 ListView {
   id: tracksList
 
+  property bool fromPlaylist: false
+  property Playlist pl
+
   boundsMovement: Flickable.StopAtBounds
   spacing: 16
 
@@ -14,17 +17,21 @@ ListView {
     id: songItem
 
     required property list<Artist> artists
+    required property Track track
     required property string url
 
     height: 64
-    width: parent.width
+    width: tracksList.width
 
     rightContent: IconButton {
       hasState: false
       source: Qt.resolvedUrl("../../../assets/icons/three-dot-vertical.svg")
 
+      // Need this since `rightContentClicked` is not emitted when a control is passed.
       onClicked: {
-        console.log("[ACTION] Open song context menu");
+        contextMenu.close();
+        contextMenu.track = songItem.track;
+        contextMenu.open();
       }
     }
     subText: Row {
@@ -51,13 +58,15 @@ ListView {
       }
     }
 
-    MouseArea {
-      anchors.fill: parent
-
-      onClicked: {
-        console.log("[ACTION] Play song");
-        Player.play(songItem.url);
-      }
+    onMainContentClicked: {
+      Player.play(url);
     }
+  }
+
+  SongItemContextMenu {
+    id: contextMenu
+
+    fromPlaylist: tracksList.fromPlaylist
+    pl: tracksList.pl
   }
 }
