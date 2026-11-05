@@ -453,14 +453,14 @@ Core::Playlist PlaylistEngine::getPlaylistFromId(const QString &playlistId) cons
     return playlist;
   }
 
-  query.next();
-
-  playlist.id = query.value("id").toString();
-  playlist.name = query.value("name").toString();
-  playlist.artUrl = query.value("cover_uri").toString();
-  QString typeStr = query.value("type").toString();
-  playlist.type = Core::playlistTypeFromString(typeStr);
-  playlist.createdAt = query.value("created_at").toDateTime();
+  if (query.next()) {
+    playlist.id = query.value("id").toString();
+    playlist.name = query.value("name").toString();
+    playlist.artUrl = query.value("cover_uri").toString();
+    QString typeStr = query.value("type").toString();
+    playlist.type = Core::playlistTypeFromString(typeStr);
+    playlist.createdAt = query.value("created_at").toDateTime();
+  }
 
   return playlist;
 }
