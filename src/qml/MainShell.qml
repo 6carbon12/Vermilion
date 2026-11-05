@@ -133,8 +133,8 @@ Item {
 
         Repeater {
           id: stackRepeater
-
           Layout.maximumWidth: 1920
+
           model: ["pages/Home.qml", "pages/Search.qml", "pages/Library.qml", "pages/Settings.qml"]
 
           StackView {
@@ -465,8 +465,8 @@ Item {
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredHeight: 96
                 Layout.preferredWidth: 96
-                hasState: false
                 size: Qt.size(Design.iconSize.large, Design.iconSize.large)
+                hasState: false
                 source: Qt.resolvedUrl("../../assets/icons/play-circle.svg")
 
                 states: [
@@ -596,7 +596,7 @@ Item {
             anchors.fill: parent
             anchors.margins: 8
             clip: true
-            model: Player.playlist
+            model: PlaylistsController.getTracksFromPlaylist(Player.playlist.id)
           }
         }
       }
