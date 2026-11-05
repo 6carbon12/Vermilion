@@ -15,6 +15,13 @@ PlaylistEngine::PlaylistEngine(QObject *parent) : QObject(parent) {
 
   m_db = QSqlDatabase::addDatabase("QSQLITE");
   m_db.setDatabaseName(dbPath);
+  updateLikedCache();
+
+  connect(this, &PlaylistEngine::tracksUpdated, this, [this](QString playlistId) {
+    if (playlistId == "liked") {
+      updateLikedCache();
+    }
+  });
 
   if (!m_db.open()) {
     m_lastError = "DB connection failed.\nDB: " + m_db.lastError().text();
@@ -36,6 +43,26 @@ PlaylistEngine::PlaylistEngine(QObject *parent) : QObject(parent) {
 }
 
 PlaylistEngine::~PlaylistEngine() { m_db.close(); }
+
+void PlaylistEngine::updateLikedCache() {
+  QList<Track> newTracks = getTracksFromPlaylist("liked");
+  m_likedCache.clear();
+  for (Track& track : newTracks) {
+    m_likedCache.insert(track.id);
+  }
+}
+
+bool PlaylistEngine::isLiked(const QString &trackId) const {
+  return m_likedCache.contains(trackId);
+}
+
+bool PlaylistEngine::toggleLike(const Track &track) {
+  if (isLiked(track.id)) {
+    return removeFromPlaylist(track.id, "liked");
+  } else {
+    return addToPlaylist(track, "liked");
+  }
+}
 
 bool PlaylistEngine::createPlaylist(const Playlist &playlist) {
   if (playlist.id.isEmpty() || playlist.name.trimmed().isEmpty()) {
@@ -206,7 +233,8 @@ bool PlaylistEngine::addToPlaylist(const QList<Core::Track> &tracks, const QStri
   )");
 
   for (const Core::Track &track : tracks) {
-    if (track.id.isEmpty()) continue;
+    if (track.id.isEmpty())
+      continue;
 
     QJsonArray artistsArray;
     for (int i = 0; i < track.artistsNum && i < 8; ++i) {
@@ -526,7 +554,7 @@ QList<Core::Track> PlaylistEngine::getTracksFromPlaylist(const QString &playlist
   return tracks;
 }
 
-QString PlaylistEngine::generateLocalPlaylistId() {
+QString PlaylistEngine::generateLocalPlaylistId() const {
   QByteArray bytes;
   for (int i = 0; i < 24; i++) {
     bytes.append(static_cast<char>(QRandomGenerator::global()->bounded(256)));
