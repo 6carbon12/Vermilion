@@ -50,4 +50,12 @@ ApplicationWindow {
 
     target: Player
   }
+  Connections {
+    function onErrorOccurred(err) {
+      console.log("Playlist Error:", err);
+      console.log(PlaylistsController.lastError)
+    }
+
+    target: PlaylistsController
+  }
 }
