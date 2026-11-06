@@ -104,6 +104,13 @@ bool PlaylistsController::toggleLike(const Core::Track track) {
   return ok;
 }
 
+bool PlaylistsController::updateSortOrder(const QString &playlistId, Core::TrackSortCriterion criterion, bool isReversed) {
+  bool ok = m_engine.updateSortOrder(playlistId, criterion, isReversed);
+  if (!ok)
+    Q_EMIT errorOccurred();
+  return ok;
+}
+
 QList<Core::Playlist> PlaylistsController::getPlaylists() const { return m_engine.getPlaylists(); }
 
 Models::TrackListModel *PlaylistsController::getTracksFromPlaylist(const QString &playlistId) const {
