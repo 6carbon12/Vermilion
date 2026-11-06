@@ -438,7 +438,7 @@ QList<Core::Playlist> PlaylistEngine::getPlaylists() const {
 
   QSqlQuery query(m_db);
   query.prepare(R"(
-      SELECT id, name, cover_uri, type, created_at
+      SELECT id, name, cover_uri, type, created_at, sort_by, is_reversed
       FROM playlists
       ORDER BY created_at ASC;
     )");
@@ -458,6 +458,10 @@ QList<Core::Playlist> PlaylistEngine::getPlaylists() const {
     playlist.type = Core::playlistTypeFromString(typeStr);
     playlist.createdAt = query.value("created_at").toDateTime();
 
+    QString sortByStr = query.value("sort_by").toString();
+    playlist.sortBy = Core::stringToSortCriterion(sortByStr);
+    playlist.isReverse = query.value("is_reversed").toBool();
+
     playlists.append(playlist);
   }
 
@@ -468,7 +472,7 @@ Core::Playlist PlaylistEngine::getPlaylistFromId(const QString &playlistId) cons
   Core::Playlist playlist;
   QSqlQuery query(m_db);
   query.prepare(R"(
-      SELECT id, name, cover_uri, type, created_at
+      SELECT id, name, cover_uri, type, created_at, sort_by, is_reversed
       FROM playlists
       WHERE id = :playlistId
     )");
@@ -488,6 +492,9 @@ Core::Playlist PlaylistEngine::getPlaylistFromId(const QString &playlistId) cons
     QString typeStr = query.value("type").toString();
     playlist.type = Core::playlistTypeFromString(typeStr);
     playlist.createdAt = query.value("created_at").toDateTime();
+    QString sortByStr = query.value("sort_by").toString();
+    playlist.sortBy = Core::stringToSortCriterion(sortByStr);
+    playlist.isReverse = query.value("is_reversed").toBool();
   }
 
   return playlist;

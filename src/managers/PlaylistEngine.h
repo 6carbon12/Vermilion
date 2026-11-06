@@ -115,6 +115,8 @@ private:
         name TEXT NOT NULL,
         cover_uri TEXT,
         type TEXT DEFAULT 'user',
+        sort_by TEXT DEFAULT 'dateadded',
+        is_reversed BOOLEAN DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
       )",
