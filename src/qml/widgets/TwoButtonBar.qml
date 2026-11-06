@@ -2,43 +2,64 @@ import QtQuick
 import QtQuick.Layouts
 import "../components"
 
-RowLayout {
+Rectangle {
   id: root
+
+  property alias leftIcon: leftButton.source
+
+  // Exposed middle Text item properties
+  property alias middleText: middleTitle.text
+  property alias middleTextColor: middleTitle.color
+  property alias middleTextOpacity: middleTitle.opacity
+  property alias rightIcon: rightButton.source
+
+  signal leftClicked
+  signal rightClicked
 
   Layout.fillWidth: true
   Layout.preferredHeight: 32
+  color: "transparent"
 
-  signal leftClicked();
-  signal rightClicked();
+  RowLayout {
+    anchors.fill: parent
 
-  property alias leftIcon: leftButton.source
-  property alias rightIcon: rightButton.source
+    IconButton {
+      id: leftButton
 
-  IconButton {
-    id: leftButton
+      Layout.preferredHeight: parent.height
+      Layout.preferredWidth: parent.height
+      hasState: false
 
-    Layout.preferredHeight: parent.height
-    Layout.preferredWidth: parent.height
-    hasState: false
-
-    onClicked: {
-      root.leftClicked();
+      onClicked: {
+        root.leftClicked();
+      }
     }
-  }
-  Item {
-    id: topBarMiddleSpacer
+    Item {
+      id: topBarMiddleSpacer
 
-    Layout.fillWidth: true
-  }
-  IconButton {
-    id: rightButton
+      Layout.fillWidth: true
 
-    Layout.preferredHeight: parent.height
-    Layout.preferredWidth: parent.height
-    hasState: false
+      Text {
+        id: middleTitle
 
-    onClicked: {
-      root.rightClicked();
+        anchors.centerIn: parent
+        elide: Text.ElideRight
+        font.bold: true
+        font.pixelSize: 16
+        horizontalAlignment: Text.AlignHCenter
+        width: parent.width
+      }
+    }
+    IconButton {
+      id: rightButton
+
+      Layout.preferredHeight: parent.height
+      Layout.preferredWidth: parent.height
+      hasState: false
+
+      onClicked: {
+        root.rightClicked();
+      }
     }
   }
 }
