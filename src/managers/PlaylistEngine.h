@@ -15,6 +15,7 @@ public:
   ~PlaylistEngine();
   using Track = Core::Track;
   using Playlist = Core::Playlist;
+  using TrackSortCriterion = Core::TrackSortCriterion;
 
   /// @brief Adds a song to a given playlist or updates info of track if it already exists.
   /// @param playlistId id of target playlist.
@@ -73,6 +74,15 @@ public:
   /// @param trackId ID of the track to check.
   bool isLiked(const QString &trackId) const;
 
+  /// @brief Updated sorting order of a playlist.
+  /// @param playlistId ID of playlist to update.
+  /// @param criterion new criterion for sorting.
+  /// @retval true criterion updated successfully or if passed criterion is same as the old one.
+  /// @retval false Error occurred.
+  ///
+  /// After updating sorting order it is advised to re-fetch the tracks list for new ordered list.
+  bool updateSortOrder(const QString &playlistId, TrackSortCriterion criterion, bool isReversed);
+
   /// @brief Fetches list of all playlists from database.
   /// @return List of playlists.
   QList<Playlist> getPlaylists() const;
@@ -107,6 +117,8 @@ private:
   QSet<QString> m_likedCache;
 
   void updateLikedCache();
+  QString criterionToColumn(TrackSortCriterion criterion) const;
+  void sortTracksByArtist(QList<Track> &tracks, bool ascending = true) const;
 
   inline static const QStringList s_schemaStatements = {
       R"(

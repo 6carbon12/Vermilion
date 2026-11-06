@@ -1,4 +1,5 @@
 #include "PlaylistEngine.h"
+#include "Playlist.h"
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QLoggingCategory>
@@ -7,6 +8,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QStandardPaths>
+#include <algorithm>
 
 Q_LOGGING_CATEGORY(PlaylistEngine_l, "PlaylistEngine")
 
@@ -15,7 +17,6 @@ PlaylistEngine::PlaylistEngine(QObject *parent) : QObject(parent) {
 
   m_db = QSqlDatabase::addDatabase("QSQLITE");
   m_db.setDatabaseName(dbPath);
-  updateLikedCache();
 
   connect(this, &PlaylistEngine::tracksUpdated, this, [this](QString playlistId) {
     if (playlistId == "liked") {
@@ -40,6 +41,7 @@ PlaylistEngine::PlaylistEngine(QObject *parent) : QObject(parent) {
       return;
     }
   }
+  updateLikedCache();
 }
 
 PlaylistEngine::~PlaylistEngine() { m_db.close(); }
@@ -47,14 +49,12 @@ PlaylistEngine::~PlaylistEngine() { m_db.close(); }
 void PlaylistEngine::updateLikedCache() {
   QList<Track> newTracks = getTracksFromPlaylist("liked");
   m_likedCache.clear();
-  for (Track& track : newTracks) {
+  for (Track &track : newTracks) {
     m_likedCache.insert(track.id);
   }
 }
 
-bool PlaylistEngine::isLiked(const QString &trackId) const {
-  return m_likedCache.contains(trackId);
-}
+bool PlaylistEngine::isLiked(const QString &trackId) const { return m_likedCache.contains(trackId); }
 
 bool PlaylistEngine::toggleLike(const Track &track) {
   if (isLiked(track.id)) {
@@ -508,14 +508,23 @@ QList<Core::Track> PlaylistEngine::getTracksFromPlaylist(const QString &playlist
   }
 
   QSqlQuery query(m_db);
-  query.prepare(R"(
-      SELECT t.id, t.is_explicit, t.url, t.title, t.views,
-             t.cover_art_url, t.duration_string, t.duration, t.artists_json
-      FROM tracks t
-      INNER JOIN playlist_tracks pt ON t.id = pt.track_id
-      WHERE pt.playlist_id = :playlistId
-      ORDER BY pt.position ASC;
-    )");
+
+  Playlist pl = getPlaylistFromId(playlistId);
+  QString sortByColumn = criterionToColumn(pl.sortBy);
+
+  QString sortDir = pl.isReverse ? "DESC" : "ASC";
+
+  QString queryStr = QString(R"(
+    SELECT t.id, t.is_explicit, t.url, t.title, t.views,
+           t.cover_art_url, t.duration_string, t.duration, t.artists_json
+    FROM tracks t
+    INNER JOIN playlist_tracks pt ON t.id = pt.track_id
+    WHERE pt.playlist_id = :playlistId
+    ORDER BY %1 %2;
+  )")
+                         .arg(sortByColumn, sortDir);
+
+  query.prepare(queryStr);
 
   query.bindValue(":playlistId", playlistId);
 
@@ -558,7 +567,51 @@ QList<Core::Track> PlaylistEngine::getTracksFromPlaylist(const QString &playlist
     tracks.append(track);
   }
 
+  if (pl.sortBy == TrackSortCriterion::Artist) {
+    sortTracksByArtist(tracks);
+  }
+
   return tracks;
+}
+
+bool PlaylistEngine::updateSortOrder(const QString &playlistId, TrackSortCriterion criterion, bool isReversed) {
+  if (playlistId.isEmpty()) {
+    m_lastError = "Playlist ID cannot be empty.\nDB: " + m_db.lastError().text();
+    return false;
+  }
+
+  if (!m_db.transaction()) {
+    m_lastError = "Failed to start transaction.\nDB: " + m_db.lastError().text();
+    return false;
+  }
+
+  QSqlQuery query(m_db);
+  query.prepare(R"(
+      UPDATE playlists
+      SET sort_by = :sortBy,
+          is_reversed = :isReversed
+      WHERE id = :playlistId;
+    )");
+
+  query.bindValue(":sortBy", Core::sortCriterionToString(criterion));
+  query.bindValue(":isReversed", isReversed);
+  query.bindValue(":playlistId", playlistId);
+
+
+  if (!query.exec()) {
+    m_lastError = "Failed to update playlist sort order.\nDB: " + query.lastError().text();
+    m_db.rollback();
+    return false;
+  }
+
+  if (!m_db.commit()) {
+    m_lastError = "Failed to commit transaction.\nDB: " + m_db.lastError().text();
+    m_db.rollback();
+    return false;
+  }
+
+  Q_EMIT playlistUpdated(playlistId);
+  return true;
 }
 
 QString PlaylistEngine::generateLocalPlaylistId() const {
@@ -568,6 +621,38 @@ QString PlaylistEngine::generateLocalPlaylistId() const {
   }
   // VL = Vermilion Local
   return "VL" + bytes.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
+}
+
+QString PlaylistEngine::criterionToColumn(TrackSortCriterion criterion) const {
+  switch (criterion) {
+  case TrackSortCriterion::Title:
+    // Can't sort by Artist so we instead handle it by manually sorting in CPP
+  case TrackSortCriterion::Artist:
+    return QStringLiteral("t.title");
+  case TrackSortCriterion::Duration:
+    return QStringLiteral("t.duration");
+  case TrackSortCriterion::DateAdded:
+    return QStringLiteral("pt.added_at");
+  case TrackSortCriterion::Random:
+    return QStringLiteral("RANDOM()");
+  case TrackSortCriterion::Custom:
+  default:
+    return QStringLiteral("pt.position");
+  }
+}
+
+void PlaylistEngine::sortTracksByArtist(QList<Track> &tracks, bool ascending) const {
+  std::sort(tracks.begin(), tracks.end(), [ascending](const Track &a, const Track &b) {
+    const QString artistA = a.artists[0].name;
+    const QString artistB = b.artists[0].name;
+
+    int cmp = artistA.compare(artistB, Qt::CaseInsensitive);
+    if (cmp == 0) {
+      cmp = a.title.compare(b.title, Qt::CaseInsensitive);
+    }
+
+    return ascending ? (cmp < 0) : (cmp > 0);
+  });
 }
 
 QString PlaylistEngine::getLastError() const { return m_lastError; }
