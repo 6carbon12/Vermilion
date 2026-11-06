@@ -14,16 +14,6 @@ BasePage {
   property TrackListModel model: PlaylistsController.getTracksFromPlaylist(root.pt.id)
   property Playlist pt: pageArgs.playlist
 
-  Connections {
-    target: PlaylistsController
-
-    function onTracksUpdated(playlistId) {
-      if (root.pt.id === playlistId) {
-        root.model = PlaylistsController.getTracksFromPlaylist(root.pt.id)
-      }
-    }
-  }
-
   pageArgs: ({})
   pageUrl: Qt.resolvedUrl("PlaylistView.qml")
 
@@ -75,11 +65,21 @@ BasePage {
   }
 
   Connections {
+    function onTracksUpdated(playlistId) {
+      if (root.pt.id === playlistId) {
+        root.model = PlaylistsController.getTracksFromPlaylist(root.pt.id);
+      }
+    }
+
+    target: PlaylistsController
+  }
+  Connections {
     function onPlaylistUpdated(playlistId) {
       if (root.pt.id == playlistId) {
         console.log("Playlist has been updated.");
         root.pageArgs.playlist = PlaylistsController.getPlaylistFromId(playlistId);
         root.pt = root.pageArgs.playlist;
+        root.model = PlaylistsController.getTracksFromPlaylist(playlistId);
       }
     }
 
@@ -261,31 +261,21 @@ BasePage {
       clip: true
       spacing: 8
 
-      RowLayout {
-        id: sortBy
-
+      PlaylistSortByDropdown {
+        pt: root.pt
+        Layout.fillWidth: true
+        Layout.maximumHeight: 48
+        Layout.preferredHeight: 48
         spacing: 16
-
-        Text {
-          color: palette.text
-          font.bold: true
-          font.pixelSize: 16
-          text: "Sort By:"
-        }
-        Text {
-          color: palette.text
-          font.pixelSize: 16
-          text: "A-Z"
-        }
       }
       SongListView {
         id: tracksList
-        fromPlaylist: true
-        pl: root.pt
 
         Layout.fillHeight: true
         Layout.fillWidth: true
+        fromPlaylist: true
         model: root.model
+        pl: root.pt
       }
     }
   }
