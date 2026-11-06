@@ -14,6 +14,7 @@ BasePage {
   property TrackListModel model: PlaylistsController.getTracksFromPlaylist(root.pt.id)
   property Playlist pt: pageArgs.playlist
 
+  padding: 0
   pageArgs: ({})
   pageUrl: Qt.resolvedUrl("PlaylistView.qml")
 
@@ -26,6 +27,10 @@ BasePage {
       anchors.verticalCenter: parent.top
       color: "transparent"
       height: 860
+
+      transform: Translate {
+        y: -flickable.contentY
+      }
 
       Image {
         id: backgroundImage
@@ -100,182 +105,180 @@ BasePage {
       playlistName.focus = true;
     }
   }
-  ColumnLayout {
-    id: mainLayout
 
-    anchors.centerIn: parent
-    anchors.fill: parent
-    anchors.margins: 8
-    spacing: 20
+  // Floating Header directly on BasePage
+  Rectangle {
+    id: topBarBg
+
+    readonly property real fadeEnd: Math.max(1, tracksList.y - height)
+    readonly property real fadeStart: 0
+    readonly property real scrollProgress: Math.min(1.0, Math.max(0.0, (flickable.contentY - fadeStart) / (fadeEnd - fadeStart)))
+
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: parent.top
+    color: Qt.rgba(palette.window.r, palette.window.g, palette.window.b, topBarBg.scrollProgress)
+    height: 64
+    z: 10
 
     TwoButtonBar {
-      Layout.fillWidth: true
-      Layout.preferredHeight: 32
+      id: topBar
+
+      // Header offsets offset by topPadding (64)
+      readonly property real nameLayoutYInMain: playlistArt.Layout.preferredHeight + playlistInfo.spacing
+      readonly property real textFadeEnd: Math.max(textFadeStart + 1, nameLayoutYInMain + playlistNameLayout.implicitHeight)
+      readonly property real textFadeStart: Math.max(0, nameLayoutYInMain)
+
+      anchors.fill: parent
+      anchors.margins: 8
+      anchors.verticalCenter: parent.verticalCenter
       leftIcon: Qt.resolvedUrl("../../../assets/icons/left-arrow.svg")
+      middleText: root.pt.name
+      middleTextColor: palette.text
+      middleTextOpacity: Math.min(1.0, Math.max(0.0, (flickable.contentY - textFadeStart) / (textFadeEnd - textFadeStart)))
       rightIcon: Qt.resolvedUrl("../../../assets/icons/three-dot-vertical.svg")
 
-      onLeftClicked: {
-        rootContent.stack.pop();
-      }
-      onRightClicked: {
-        console.log("[ACTION] Open context menu.");
-        topRightContextMenu.open();
-      }
+      onLeftClicked: rootContent.stack.pop()
+      onRightClicked: topRightContextMenu.open()
     }
+  }
+
+  // Scrollable Content filling parent underneath topBarBg
+  Flickable {
+    id: flickable
+
+    anchors.fill: parent
+    boundsBehavior: Flickable.StopAtBounds
+    clip: true
+    contentHeight: mainLayout.implicitHeight + topPadding
+    contentWidth: width
+    property int topPadding: topBarBg.height
+
     ColumnLayout {
-      id: playlistInfo
+      id: mainLayout
+      anchors.topMargin: flickable.topPadding
+      anchors.fill: parent
+      anchors.leftMargin: 16
+      anchors.rightMargin: 16
 
-      Layout.fillWidth: true
-      spacing: 16
+      spacing: 20
+      width: parent.width
 
-      // Need to make other elements be centered.
-      Rectangle {
-        id: infoFiller
-
-        Layout.fillWidth: true
-        Layout.preferredHeight: 0
-      }
-      RoundedImage {
-        id: playlistArt
-
-        Layout.alignment: Qt.AlignHCenter
-        Layout.preferredHeight: 256
-        Layout.preferredWidth: 256
-        Layout.topMargin: -playlistInfo.spacing
-        source: root.pageArgs.playlist.artUrl
-      }
       ColumnLayout {
-        id: playlistNameLayout
+        id: playlistInfo
 
-        Layout.alignment: Qt.AlignHCenter
-        Layout.fillHeight: true
-        spacing: 0
+        Layout.fillWidth: true
+        spacing: 16
 
-        TextField {
-          id: playlistName
+        RoundedImage {
+          id: playlistArt
 
           Layout.alignment: Qt.AlignHCenter
+          Layout.preferredHeight: 256
+          Layout.preferredWidth: 256
+          source: root.pageArgs.playlist.artUrl
+        }
+        ColumnLayout {
+          id: playlistNameLayout
+
+          Layout.alignment: Qt.AlignHCenter
+          spacing: 0
+
+          TextField {
+            id: playlistName
+
+            Layout.alignment: Qt.AlignHCenter
+            Layout.fillWidth: true
+            color: palette.text
+            font.bold: true
+            font.pixelSize: 32
+            horizontalAlignment: Text.AlignHCenter
+            text: root.pt.name
+            wrapMode: Text.WordWrap
+
+            background: Rectangle {
+              color: "transparent"
+            }
+
+            onAccepted: {
+              if (text != root.pt.name) {
+                PlaylistsController.renamePlaylist(root.pt.id, playlistName.text);
+              }
+              playlistName.focus = false;
+            }
+            onFocusChanged: {
+              if (text != root.pt.name) {
+                PlaylistsController.renamePlaylist(root.pt.id, playlistName.text);
+              }
+            }
+          }
+          Text {
+            id: playlistSubtext
+
+            Layout.alignment: Qt.AlignHCenter
+            color: Qt.darker(palette.text, 2)
+            font.pixelSize: 14
+            text: root.model.rowCount() + " songs • 2hr 34min"
+          }
+        }
+      }
+      RowLayout {
+        id: controlsLayout
+
+        Layout.fillWidth: true
+        Layout.preferredHeight: 64
+        spacing: 12
+
+        Item {
           Layout.fillWidth: true
-          color: palette.text
-          font.bold: true
-          font.pixelSize: 32
-          horizontalAlignment: Text.AlignHCenter
-          text: root.pt.name
-          wrapMode: Text.WordWrap
-
-          background: Rectangle {
-            color: "transparent"
-          }
-
-          onAccepted: {
-            if (text != root.pt.name) {
-              PlaylistsController.renamePlaylist(root.pt.id, playlistName.text);
-            }
-            playlistName.focus = false;
-          }
-          onFocusChanged: {
-            if (text != root.pt.name) {
-              PlaylistsController.renamePlaylist(root.pt.id, playlistName.text);
-            }
-          }
         }
-        Text {
-          id: playlistSubtext
+        CircleIconButton {
+          id: downloadButton
 
           Layout.alignment: Qt.AlignHCenter
-          color: Qt.darker(palette.text, 2)
-          font.pixelSize: 14
-          text: root.model.rowCount() + " songs • 2hr 34min"
+          iconSource: Qt.resolvedUrl("../../../assets/icons/download.svg")
+          margins: 12
+
+          onClicked: console.log("[ACTION] Download Playlist:", root.pt.id)
+        }
+        IconButton {
+          id: playButton
+
+          hasState: false
+          size: Qt.size(Design.iconSize.large, Design.iconSize.large)
+          source: Qt.resolvedUrl("../../../assets/icons/play-circle.svg")
+
+          onClicked: Player.playPlaylist(root.pt)
+        }
+        CircleIconButton {
+          id: editButton
+
+          Layout.alignment: Qt.AlignHCenter
+          iconSource: Qt.resolvedUrl("../../../assets/icons/pen.svg")
+          margins: 12
+
+          onClicked: console.log("[ACTION] Edit Playlist:", root.pt.id)
+        }
+        Item {
+          Layout.fillWidth: true
         }
       }
-    }
-    RowLayout {
-      id: controlsLayout
-
-      Layout.fillWidth: true
-      Layout.maximumHeight: 128
-      Layout.preferredHeight: 128
-      Layout.topMargin: -8
-      spacing: 12
-
-      Item {
-        id: controlsLeftSpacer
-
-        Layout.fillWidth: true
-      }
-      CircleIconButton {
-        id: downloadButton
-
-        Layout.alignment: Qt.AlignHCenter
-        Layout.fillHeight: true
-        Layout.maximumHeight: Design.iconSize.base + (margins * 2)
-        Layout.preferredHeight: Design.iconSize.base + (margins * 2)
-        Layout.preferredWidth: height
-        iconSource: Qt.resolvedUrl("../../../assets/icons/download.svg")
-        margins: 12
-
-        onClicked: {
-          console.log("[ACTION] Download Playlist:", root.pt.id);
-        }
-      }
-      IconButton {
-        id: playButton
-
-        Layout.fillHeight: true
-        Layout.preferredWidth: height
-        hasState: false
-        size: Qt.size(Design.iconSize.large, Design.iconSize.large)
-        source: Qt.resolvedUrl("../../../assets/icons/play-circle.svg")
-
-        onClicked: {
-          console.log("[ACTION] Play Playlist:", root.pt.id);
-          Player.playPlaylist(root.pt);
-        }
-      }
-      CircleIconButton {
-        id: editButton
-
-        Layout.alignment: Qt.AlignHCenter
-        Layout.fillHeight: true
-        Layout.maximumHeight: Design.iconSize.base + (margins * 2)
-        Layout.preferredHeight: Design.iconSize.base + (margins * 2)
-        Layout.preferredWidth: height
-        iconSource: Qt.resolvedUrl("../../../assets/icons/pen.svg")
-        margins: 12
-
-        onClicked: {
-          console.log("[ACTION] Download Playlist:", root.pt.id);
-        }
-      }
-      Item {
-        id: controlsRightSpacer
-
-        Layout.fillWidth: true
-      }
-    }
-    ColumnLayout {
-      id: trackAndSort
-
-      Layout.fillHeight: true
-      Layout.fillWidth: true
-      clip: true
-      spacing: 8
-
       PlaylistSortByDropdown {
-        pt: root.pt
         Layout.fillWidth: true
-        Layout.maximumHeight: 48
         Layout.preferredHeight: 48
+        pt: root.pt
         spacing: 16
       }
       SongListView {
         id: tracksList
 
-        Layout.fillHeight: true
         Layout.fillWidth: true
         fromPlaylist: true
+        implicitHeight: contentHeight
+        interactive: false
         model: root.model
         pl: root.pt
+        Layout.bottomMargin: 16
       }
     }
   }
