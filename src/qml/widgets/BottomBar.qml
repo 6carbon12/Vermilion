@@ -22,22 +22,22 @@ Rectangle {
     Repeater {
       model: [
         {
-          icon: "../../../assets/icons/home",
+          icon: "qrc:/icons/home",
           target: Qt.resolvedUrl("../pages/Home.qml"),
           text: "Home"
         },
         {
-          icon: "../../../assets/icons/search",
+          icon: "qrc:/icons/search",
           target: Qt.resolvedUrl("../pages/Search.qml"),
           text: "Search"
         },
         {
-          icon: "../../../assets/icons/library",
+          icon: "qrc:/icons/library",
           target: Qt.resolvedUrl("../pages/Library.qml"),
           text: "Library"
         },
         {
-          icon: "../../../assets/icons/setting",
+          icon: "qrc:/icons/setting",
           target: Qt.resolvedUrl("../pages/Settings.qml"),
           text: "Settings"
         }

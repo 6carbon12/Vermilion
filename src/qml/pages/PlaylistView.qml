@@ -132,11 +132,11 @@ BasePage {
       anchors.fill: parent
       anchors.margins: 8
       anchors.verticalCenter: parent.verticalCenter
-      leftIcon: Qt.resolvedUrl("../../../assets/icons/left-arrow.svg")
+      leftIcon: "qrc:/icons/left-arrow.svg"
       middleText: root.pt.name
       middleTextColor: palette.text
       middleTextOpacity: Math.min(1.0, Math.max(0.0, (flickable.contentY - textFadeStart) / (textFadeEnd - textFadeStart)))
-      rightIcon: Qt.resolvedUrl("../../../assets/icons/three-dot-vertical.svg")
+      rightIcon: "qrc:/icons/three-dot-vertical.svg"
 
       onLeftClicked: rootContent.stack.pop()
       onRightClicked: topRightContextMenu.open()
@@ -236,7 +236,7 @@ BasePage {
           id: downloadButton
 
           Layout.alignment: Qt.AlignHCenter
-          iconSource: Qt.resolvedUrl("../../../assets/icons/download.svg")
+          iconSource: "qrc:/icons/download.svg"
           margins: 12
 
           onClicked: console.log("[ACTION] Download Playlist:", root.pt.id)
@@ -246,7 +246,7 @@ BasePage {
 
           hasState: false
           size: Qt.size(Design.iconSize.large, Design.iconSize.large)
-          source: Qt.resolvedUrl("../../../assets/icons/play-circle.svg")
+          source: "qrc:/icons/play-circle.svg"
 
           onClicked: Player.playPlaylist(root.pt)
         }
@@ -254,7 +254,7 @@ BasePage {
           id: editButton
 
           Layout.alignment: Qt.AlignHCenter
-          iconSource: Qt.resolvedUrl("../../../assets/icons/pen.svg")
+          iconSource: "qrc:/icons/pen.svg"
           margins: 12
 
           onClicked: console.log("[ACTION] Edit Playlist:", root.pt.id)

@@ -63,7 +63,7 @@ Rectangle {
         Layout.preferredWidth: 40
         hasState: false
         size: Qt.size(Design.iconSize.small, Design.iconSize.small)
-        source: Qt.resolvedUrl("../../../assets/icons/pause.svg")
+        source: "qrc:/icons/pause.svg"
 
         states: [
           State {
@@ -72,7 +72,7 @@ Rectangle {
 
             PropertyChanges {
               playPauseIcon {
-                source: Qt.resolvedUrl("../../../assets/icons/pause.svg")
+                source: "qrc:/icons/pause.svg"
               }
             }
           },
@@ -82,7 +82,7 @@ Rectangle {
 
             PropertyChanges {
               playPauseIcon {
-                source: Qt.resolvedUrl("../../../assets/icons/play.svg")
+                source: "qrc:/icons/play.svg"
               }
             }
           }

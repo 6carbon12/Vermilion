@@ -56,7 +56,7 @@ BasePage {
         Layout.preferredHeight: 48
         Layout.preferredWidth: 48
         hasState: false
-        source: Qt.resolvedUrl("../../../assets/icons/search-inactive.svg")
+        source: "qrc:/icons/search-inactive.svg"
       }
     }
     RowLayout {

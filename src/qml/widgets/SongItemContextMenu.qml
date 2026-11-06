@@ -88,7 +88,7 @@ Popup {
           Layout.preferredWidth: 28
           // TODO: Add proper way to get to know if song is liked
           isActive: root.track && PlaylistsController.isLiked(root.track.id)
-          source: Qt.resolvedUrl("../../../assets/icons/heart")
+          source: "qrc:/icons/heart"
 
           onClicked: {
             PlaylistsController.toggleLike(root.track);
@@ -138,7 +138,7 @@ Popup {
           BigButton {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            iconSource: Qt.resolvedUrl("../../../assets/icons/play-next.svg")
+            iconSource: "qrc:/icons/play-next.svg"
             size: content.iconSize
 
             onClicked: {
@@ -148,7 +148,7 @@ Popup {
           BigButton {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            iconSource: Qt.resolvedUrl("../../../assets/icons/play-last.svg")
+            iconSource: "qrc:/icons/play-last.svg"
             size: content.iconSize
 
             onClicked: {
@@ -163,7 +163,7 @@ Popup {
           spacing: content.largeSpacing
 
           ContextMenuItem {
-            icon: Qt.resolvedUrl("../../../assets/icons/add-to-playlist.svg")
+            icon: "qrc:/icons/add-to-playlist.svg"
             iconSize: content.iconSize
             spacing: content.mediumSpacing
             text: "Add to library"
@@ -176,7 +176,7 @@ Popup {
             }
           }
           ContextMenuItem {
-            icon: Qt.resolvedUrl("../../../assets/icons/download.svg")
+            icon: "qrc:/icons/download.svg"
             iconSize: content.iconSize
             spacing: content.mediumSpacing
             text: "Download"
@@ -188,7 +188,7 @@ Popup {
             }
           }
           ContextMenuItem {
-            icon: Qt.resolvedUrl("../../../assets/icons/info.svg")
+            icon: "qrc:/icons/info.svg"
             iconSize: content.iconSize
             spacing: content.mediumSpacing
             text: "Open Artist"
@@ -201,7 +201,7 @@ Popup {
           }
           ContextMenuItem {
             color: "#FF8183"
-            icon: Qt.resolvedUrl("../../../assets/icons/trash.svg")
+            icon: "qrc:/icons/trash.svg"
             iconSize: content.iconSize
             spacing: content.mediumSpacing
             text: "Remove"

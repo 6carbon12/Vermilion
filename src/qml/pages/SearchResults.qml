@@ -46,7 +46,7 @@ BasePage {
         hasState: false
         height: parent.height
         size: Qt.size(32, 32)
-        source: "../../../assets/icons/left-arrow.svg"
+        source: "qrc:/icons/left-arrow.svg"
         width: parent.height
 
         background: Rectangle {

@@ -158,7 +158,7 @@ Item {
         Layout.preferredHeight: 40
         Layout.preferredWidth: 40
         hasState: false
-        source: Qt.resolvedUrl("../../../../assets/icons/plus.svg")
+        source: "qrc:/icons/plus.svg"
 
         onClicked: {
           root.openDialog();
@@ -200,7 +200,7 @@ Item {
     anchors.right: root.right
     hasState: false
     height: 80
-    source: Qt.resolvedUrl("../../../../assets/icons/plus-circle.svg")
+    source: "qrc:/icons/plus-circle.svg"
     width: 80
 
     onClicked: {

@@ -66,7 +66,7 @@ RowLayout {
     caret: Image {
       layer.enabled: true
       rotation: root.pt.isReverse ? 180 : 0
-      source: Qt.resolvedUrl("../../../assets/icons/caret-down-fill.svg")
+      source: "qrc:/icons/caret-down-fill.svg"
       sourceSize: Qt.size(height, width)
       transformOrigin: Item.Center
 
@@ -118,7 +118,7 @@ RowLayout {
           Layout.preferredWidth: parent.height - 8
           layer.enabled: true
           rotation: root.pt.isReverse ? 180 : 0
-          source: Qt.resolvedUrl("../../../assets/icons/caret-down-fill.svg")
+          source: "qrc:/icons/caret-down-fill.svg"
           sourceSize: Qt.size(height, width)
           transformOrigin: Item.Center
           visible: sortDropdownDelegate.isSelected

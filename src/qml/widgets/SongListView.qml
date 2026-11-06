@@ -25,7 +25,7 @@ ListView {
 
     rightContent: IconButton {
       hasState: false
-      source: Qt.resolvedUrl("../../../assets/icons/three-dot-vertical.svg")
+      source: "qrc:/icons/three-dot-vertical.svg"
 
       // Need this since `rightContentClicked` is not emitted when a control is passed.
       onClicked: {

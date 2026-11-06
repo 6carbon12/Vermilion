@@ -66,7 +66,7 @@ VmModal {
             hasState: false
             height: Design.iconSize.small
             size: Qt.size(height, width)
-            source: Qt.resolvedUrl("../../../assets/icons/search-inactive.svg")
+            source: "qrc:/icons/search-inactive.svg"
             width: Design.iconSize.small
           }
         }
@@ -144,7 +144,7 @@ VmModal {
                 checkBoxBackground: IconButton {
                   hasState: false
                   size: Qt.size(Design.iconSize.small, Design.iconSize.small)
-                  source: Qt.resolvedUrl("../../../assets/icons/plus.svg")
+                  source: "qrc:/icons/plus.svg"
 
                   background: Rectangle {
                     color: palette.window

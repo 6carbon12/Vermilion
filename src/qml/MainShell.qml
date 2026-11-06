@@ -222,7 +222,7 @@ Item {
               Layout.preferredHeight: 40
               Layout.preferredWidth: 40
               hasState: false
-              source: Qt.resolvedUrl("../../assets/icons/caretDown.svg")
+              source: "qrc:/icons/caretDown.svg"
 
               onClicked: {
                 shrinkAnimation.start();
@@ -250,7 +250,7 @@ Item {
               Layout.preferredWidth: 40
               Layout.rightMargin: -8
               hasState: false
-              source: Qt.resolvedUrl("../../assets/icons/hamburger.svg")
+              source: "qrc:/icons/hamburger.svg"
 
               onClicked: {
                 console.log("Three dots clicked");
@@ -306,7 +306,7 @@ Item {
               Layout.preferredWidth: 48
               Layout.rightMargin: -8
               hasState: false
-              source: Qt.resolvedUrl("../../assets/icons/heart.svg")
+              source: "qrc:/icons/heart.svg"
 
               onClicked: {
                 console.log("Like Pressed.");
@@ -429,7 +429,7 @@ Item {
               Layout.preferredHeight: 48
               Layout.preferredWidth: 48
               hasState: false
-              source: Qt.resolvedUrl("../../assets/icons/shuffle.svg")
+              source: "qrc:/icons/shuffle.svg"
 
               onClicked: {
                 console.log("Shuffle Pressed");
@@ -453,7 +453,7 @@ Item {
                 Layout.preferredHeight: 48
                 Layout.preferredWidth: 48
                 hasState: false
-                source: Qt.resolvedUrl("../../assets/icons/previous.svg")
+                source: "qrc:/icons/previous.svg"
 
                 onClicked: {
                   Player.prev();
@@ -467,7 +467,7 @@ Item {
                 Layout.preferredWidth: 96
                 size: Qt.size(Design.iconSize.large, Design.iconSize.large)
                 hasState: false
-                source: Qt.resolvedUrl("../../assets/icons/play-circle.svg")
+                source: "qrc:/icons/play-circle.svg"
 
                 states: [
                   State {
@@ -476,7 +476,7 @@ Item {
 
                     PropertyChanges {
                       playPauseIcon {
-                        source: Qt.resolvedUrl("../../assets/icons/pause-circle.svg")
+                        source: "qrc:/icons/pause-circle.svg"
                       }
                     }
                   },
@@ -486,7 +486,7 @@ Item {
 
                     PropertyChanges {
                       playPauseIcon {
-                        source: Qt.resolvedUrl("../../assets/icons/play-circle.svg")
+                        source: "qrc:/icons/play-circle.svg"
                       }
                     }
                   }
@@ -507,7 +507,7 @@ Item {
                 Layout.preferredHeight: 48
                 Layout.preferredWidth: 48
                 hasState: false
-                source: Qt.resolvedUrl("../../assets/icons/next.svg")
+                source: "qrc:/icons/next.svg"
 
                 onClicked: {
                   Player.next();
@@ -527,7 +527,7 @@ Item {
               Layout.preferredWidth: 48
               Layout.rightMargin: -8
               hasState: false
-              source: Qt.resolvedUrl("../../assets/icons/loop.svg")
+              source: "qrc:/icons/loop.svg"
 
               onClicked: {
                 console.log("Loop Pressed");
@@ -540,7 +540,7 @@ Item {
             Layout.maximumWidth: 1920
             Layout.preferredHeight: 48
             hasState: false
-            source: Qt.resolvedUrl("../../assets/icons/caretUp.svg")
+            source: "qrc:/icons/caretUp.svg"
 
             onClicked: {
               console.log("[ACTION] Open current queue");
@@ -572,7 +572,7 @@ Item {
           Layout.maximumWidth: 1920
           Layout.preferredHeight: 48
           hasState: false
-          source: Qt.resolvedUrl("../../assets/icons/caretDown.svg")
+          source: "qrc:/icons/caretDown.svg"
 
           background: Rectangle {
             anchors.fill: parent

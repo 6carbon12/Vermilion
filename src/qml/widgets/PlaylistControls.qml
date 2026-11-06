@@ -29,7 +29,7 @@ RowLayout {
     Layout.fillHeight: true
     Layout.preferredWidth: height
     Layout.topMargin: 32
-    iconSource: Qt.resolvedUrl("../../../assets/icons/download.svg")
+    iconSource: "qrc:/icons/download.svg"
 
     onClicked: {
       root.download()
@@ -42,7 +42,7 @@ RowLayout {
     Layout.preferredWidth: height
     hasState: false
     size: Qt.size(Design.iconSize.large, Design.iconSize.large)
-    source: Qt.resolvedUrl("../../../assets/icons/play-circle.svg")
+    source: "qrc:/icons/play-circle.svg"
 
     onClicked: {
       root.play()
@@ -56,7 +56,7 @@ RowLayout {
     Layout.fillHeight: true
     Layout.preferredWidth: height
     Layout.topMargin: 32
-    iconSource: Qt.resolvedUrl("../../../assets/icons/pen.svg")
+    iconSource: "qrc:/icons/pen.svg"
 
     onClicked: {
       root.edit()

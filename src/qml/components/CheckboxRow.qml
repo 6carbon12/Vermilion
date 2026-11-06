@@ -37,7 +37,7 @@ Rectangle {
         anchors.fill: parent
         hasState: false
         size: Qt.size(Design.iconSize.small, Design.iconSize.small)
-        source: Qt.resolvedUrl("../../../assets/icons/check.svg")
+        source: "qrc:/icons/check.svg"
         visible: root.selected
       }
     }

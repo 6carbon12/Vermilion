@@ -18,7 +18,7 @@ SearchField {
     anchors.rightMargin: 24
     anchors.verticalCenter: parent.verticalCenter
     hasState: false
-    source: "../../../assets/icons/cross.svg"
+    source: "qrc:/icons/cross.svg"
     visible: searchBar.text !== ""
 
     background: Rectangle {

@@ -183,7 +183,7 @@ Rectangle {
 
     Image {
       layer.enabled: true
-      source: Qt.resolvedUrl("../../../assets/icons/caret-down-fill.svg")
+      source: "qrc:/icons/caret-down-fill.svg"
       sourceSize: Qt.size(height, width)
 
       layer.effect: MultiEffect {

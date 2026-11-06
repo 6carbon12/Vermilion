@@ -51,7 +51,7 @@ BasePage {
         height: parent.height
         width: parent.height
         size: Qt.size(32, 32)
-        source: "../../../assets/icons/left-arrow.svg"
+        source: "qrc:/icons/left-arrow.svg"
 
         background: Rectangle {
           color: palette.alternateBase

@@ -18,7 +18,7 @@ Rectangle {
     anchors.margins: 8
     hasState: false
     size: Qt.size(height, width)
-    source: Qt.resolvedUrl("../../../assets/icons/download.svg")
+    source: "qrc:/icons/download.svg"
 
     onClicked: {
       root.clicked();

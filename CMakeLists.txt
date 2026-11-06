@@ -80,6 +80,7 @@ set(PLAIN_QML_FILES
   src/qml/components/ArtistsText.qml
   src/qml/components/BasePage.qml
   src/qml/components/BigButton.qml
+  src/qml/components/CheckboxRow.qml
   src/qml/components/CircleIconButton.qml
   src/qml/components/ContextMenuItem.qml
   src/qml/components/IconButton.qml
@@ -88,6 +89,7 @@ set(PLAIN_QML_FILES
   src/qml/components/SearchBar.qml
   src/qml/components/SongItem.qml
   src/qml/components/StandardSizes.qml
+  src/qml/components/VmDropdown.qml
   src/qml/components/VmModal.qml
   src/qml/components/VmTextField.qml
   src/qml/pages/Home.qml
@@ -96,17 +98,21 @@ set(PLAIN_QML_FILES
   src/qml/pages/Search.qml
   src/qml/pages/SearchResults.qml
   src/qml/pages/Settings.qml
-  src/qml/widgets/BottomBar.qml
-  src/qml/widgets/MiniPlayer.qml
-  src/qml/widgets/PlaylistContextMenu.qml
-  src/qml/widgets/PlaylistControls.qml
-  src/qml/widgets/SideBar.qml
-  src/qml/widgets/SongListView.qml
-  src/qml/widgets/TwoButtonBar.qml
   src/qml/widgets/library/Artists.qml
   src/qml/widgets/library/Downloaded.qml
   src/qml/widgets/library/Liked.qml
   src/qml/widgets/library/Playlists.qml
+  src/qml/widgets/BottomBar.qml
+  src/qml/widgets/MiniPlayer.qml
+  src/qml/widgets/PlaylistAdditionModal.qml
+  src/qml/widgets/PlaylistChecklist.qml
+  src/qml/widgets/PlaylistContextMenu.qml
+  src/qml/widgets/PlaylistControls.qml
+  src/qml/widgets/PlaylistSortByDropdown.qml
+  src/qml/widgets/SideBar.qml
+  src/qml/widgets/SongItemContextMenu.qml
+  src/qml/widgets/SongListView.qml
+  src/qml/widgets/TwoButtonBar.qml
 )
 
 set_source_files_properties(${SINGLETON_QML_FILES}

@@ -95,7 +95,7 @@ Popup {
           Layout.preferredHeight: 28
           Layout.preferredWidth: 28
           hasState: false
-          source: Qt.resolvedUrl("../../../assets/icons/cross.svg")
+          source: "qrc:/icons/cross.svg"
 
           onClicked: {
             root.close();
@@ -126,7 +126,7 @@ Popup {
           BigButton {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            iconSource: Qt.resolvedUrl("../../../assets/icons/play-next.svg")
+            iconSource: "qrc:/icons/play-next.svg"
             size: content.iconSize
 
             onClicked: {
@@ -136,7 +136,7 @@ Popup {
           BigButton {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            iconSource: Qt.resolvedUrl("../../../assets/icons/play-last.svg")
+            iconSource: "qrc:/icons/play-last.svg"
             size: content.iconSize
 
             onClicked: {
@@ -151,7 +151,7 @@ Popup {
           spacing: content.largeSpacing
 
           ContextMenuItem {
-            icon: Qt.resolvedUrl("../../../assets/icons/shuffle.svg")
+            icon: "qrc:/icons/shuffle.svg"
             iconSize: content.iconSize
             spacing: content.mediumSpacing
             text: "Shuffle play"
@@ -163,7 +163,7 @@ Popup {
             }
           }
           ContextMenuItem {
-            icon: Qt.resolvedUrl("../../../assets/icons/note-pencil.svg")
+            icon: "qrc:/icons/note-pencil.svg"
             iconSize: content.iconSize
             spacing: content.mediumSpacing
             text: "Edit name"
@@ -175,7 +175,7 @@ Popup {
             }
           }
           ContextMenuItem {
-            icon: Qt.resolvedUrl("../../../assets/icons/image.svg")
+            icon: "qrc:/icons/image.svg"
             iconSize: content.iconSize
             spacing: content.mediumSpacing
             text: "Change cover"
@@ -187,7 +187,7 @@ Popup {
             }
           }
           ContextMenuItem {
-            icon: Qt.resolvedUrl("../../../assets/icons/info.svg")
+            icon: "qrc:/icons/info.svg"
             iconSize: content.iconSize
             spacing: content.mediumSpacing
             text: "Info"
@@ -200,7 +200,7 @@ Popup {
           }
           ContextMenuItem {
             color: "#FF8183"
-            icon: Qt.resolvedUrl("../../../assets/icons/trash.svg")
+            icon: "qrc:/icons/trash.svg"
             iconSize: content.iconSize
             spacing: content.mediumSpacing
             text: "Remove from library"
@@ -238,7 +238,7 @@ Popup {
           Layout.preferredHeight: Design.iconSize.large / 1.6
           Layout.preferredWidth: Design.iconSize.large / 1.6
           layer.enabled: true
-          source: Qt.resolvedUrl("../../../assets/icons/info.svg")
+          source: "qrc:/icons/info.svg"
           sourceSize.height: Layout.preferredHeight
           sourceSize.width: Layout.preferredWidth
 
