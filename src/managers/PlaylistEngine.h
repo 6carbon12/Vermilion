@@ -173,7 +173,7 @@ private:
         END;
       )",
       R"(
-        INSERT OR IGNORE INTO playlists (id, name, type)
-        VALUES ('liked', 'Liked Songs', 'liked');
+        INSERT OR IGNORE INTO playlists (id, name, type, cover_uri)
+        VALUES ('liked', 'Liked Songs', 'liked', 'qrc:/images/liked-playlist-cover.png');
       )"};
 };

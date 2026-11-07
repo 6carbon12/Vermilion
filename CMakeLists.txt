@@ -150,6 +150,13 @@ file(
   CONFIGURE_DEPENDS "assets/icons/*.svg"
 )
 
+file(
+  GLOB_RECURSE
+  APP_IMAGES
+  RELATIVE ${CMAKE_SOURCE_DIR}
+  CONFIGURE_DEPENDS "assets/images/*"
+)
+
 file(WRITE "${CMAKE_BINARY_DIR}/clean_qmlls.sh" 
 "#!/bin/bash\n"
 "sed -i '/workspaces/d; s/^1.//; /size=/d' .qt/.qmlls.build.ini\n"
@@ -178,6 +185,12 @@ if(ANDROID)
     PREFIX "/icons"
     BASE "assets/icons"
     FILES ${APP_ICONS}
+  )
+
+  qt_add_resources(${ANDROID_TARGET} "Images"
+    PREFIX "/images"
+    BASE "assets/images"
+    FILES ${APP_IMAGES}
   )
   # `slots` is a macro used by QT
   # but `slots` is used as a variable in Python C API
@@ -282,6 +295,12 @@ else()
     PREFIX "/icons"
     BASE "assets/icons"
     FILES ${APP_ICONS}
+  )
+
+  qt_add_resources(${LINUX_TARGET} "Images"
+    PREFIX "/images"
+    BASE "assets/images"
+    FILES ${APP_IMAGES}
   )
 
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")

@@ -49,7 +49,7 @@ bool PlaylistsController::addToPlaylist(const QList<Core::Track> &track, const Q
 bool PlaylistsController::createPlaylist(const QString &playlistName) {
   Core::Playlist pt;
   pt.name = playlistName;
-  pt.artUrl = "qrc:/icons/default-playlist.svg";
+  pt.artUrl = "qrc:images/default-playlist-cover.png";
   pt.type = Core::PlaylistType::User;
   pt.id = m_engine.generateLocalPlaylistId();
   bool ok = m_engine.createPlaylist(pt);
