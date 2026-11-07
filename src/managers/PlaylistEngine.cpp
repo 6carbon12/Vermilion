@@ -574,6 +574,77 @@ QList<Core::Track> PlaylistEngine::getTracksFromPlaylist(const QString &playlist
   return tracks;
 }
 
+QList<Core::Playlist> PlaylistEngine::getPlaylistsFromTrack(const QString &trackId) {
+  if (trackId.isEmpty()) {
+    m_lastError = "trackId cannot be empty while fetching playlists for it.";
+    return {};
+  }
+  QList<Core::Playlist> playlists;
+  QSqlQuery query(m_db);
+
+  query.prepare(R"(
+SELECT p.*
+FROM playlists p
+JOIN playlist_tracks pt ON p.id = pt.playlist_id
+WHERE pt.track_id = :trackId;
+  )");
+  query.bindValue(":trackId", trackId);
+
+  if (!query.exec()) {
+    qCCritical(PlaylistEngine_l) << "Failed to fetch playlists for track" << trackId << "\nDB:" << query.lastError().text();
+    return {};
+  }
+
+  while (query.next()) {
+    Core::Playlist playlist;
+    playlist.id = query.value("id").toString();
+    playlist.name = query.value("name").toString();
+    playlist.artUrl = query.value("cover_uri").toString();
+
+    QString typeStr = query.value("type").toString();
+    playlist.type = Core::playlistTypeFromString(typeStr);
+    playlist.createdAt = query.value("created_at").toDateTime();
+
+    QString sortByStr = query.value("sort_by").toString();
+    playlist.sortBy = Core::stringToSortCriterion(sortByStr);
+    playlist.isReverse = query.value("is_reversed").toBool();
+
+    playlists.append(playlist);
+  }
+
+  return playlists;
+}
+
+bool PlaylistEngine::isTrackInPlaylist(const QString &trackId, const QString &playlistId) {
+  if (trackId.isEmpty() || playlistId.isEmpty()) {
+    m_lastError = "trackId or playlistId cannot be empty.";
+    return false;
+  }
+
+  QSqlQuery query(m_db);
+
+  query.prepare(R"(
+SELECT 1
+FROM playlist_tracks pt
+WHERE pt.track_id = :trackId AND pt.playlist_id = :playlistId;
+  )");
+
+  query.bindValue(":trackId", trackId);
+  query.bindValue(":playlistId", playlistId);
+
+  if (!query.exec()) {
+    m_lastError = "Failed to check if track exists in playlist, trackId:" + trackId + "playlistId:" + playlistId + "\nDB:" + query.lastError().text();
+    qCCritical(PlaylistEngine_l) << m_lastError;
+    return false;
+  }
+
+  if (!query.next()) {
+    return false;
+  }
+
+  return true;
+}
+
 bool PlaylistEngine::updateSortOrder(const QString &playlistId, TrackSortCriterion criterion, bool isReversed) {
   if (playlistId.isEmpty()) {
     m_lastError = "Playlist ID cannot be empty.\nDB: " + m_db.lastError().text();

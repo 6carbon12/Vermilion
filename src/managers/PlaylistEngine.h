@@ -94,6 +94,14 @@ public:
   /// @return List of tracks in the given playlist.
   QList<Track> getTracksFromPlaylist(const QString &playlistId) const;
 
+  /// @brief Fetches all the playlists a give track is added to.
+  /// @param trackId id of target song.
+  /// @return List of playlists of which track is a part of.
+  QList<Playlist> getPlaylistsFromTrack(const QString &trackId);
+
+  /// @brief Checks if a given track is present in a given playlist.
+  bool isTrackInPlaylist(const QString &trackId, const QString &playlistId);
+
   /// @brief Generates a playlistid.
   QString generateLocalPlaylistId() const;
 
