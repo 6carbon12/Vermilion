@@ -53,18 +53,25 @@ Item {
         id: content
 
         anchors.left: albumCoverContainer.right
+        anchors.right: parent.right
         anchors.leftMargin: trackLayout.spacing
         anchors.verticalCenter: parent.verticalCenter
         spacing: 4
 
         Text {
+          anchors.left: parent.left
+          anchors.right: parent.right
           color: "white"
           elide: Text.ElideRight
+          clip: true
           font.pixelSize: Design.fontSize.base
           font.weight: Font.Medium
           text: root.title
         }
         Loader {
+          anchors.left: parent.left
+          anchors.right: parent.right
+          clip: true
           sourceComponent: root.subText
         }
       }
@@ -77,6 +84,7 @@ Item {
       }
     }
     Loader {
+      id: rightContent
       Layout.alignment: Qt.AlignVCenter
       Layout.preferredHeight: 48
       Layout.preferredWidth: 40

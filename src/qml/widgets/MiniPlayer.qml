@@ -30,8 +30,8 @@ Rectangle {
 
         Layout.fillHeight: true
         Layout.preferredWidth: height
-        source: Player.currentTrack.coverArtUrl
         cornerRadius: 8
+        source: Player.currentTrack.coverArtUrl
       }
       ColumnLayout {
         Layout.fillWidth: true
@@ -50,6 +50,7 @@ Rectangle {
         ArtistsText {
           id: artists
 
+          Layout.fillWidth: true
           artists: Player.currentTrack.artists
           fontSize: Design.fontSize.small
           textColor: Qt.darker(palette.text, 2)

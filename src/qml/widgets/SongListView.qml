@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Layouts
 import Vermilion
 import "../components"
 
@@ -35,12 +36,14 @@ ListView {
       }
     }
     subText: Row {
-      ArtistsText {
-        id: artists
+      spacing: 0
+      width: parent.width
 
+      ArtistsText {
         artists: songItem.artists
         fontSize: 14
         textColor: Qt.darker(palette.text, 2)
+        width: Math.min(implicitWidth, parent.width - separator.width - duration.width)
       }
       Text {
         id: separator

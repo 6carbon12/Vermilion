@@ -292,10 +292,9 @@ Item {
               }
               ArtistsText {
                 id: artists
-
+                Layout.fillWidth: true
                 artists: Player.currentTrack.artists
                 fontSize: 16
-                interactive: true
                 textColor: Qt.darker(palette.text, 2)
               }
             }
