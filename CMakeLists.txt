@@ -266,6 +266,8 @@ else()
   set(CPP_SOURCES_DEBUG
     src/dev/HotReloader.h
     src/dev/HotReloader.cpp
+    src/dev/DebugResourceInterceptor.h
+    src/dev/DebugResourceInterceptor.cpp
   )
   qt_add_executable(${LINUX_TARGET}
     ${CPP_SOURCES}

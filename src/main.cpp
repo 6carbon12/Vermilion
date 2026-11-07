@@ -1,11 +1,12 @@
+#include "DebugResourceInterceptor.h"
 #include "PyHelper.h"
 #include <QDir>
 #include <QFile>
 #include <QGuiApplication>
-#include <QQuickStyle>
 #include <QLoggingCategory>
 #include <QProcessEnvironment>
 #include <QQmlApplicationEngine>
+#include <QQuickStyle>
 #include <QStandardPaths>
 #include <QtLogging>
 #include <exception>
@@ -33,7 +34,6 @@ int main(int argc, char *argv[]) {
   QQuickStyle::setStyle("Fusion");
   qRegisterMetaType<QMap<QByteArray, QByteArray>>();
   QLoggingCategory::setFilterRules("qt.qpa.wayland.textinput.warning=false");
-
 
   if (auto result = PyHelper::init(); !result) {
     auto e = result.error();
@@ -68,17 +68,16 @@ int main(int argc, char *argv[]) {
         &engine, &QQmlApplicationEngine::objectCreationFailed, &app, []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
 #ifdef QT_DEBUG
+#ifndef Q_OS_ANDROID
+    // Add URL interceptor when in a debug build AND on Desktop.
 #define XSTR(x) STR(x)
 #define STR(x) #x
     QString qmlSourceDir = QString::fromUtf8(XSTR(HOTRELOAD_QML_DIR)).remove('"');
-#ifdef Q_OS_ANDROID
-    engine.loadFromModule("Vermilion", "Main");
-#else
-    engine.load(QUrl::fromLocalFile(qmlSourceDir + "/Main.qml"));
+    engine.addUrlInterceptor(new DebugResourceInterceptor(qmlSourceDir));
 #endif
-#else
-    engine.loadFromModule("Vermilion", "Main");
 #endif
+
+    engine.loadFromModule("Vermilion", "Main");
     exitCode = app.exec();
   }
 
