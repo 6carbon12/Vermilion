@@ -105,12 +105,11 @@ BasePage {
       playlistName.focus = true;
     }
   }
-
-  // Floating Header directly on BasePage
   Rectangle {
     id: topBarBg
 
-    readonly property real fadeEnd: Math.max(1, tracksList.y - height)
+    readonly property real absoluteControlsY: mainLayout.y + plInfoAndControlsCol.y + controlsLayout.y
+    readonly property real fadeEnd: Math.max(1, absoluteControlsY - height)
     readonly property real fadeStart: 0
     readonly property real scrollProgress: Math.min(1.0, Math.max(0.0, (flickable.contentY - fadeStart) / (fadeEnd - fadeStart)))
 
@@ -147,138 +146,166 @@ BasePage {
   Flickable {
     id: flickable
 
+    property int topPadding: topBarBg.height
+
     anchors.fill: parent
     boundsBehavior: Flickable.DragOverBounds
     clip: true
     contentHeight: mainLayout.implicitHeight + topPadding
     contentWidth: width
-    property int topPadding: topBarBg.height
 
     ColumnLayout {
       id: mainLayout
-      anchors.topMargin: flickable.topPadding
+
       anchors.fill: parent
       anchors.leftMargin: 16
       anchors.rightMargin: 16
-
-      spacing: 20
+      anchors.topMargin: flickable.topPadding
+      spacing: 32
       width: parent.width
 
-      ColumnLayout {
-        id: playlistInfo
+      Column {
+        id: plInfoAndControlsCol
 
         Layout.fillWidth: true
-        spacing: 16
+        spacing: 4
 
-        RoundedImage {
-          id: playlistArt
-
-          Layout.alignment: Qt.AlignHCenter
-          Layout.preferredHeight: 256
-          Layout.preferredWidth: 256
-          source: root.pageArgs.playlist.artUrl
-        }
         ColumnLayout {
-          id: playlistNameLayout
+          id: playlistInfo
 
-          Layout.alignment: Qt.AlignHCenter
-          spacing: 0
+          anchors.left: parent.left
+          anchors.right: parent.right
+          spacing: 16
 
-          TextField {
-            id: playlistName
+          RoundedImage {
+            id: playlistArt
 
             Layout.alignment: Qt.AlignHCenter
+            Layout.preferredHeight: 256
+            Layout.preferredWidth: 256
+            source: root.pageArgs.playlist.artUrl
+          }
+          ColumnLayout {
+            id: playlistNameLayout
+
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 0
+
+            TextField {
+              id: playlistName
+
+              Layout.alignment: Qt.AlignHCenter
+              Layout.fillWidth: true
+              color: palette.text
+              font.bold: true
+              font.pixelSize: 32
+              horizontalAlignment: Text.AlignHCenter
+              text: root.pt.name
+              wrapMode: Text.WordWrap
+
+              background: Rectangle {
+                color: "transparent"
+              }
+
+              onAccepted: {
+                if (text != root.pt.name) {
+                  PlaylistsController.renamePlaylist(root.pt.id, playlistName.text);
+                }
+                playlistName.focus = false;
+              }
+              onFocusChanged: {
+                if (text != root.pt.name) {
+                  PlaylistsController.renamePlaylist(root.pt.id, playlistName.text);
+                }
+              }
+            }
+            Text {
+              id: playlistSubtext
+
+              Layout.alignment: Qt.AlignHCenter
+              Layout.topMargin: -4
+              color: Qt.darker(palette.text, 2)
+              font.pixelSize: 14
+              text: root.model.rowCount() + " songs • 2hr 34min"
+            }
+          }
+        }
+        RowLayout {
+          id: controlsLayout
+
+          anchors.left: parent.left
+          anchors.right: parent.right
+          height: 64
+          spacing: 12
+
+          Item {
+            id: controlsLeftSpacer
+
             Layout.fillWidth: true
-            color: palette.text
-            font.bold: true
-            font.pixelSize: 32
-            horizontalAlignment: Text.AlignHCenter
-            text: root.pt.name
-            wrapMode: Text.WordWrap
-
-            background: Rectangle {
-              color: "transparent"
-            }
-
-            onAccepted: {
-              if (text != root.pt.name) {
-                PlaylistsController.renamePlaylist(root.pt.id, playlistName.text);
-              }
-              playlistName.focus = false;
-            }
-            onFocusChanged: {
-              if (text != root.pt.name) {
-                PlaylistsController.renamePlaylist(root.pt.id, playlistName.text);
-              }
-            }
           }
-          Text {
-            id: playlistSubtext
+          CircleIconButton {
+            id: downloadButton
 
-            Layout.alignment: Qt.AlignHCenter
-            color: Qt.darker(palette.text, 2)
-            font.pixelSize: 14
-            text: root.model.rowCount() + " songs • 2hr 34min"
+            Layout.preferredHeight: Design.iconSize.base * 1.5
+            Layout.preferredWidth: Design.iconSize.base * 1.5
+            iconSource: "qrc:/icons/download.svg"
+            margins: 12
+
+            onClicked: console.log("[ACTION] Download Playlist:", root.pt.id)
+          }
+          IconButton {
+            id: playButton
+
+            Layout.preferredHeight: Design.iconSize.large
+            Layout.preferredWidth: Design.iconSize.large
+            hasState: false
+            size: Qt.size(height, width)
+            source: "qrc:/icons/play-circle.svg"
+
+            onClicked: Player.playPlaylist(root.pt)
+          }
+          CircleIconButton {
+            id: editButton
+
+            Layout.preferredHeight: Design.iconSize.base * 1.5
+            Layout.preferredWidth: Design.iconSize.base * 1.5
+            iconSource: "qrc:/icons/pen.svg"
+            margins: 12
+
+            onClicked: console.log("[ACTION] Edit Playlist:", root.pt.id)
+          }
+          Item {
+            id: controlsRightSpacer
+
+            Layout.fillWidth: true
           }
         }
       }
-      RowLayout {
-        id: controlsLayout
+      Column {
+        id: tracksAndSortCol
 
+        Layout.bottomMargin: 80 + tracksList.spacing
+        Layout.fillHeight: true
         Layout.fillWidth: true
-        Layout.preferredHeight: 64
-        spacing: 12
 
-        Item {
-          Layout.fillWidth: true
+        PlaylistSortByDropdown {
+          anchors.left: parent.left
+          anchors.right: parent.right
+          height: 48
+          pt: root.pt
+          spacing: 16
         }
-        CircleIconButton {
-          id: downloadButton
+        SongListView {
+          id: tracksList
 
-          Layout.alignment: Qt.AlignHCenter
-          iconSource: "qrc:/icons/download.svg"
-          margins: 12
-
-          onClicked: console.log("[ACTION] Download Playlist:", root.pt.id)
+          anchors.left: parent.left
+          anchors.right: parent.right
+          fromPlaylist: true
+          implicitHeight: contentHeight
+          interactive: false
+          model: root.model
+          pl: root.pt
         }
-        IconButton {
-          id: playButton
-
-          hasState: false
-          size: Qt.size(Design.iconSize.large, Design.iconSize.large)
-          source: "qrc:/icons/play-circle.svg"
-
-          onClicked: Player.playPlaylist(root.pt)
-        }
-        CircleIconButton {
-          id: editButton
-
-          Layout.alignment: Qt.AlignHCenter
-          iconSource: "qrc:/icons/pen.svg"
-          margins: 12
-
-          onClicked: console.log("[ACTION] Edit Playlist:", root.pt.id)
-        }
-        Item {
-          Layout.fillWidth: true
-        }
-      }
-      PlaylistSortByDropdown {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 48
-        pt: root.pt
-        spacing: 16
-      }
-      SongListView {
-        id: tracksList
-
-        Layout.fillWidth: true
-        fromPlaylist: true
-        implicitHeight: contentHeight
-        interactive: false
-        model: root.model
-        pl: root.pt
-        Layout.bottomMargin: 80 + spacing
       }
     }
   }
