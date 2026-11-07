@@ -148,7 +148,7 @@ BasePage {
     id: flickable
 
     anchors.fill: parent
-    boundsBehavior: Flickable.StopAtBounds
+    boundsBehavior: Flickable.DragOverBounds
     clip: true
     contentHeight: mainLayout.implicitHeight + topPadding
     contentWidth: width
@@ -278,7 +278,7 @@ BasePage {
         interactive: false
         model: root.model
         pl: root.pt
-        Layout.bottomMargin: 16
+        Layout.bottomMargin: 80 + spacing
       }
     }
   }
