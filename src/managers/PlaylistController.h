@@ -40,6 +40,9 @@ public:
 
   Q_INVOKABLE QList<Core::Playlist> getPlaylists() const;
   Q_INVOKABLE Core::Playlist getPlaylistFromId(const QString &playlistId) const;
+  Q_INVOKABLE Models::PlaylistsModel* getPlaylistsFromTrack(const QString &trackId);
+  Q_INVOKABLE QList<Core::Playlist> getPlaylistsListFromTrack(const QString &trackId);
+  Q_INVOKABLE bool isTrackInPlaylist(const QString &trackId, const QString &playlistId);
   Q_INVOKABLE Models::TrackListModel* getTracksFromPlaylist(const QString &playlistId) const;
   Q_INVOKABLE QList<Core::Track> getTracksListFromPlaylist(const QString &playlistId) const;
   Q_INVOKABLE QString getLastError() const;

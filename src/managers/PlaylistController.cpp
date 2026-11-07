@@ -121,6 +121,22 @@ Models::TrackListModel *PlaylistsController::getTracksFromPlaylist(const QString
   return tracksModel;
 }
 
+Models::PlaylistsModel *PlaylistsController::getPlaylistsFromTrack(const QString &trackId) {
+  QList<Core::Playlist> playlists = m_engine.getPlaylistsFromTrack(trackId);
+  Models::PlaylistsModel *playlistsModel = new Models::PlaylistsModel;
+  QQmlEngine::setObjectOwnership(playlistsModel, QQmlEngine::JavaScriptOwnership);
+  playlistsModel->setPlaylists(playlists);
+  return playlistsModel;
+}
+
+QList<Core::Playlist> PlaylistsController::getPlaylistsListFromTrack(const QString &playlistId) {
+  return m_engine.getPlaylistsFromTrack(playlistId);
+}
+
+bool PlaylistsController::isTrackInPlaylist(const QString &trackId, const QString &playlistId) {
+  return m_engine.isTrackInPlaylist(trackId, playlistId);
+}
+
 QList<Core::Track> PlaylistsController::getTracksListFromPlaylist(const QString &playlistId) const {
   return m_engine.getTracksFromPlaylist(playlistId);
 }
