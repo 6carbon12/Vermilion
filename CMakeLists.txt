@@ -237,20 +237,11 @@ v1.0/vermilion-extra-libs.tar.gz"
     PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libsqlite3.so"
   )
 
-  set_property(
-    TARGET ${ANDROID_TARGET}
-    PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR ${ANDROID_PKG_DIR}
-  )
-  set_property(
-    TARGET ${ANDROID_TARGET}
-    PROPERTY QT_ANDROID_APP_NAME "Vermilion"
-  )
-  set_property(TARGET ${ANDROID_TARGET}
-    PROPERTY QT_ANDROID_PACKAGE_NAME "io.github.x6carbon12.vermilion"
-  )
-  set_property(TARGET ${ANDROID_TARGET} PROPERTY
-    QT_ANDROID_EXTRA_LIBS
-    "${custom_android_libs_SOURCE_DIR}/libqjs.so"
+  set_target_properties(${ANDROID_TARGET} PROPERTIES
+    QT_ANDROID_PACKAGE_SOURCE_DIR ${ANDROID_PKG_DIR}
+    QT_ANDROID_APP_NAME "Vermilion"
+    QT_ANDROID_PACKAGE_NAME "io.github.x6carbon12.vermilion"
+    QT_ANDROID_EXTRA_LIBS "${custom_android_libs_SOURCE_DIR}/libqjs.so"
   )
 
 else()
