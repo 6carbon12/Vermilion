@@ -64,6 +64,12 @@ ListView {
     onMainContentClicked: {
       Player.play(url);
     }
+
+    onRightContentClicked: {
+      contextMenu.close();
+      contextMenu.track = songItem.track;
+      contextMenu.open();
+    }
   }
 
   SongItemContextMenu {

@@ -77,9 +77,18 @@ Item {
       }
       MouseArea {
         anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-        onClicked: {
-          root.mainContentClicked();
+        onClicked: (mouse) => {
+          if (mouse.button == Qt.RightButton) {
+            root.rightContentClicked();
+          } else {
+            root.mainContentClicked();
+          }
+        }
+
+        onPressAndHold: {
+          root.rightContentClicked();
         }
       }
     }
