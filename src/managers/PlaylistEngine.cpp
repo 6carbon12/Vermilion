@@ -468,6 +468,42 @@ QList<Core::Playlist> PlaylistEngine::getPlaylists() const {
   return playlists;
 }
 
+QList<Core::Playlist> PlaylistEngine::getUserPlaylists() const {
+  QList<Core::Playlist> playlists;
+
+  QSqlQuery query(m_db);
+  query.prepare(R"(
+      SELECT id, name, cover_uri, type, created_at, sort_by, is_reversed
+      FROM playlists
+      WHERE type = "user"
+      ORDER BY created_at ASC;
+    )");
+
+  if (!query.exec()) {
+    qCCritical(PlaylistEngine_l) << "Failed to fetch playlists.\nDB:" << query.lastError().text();
+    return playlists;
+  }
+
+  while (query.next()) {
+    Core::Playlist playlist;
+    playlist.id = query.value("id").toString();
+    playlist.name = query.value("name").toString();
+    playlist.artUrl = query.value("cover_uri").toString();
+
+    QString typeStr = query.value("type").toString();
+    playlist.type = Core::playlistTypeFromString(typeStr);
+    playlist.createdAt = query.value("created_at").toDateTime();
+
+    QString sortByStr = query.value("sort_by").toString();
+    playlist.sortBy = Core::stringToSortCriterion(sortByStr);
+    playlist.isReverse = query.value("is_reversed").toBool();
+
+    playlists.append(playlist);
+  }
+
+  return playlists;
+}
+
 Core::Playlist PlaylistEngine::getPlaylistFromId(const QString &playlistId) const {
   Core::Playlist playlist;
   QSqlQuery query(m_db);

@@ -87,6 +87,10 @@ public:
   /// @return List of playlists.
   QList<Playlist> getPlaylists() const;
 
+  /// @brief Fetches list of all playlists created by user from database.
+  /// @return List of playlists.
+  QList<Playlist> getUserPlaylists() const;
+
   Playlist getPlaylistFromId(const QString& playlistId) const;
 
   /// @brief Fetches all the tracks in a given playlist.
