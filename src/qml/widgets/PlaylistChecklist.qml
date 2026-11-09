@@ -9,8 +9,6 @@ ListView {
   clip: true
   property int num
   property Track track;
-  signal itemToggled(string id);
-
   delegate: CheckboxRow {
     id: plItem
 

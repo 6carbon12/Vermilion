@@ -7,61 +7,57 @@ import Vermilion
 
 VmModal {
   id: root
-  property Track track;
+
+  property var selectedPlaylistIds: []
+  property Track track
+
   function openForTrack(newTrack) {
-    track = newTrack
+    track = newTrack;
     trackChanged();
     open();
   }
 
-  property var selectedPlaylistIds: []
-
   clip: true
-  height: 662
-  width: height * (3 / 5)
+  width: 397
 
-  contentItem: Rectangle {
-    anchors.fill: parent
-    clip: true
-    color: "transparent"
+  contentItem: Item {
+    // This tells the modal exactly how tall it needs to be
+    implicitHeight: layoutCol.implicitHeight
 
-    ColumnLayout {
-      id: mainCol
+    Column {
+      id: layoutCol
 
-      anchors.left: parent.left
-      anchors.margins: 24
-      anchors.right: parent.right
-      anchors.top: parent.top
-      spacing: anchors.margins / 2
+      width: parent.width
 
-      Rectangle {
-        id: modalTopBar
-
-        Layout.fillWidth: true
-        Layout.preferredHeight: 32
-        color: 'transparent'
-
-        Text {
-          anchors.centerIn: parent
-          color: palette.text
-          font.pixelSize: Design.fontSize.base
-          font.weight: Font.Medium
-          text: "Add to a playlist"
-        }
-      }
+      // Top Section (Main Content)
       Column {
-        id: modalContentCol
+        id: mainContelCol
+        bottomPadding: 16
+        spacing: 12
+        topPadding: 12
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: 24
+        anchors.rightMargin: 24
 
-        Layout.fillHeight: true
-        Layout.fillWidth: true
-        spacing: 16
+        Item {
+          height: 32
+          width: parent.width
 
+          Text {
+            anchors.centerIn: parent
+            color: palette.text
+            font.pixelSize: Design.fontSize.base
+            font.weight: Font.Medium
+            text: "Add to a playlist"
+          }
+        }
         VmTextField {
           id: searchBar
 
           height: 48
           placeholderText: "Search Playlist..."
-          width: mainCol.width
+          width: parent.width
 
           IconButton {
             anchors.right: parent.right
@@ -71,37 +67,22 @@ VmModal {
             height: Design.iconSize.small
             size: Qt.size(height, width)
             source: "qrc:/icons/search-inactive.svg"
-            width: Design.iconSize.small
+            width: height
           }
         }
         Column {
           id: playlists
 
-          property alias selectedPlaylistIds: root.selectedPlaylistIds
-
-          function togglePlaylist(id) {
-            let temp = [...selectedPlaylistIds];
-            let idx = temp.indexOf(id);
-            if (idx !== -1) {
-              temp.splice(idx, 1);
-            } else {
-              temp.push(id);
-            }
-            selectedPlaylistIds = temp;
-          }
-
           spacing: 16
-
-          onSelectedPlaylistIdsChanged: {
-            console.log(selectedPlaylistIds);
-          }
+          width: parent.width
 
           Column {
             id: recents
 
-            Text {
-              id: recentsText
+            visible: recentPlaylistsView.count > 0
+            width: parent.width
 
+            Text {
               color: palette.text
               font.pixelSize: Design.fontSize.base
               font.weight: Font.Bold
@@ -109,23 +90,21 @@ VmModal {
             }
             PlaylistChecklist {
               id: recentPlaylistsView
-              track: root.track
-              height: 64 * 3
-              model: PlaylistsController.model
-              num: 3
-              width: mainCol.width
 
-              onItemToggled: id => playlists.togglePlaylist(id)
+              height: 64 * Math.min(count, 3)
+              model: PlaylistsController.userPlaylists
+              num: 3
+              track: root.track
+              width: parent.width
             }
           }
           Column {
             id: allPlaylists
 
             spacing: 4
+            width: parent.width
 
             Text {
-              id: allPlaylistsText
-
               color: palette.text
               font.pixelSize: Design.fontSize.base
               font.weight: Font.Bold
@@ -134,19 +113,15 @@ VmModal {
             PlaylistChecklist {
               id: allPlaylistsView
 
+              height: 64 * (count < 3 ? count + 1 : 3)
+              model: PlaylistsController.userPlaylists
               track: root.track
-              height: 64 * 3
-              model: PlaylistsController.model
-              width: mainCol.width
+              width: parent.width
 
               header: CheckboxRow {
                 height: 64
                 text: "Add new Playlist"
-                width: mainCol.width
-
-                onClicked: {
-                  playlistCreationModal.open();
-                }
+                width: parent.width
 
                 checkBoxBackground: IconButton {
                   hasState: false
@@ -158,74 +133,53 @@ VmModal {
                     radius: 8
                   }
                 }
-              }
 
-              onItemToggled: id => playlists.togglePlaylist(id)
+                onClicked: playlistCreationModal.open()
+              }
             }
           }
         }
       }
-    }
-    Rectangle {
-      anchors.bottom: parent.bottom
-      anchors.left: parent.left
-      anchors.right: parent.right
-      anchors.top: mainCol.bottom
-      anchors.topMargin: 16
-      color: Qt.darker(palette.alternateBase, 1.2)
-      radius: 8
 
+      // Bottom Action Bar
       Rectangle {
-        color: parent.color
-        height: parent.radius
+        color: Qt.darker(palette.alternateBase, 1.2)
+        // Manually calculate height based on the contents to avoid stretching
+        height: 13 + (Design.fontSize.base + 20) + 16
+        radius: 8
+        width: parent.width
 
-        anchors {
-          left: parent.left
-          right: parent.right
-          top: parent.top
+        // Square off the top corners
+        Rectangle {
+          anchors.top: parent.top
+          color: parent.color
+          height: parent.radius
+          width: parent.width
         }
-      }
-      Column {
-        anchors.fill: parent
-        height: Design.fontSize.base + 24
-
         Rectangle {
           id: topBorder
 
-          anchors.left: parent.left
-          anchors.right: parent.right
           color: Qt.darker(palette.text, 3)
           height: 1
-        }
-        Rectangle {
-          id: spacer
-
-          anchors.left: parent.left
-          anchors.right: parent.right
-          color: "transparent"
-          height: 12
+          width: parent.width
         }
         RowLayout {
-          id: controls
-
-          anchors.left: parent.left
+          anchors.bottomMargin: 16
+          anchors.fill: parent
           anchors.leftMargin: 24
-          anchors.right: parent.right
           anchors.rightMargin: 24
-          height: Design.fontSize.base + 20
+          anchors.topMargin: 13
           spacing: 12
 
           Button {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.preferredWidth: 1
 
             background: Rectangle {
               color: palette.window
               radius: 8
             }
             contentItem: Text {
-              anchors.fill: parent
               color: palette.text
               font.pixelSize: Design.fontSize.small
               horizontalAlignment: Text.AlignHCenter
@@ -233,21 +187,18 @@ VmModal {
               verticalAlignment: Text.AlignVCenter
             }
 
-            onClicked: {
-              root.close();
-            }
+            onClicked: root.close()
           }
           Button {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.preferredWidth: 1
 
             background: Rectangle {
               color: palette.accent
               radius: 8
             }
             contentItem: Text {
-              anchors.fill: parent
+              color: palette.window
               font.pixelSize: Design.fontSize.small
               font.weight: Font.Medium
               horizontalAlignment: Text.AlignHCenter
@@ -266,6 +217,7 @@ VmModal {
       }
     }
   }
+
   PlaylistCreationModal {
     id: playlistCreationModal
 
