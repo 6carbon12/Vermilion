@@ -136,7 +136,7 @@ Popup {
         RowLayout {
           id: bigSongControls
 
-          Layout.preferredHeight: 128
+          Layout.preferredHeight: 96
           spacing: content.mediumSpacing
 
           BigButton {
