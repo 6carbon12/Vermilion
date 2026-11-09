@@ -16,6 +16,7 @@ class PlaylistsController : public QObject {
   QML_NAMED_ELEMENT(PlaylistsController)
 
   Q_PROPERTY(Models::PlaylistsModel *model READ getModel NOTIFY playlistUpdated)
+  Q_PROPERTY(Models::PlaylistsModel *userPlaylists READ getUserPlaylists NOTIFY playlistUpdated)
   Q_PROPERTY(QString lastError READ lastError NOTIFY errorOccurred)
 
 public:
@@ -39,6 +40,8 @@ public:
   Q_INVOKABLE bool updateSortOrder(const QString &playlistId, Core::TrackSortCriterion criterion, bool isReversed);
 
   Q_INVOKABLE QList<Core::Playlist> getPlaylists() const;
+  Q_INVOKABLE Models::PlaylistsModel* getUserPlaylists() const;
+  Q_INVOKABLE QList<Core::Playlist> getUserPlaylistsList() const;
   Q_INVOKABLE Core::Playlist getPlaylistFromId(const QString &playlistId) const;
   Q_INVOKABLE Models::PlaylistsModel* getPlaylistsFromTrack(const QString &trackId);
   Q_INVOKABLE QList<Core::Playlist> getPlaylistsListFromTrack(const QString &trackId);

@@ -115,6 +115,18 @@ bool PlaylistsController::updateSortOrder(const QString &playlistId, Core::Track
 
 QList<Core::Playlist> PlaylistsController::getPlaylists() const { return m_engine.getPlaylists(); }
 
+Models::PlaylistsModel* PlaylistsController::getUserPlaylists() const {
+  QList<Core::Playlist> playlists = m_engine.getUserPlaylists();
+  Models::PlaylistsModel *playlistsModel = new Models::PlaylistsModel;
+  QQmlEngine::setObjectOwnership(playlistsModel, QQmlEngine::JavaScriptOwnership);
+  playlistsModel->setPlaylists(playlists);
+  return playlistsModel;
+}
+
+QList<Core::Playlist> PlaylistsController::getUserPlaylistsList() const {
+  return m_engine.getUserPlaylists();
+}
+
 Models::TrackListModel *PlaylistsController::getTracksFromPlaylist(const QString &playlistId) const {
   QList<Core::Track> tracks = m_engine.getTracksFromPlaylist(playlistId);
   Models::TrackListModel *tracksModel = new Models::TrackListModel;
