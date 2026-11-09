@@ -5,6 +5,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Vermilion as Vermilion
 import "../../components"
+import "../"
 
 Item {
   id: root
@@ -195,86 +196,7 @@ Item {
       }
     }
   }
-  IconButton {
-    anchors.bottom: root.bottom
-    anchors.right: root.right
-    hasState: false
-    height: 80
-    source: "qrc:/icons/plus-circle.svg"
-    width: 80
-
-    onClicked: {
-      console.log("[ACTION] Create Playlist");
-      dialog.open();
-    }
-  }
-  VmModal {
+  PlaylistCreationModal {
     id: dialog
-
-    height: 128 + 16
-    modal: true
-    width: 300
-
-    contentItem: ColumnLayout {
-      anchors.fill: parent
-      anchors.margins: 16
-      spacing: 12
-
-      VmTextField {
-        id: playlistName
-
-        Layout.fillWidth: true
-        Layout.preferredHeight: 48
-        placeholderText: "Playlist name..."
-        placeholderTextColor: Qt.darker(palette.text, 2)
-
-        onAccepted: {
-          Vermilion.PlaylistsController.createPlaylist(playlistName.text);
-          dialog.close();
-        }
-      }
-      RowLayout {
-        Layout.fillWidth: true
-
-        Item {
-          Layout.fillWidth: true
-        }
-        Button {
-          Layout.preferredHeight: 48
-          Layout.preferredWidth: 128
-
-          background: Rectangle {
-            color: palette.accent
-            radius: 8
-          }
-          contentItem: Text {
-            id: createText
-
-            color: "black"
-            font.pixelSize: Vermilion.Design.fontSize.base
-            horizontalAlignment: Qt.AlignHCenter
-            text: "Create"
-            verticalAlignment: Qt.AlignVCenter
-          }
-
-          onClicked: {
-            Vermilion.PlaylistsController.createPlaylist(playlistName.text);
-            dialog.close();
-          }
-        }
-      }
-      Item {
-        id: dialogBottomSpacer
-
-        Layout.fillHeight: true
-      }
-    }
-
-    onClosed: {
-      root.dialogStateChanged(false);
-    }
-    onOpened: {
-      root.dialogStateChanged(true);
-    }
   }
 }

@@ -2,14 +2,13 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Vermilion
-import "../components"
 
 ListView {
   id: root
   boundsMovement: Flickable.StopAtBounds
   clip: true
   property int num
-  property var selectedIds: []
+  property Track track;
   signal itemToggled(string id);
 
   delegate: CheckboxRow {
@@ -18,9 +17,8 @@ ListView {
     required property int index
     required property Playlist playlist
 
-    color: "transparent"
     height: root.num ? index < root.num ? 64 : 0 : 64
-    selected: root.selectedIds.includes(playlist.id)
+    selected: PlaylistsController.isTrackInPlaylist(root.track.id, plItem.playlist.id);
     text: plItem.playlist.name
     width: ListView.view.width
 
@@ -28,8 +26,28 @@ ListView {
       source: plItem.playlist.artUrl
     }
 
+    Connections {
+      target: root
+
+      function onTrackChanged(plId) {
+        plItem.selected = PlaylistsController.isTrackInPlaylist(root.track.id, plItem.playlist.id);
+      }
+    }
+
+    Connections {
+      target: PlaylistsController
+
+      function onTracksUpdated(plId) {
+        plItem.selected = PlaylistsController.isTrackInPlaylist(root.track.id, plItem.playlist.id);
+      }
+    }
+
     onClicked: {
-      root.itemToggled(plItem.playlist.id)
+      if (plItem.selected) {
+        PlaylistsController.removeFromPlaylist(root.track.id, plItem.playlist.id);
+      } else {
+        PlaylistsController.addToPlaylist(root.track, plItem.playlist.id);
+      }
     }
   }
 }

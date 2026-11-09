@@ -19,6 +19,7 @@ Rectangle {
       id: albumCover
 
       anchors.fill: parent
+      sourceSize: Qt.size(height, height)
       fillMode: Image.PreserveAspectCrop
       visible: false
     }

@@ -46,16 +46,18 @@ bool PlaylistsController::addToPlaylist(const QList<Core::Track> &track, const Q
   return ok;
 }
 
-bool PlaylistsController::createPlaylist(const QString &playlistName) {
+QString PlaylistsController::createPlaylist(const QString &playlistName) {
   Core::Playlist pt;
   pt.name = playlistName;
   pt.artUrl = "qrc:images/default-playlist-cover.png";
   pt.type = Core::PlaylistType::User;
   pt.id = m_engine.generateLocalPlaylistId();
   bool ok = m_engine.createPlaylist(pt);
-  if (!ok)
+  if (!ok) {
     Q_EMIT errorOccurred();
-  return ok;
+    return "";
+  }
+  return pt.id;
 }
 
 bool PlaylistsController::createPlaylist(const Core::Playlist &playlist) {

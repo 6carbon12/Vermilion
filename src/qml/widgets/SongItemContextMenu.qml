@@ -13,6 +13,11 @@ Popup {
   property Playlist pl
   property Track track
 
+  function openForTrack(newTrack) {
+    track = newTrack;
+    open();
+  }
+
   height: contentLayout.implicitHeight
   modal: true
   padding: 0
@@ -84,6 +89,7 @@ Popup {
         }
         IconButton {
           id: likeButton
+
           Layout.preferredHeight: 28
           Layout.preferredWidth: 28
           // TODO: Add proper way to get to know if song is liked
@@ -95,22 +101,20 @@ Popup {
           }
 
           Connections {
-            target: PlaylistsController
-
             function onTracksUpdated(plId) {
               if (plId == "liked") {
-                console.log("Liked updated")
-                likeButton.isActive = PlaylistsController.isLiked(root.track.id)
+                likeButton.isActive = PlaylistsController.isLiked(root.track.id);
               }
             }
+
+            target: PlaylistsController
           }
-
           Connections {
-            target: root
-
             function onTrackChanged() {
-              likeButton.isActive = PlaylistsController.isLiked(root.track.id)
+              likeButton.isActive = PlaylistsController.isLiked(root.track.id);
             }
+
+            target: root
           }
         }
       }
@@ -170,8 +174,8 @@ Popup {
 
             TapHandler {
               onSingleTapped: {
-                plAddModal.track = root.track
-                plAddModal.open();
+                plAddModal.close();
+                plAddModal.openForTrack(root.track)
               }
             }
           }

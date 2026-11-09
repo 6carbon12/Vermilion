@@ -108,6 +108,7 @@ set(PLAIN_QML_FILES
   src/qml/widgets/PlaylistChecklist.qml
   src/qml/widgets/PlaylistContextMenu.qml
   src/qml/widgets/PlaylistControls.qml
+  src/qml/widgets/PlaylistCreationModal.qml
   src/qml/widgets/PlaylistSortByDropdown.qml
   src/qml/widgets/SideBar.qml
   src/qml/widgets/SongItemContextMenu.qml

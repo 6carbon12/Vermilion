@@ -4,11 +4,15 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Vermilion
-import "../components"
 
 VmModal {
   id: root
   property Track track;
+  function openForTrack(newTrack) {
+    track = newTrack
+    trackChanged();
+    open();
+  }
 
   property var selectedPlaylistIds: []
 
@@ -105,11 +109,10 @@ VmModal {
             }
             PlaylistChecklist {
               id: recentPlaylistsView
-
+              track: root.track
               height: 64 * 3
               model: PlaylistsController.model
               num: 3
-              selectedIds: playlists.selectedPlaylistIds
               width: mainCol.width
 
               onItemToggled: id => playlists.togglePlaylist(id)
@@ -131,15 +134,19 @@ VmModal {
             PlaylistChecklist {
               id: allPlaylistsView
 
+              track: root.track
               height: 64 * 3
               model: PlaylistsController.model
-              selectedIds: playlists.selectedPlaylistIds
               width: mainCol.width
 
               header: CheckboxRow {
                 height: 64
                 text: "Add new Playlist"
                 width: mainCol.width
+
+                onClicked: {
+                  playlistCreationModal.open();
+                }
 
                 checkBoxBackground: IconButton {
                   hasState: false
@@ -257,6 +264,13 @@ VmModal {
           }
         }
       }
+    }
+  }
+  PlaylistCreationModal {
+    id: playlistCreationModal
+
+    onPlaylistCreated: plId => {
+      PlaylistsController.addToPlaylist(root.track, plId);
     }
   }
 }
