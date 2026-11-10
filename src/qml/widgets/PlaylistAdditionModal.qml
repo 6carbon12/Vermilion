@@ -18,7 +18,7 @@ VmModal {
   }
 
   clip: true
-  width: 397
+  width: 397 * 0.8
 
   contentItem: Item {
     // This tells the modal exactly how tall it needs to be

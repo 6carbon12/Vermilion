@@ -82,6 +82,8 @@ ListView {
       interval: 100
 
       onTriggered: {
+        playlistAdditionModal.close();
+        playlistAdditionModal.track = songItem.track;
         playlistAdditionModal.open();
       }
     }
