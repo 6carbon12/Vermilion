@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
 project(Vermilion VERSION 0.0 LANGUAGES CXX)
 
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+endif()
+
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_UNITY_BUILD ON)
+set(CMAKE_UNITY_BUILD_BATCH_SIZE 8)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(FetchContent)
@@ -104,6 +111,7 @@ set(PLAIN_QML_FILES
   src/qml/widgets/library/Playlists.qml
   src/qml/widgets/BottomBar.qml
   src/qml/widgets/MiniPlayer.qml
+  src/qml/widgets/PlayerView.qml
   src/qml/widgets/PlaylistAdditionModal.qml
   src/qml/widgets/PlaylistChecklist.qml
   src/qml/widgets/PlaylistContextMenu.qml
@@ -238,6 +246,13 @@ v1.0/vermilion-extra-libs.tar.gz"
     PRIVATE "${ANDROID_PKG_DIR}/libs/arm64-v8a/libsqlite3.so"
   )
 
+  target_precompile_headers(${ANDROID_TARGET} PRIVATE
+    <QObject>
+    <QString>
+    <pybind11/pybind11.h>
+    <pybind11/embed.h>
+  )
+
   set_target_properties(${ANDROID_TARGET} PROPERTIES
     QT_ANDROID_PACKAGE_SOURCE_DIR ${ANDROID_PKG_DIR}
     QT_ANDROID_APP_NAME "Vermilion"
@@ -335,7 +350,6 @@ else()
   pkg_check_modules(MPV REQUIRED IMPORTED_TARGET mpv)
   pkg_check_modules(AVUTIL REQUIRED IMPORTED_TARGET libavutil)
 
-  target_link_options(${LINUX_TARGET} PRIVATE "-Wl,--trace")
   target_link_libraries(${LINUX_TARGET} PRIVATE
     PRIVATE PkgConfig::AVUTIL
     PRIVATE Qt6::Quick
@@ -345,5 +359,12 @@ else()
     PRIVATE pybind11::embed
     PRIVATE PkgConfig::MPV
     PRIVATE Python3::Python
+  )
+
+  target_precompile_headers(${LINUX_TARGET} PRIVATE
+    <QObject>
+    <QString>
+    <pybind11/pybind11.h>
+    <pybind11/embed.h>
   )
 endif()
