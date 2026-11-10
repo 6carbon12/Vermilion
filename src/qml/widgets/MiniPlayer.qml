@@ -1,13 +1,17 @@
+pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import Vermilion
 import "../components"
 
-Rectangle {
+SwipeDelegate {
   id: root
 
   property string artUrl
   property var artists
+  property color color
+  property real contentScale: 1
   property int duration
   property real iconOpacity: 1
   property real imageOpacity: 1
@@ -15,7 +19,6 @@ Rectangle {
   property int position
   property bool progressIndicatiorVisible: true
   property real progressIndicatorOpacity: 1
-  property real contentScale: 1
   property real textOpacity: 1
   property string title
   property real yOffset: 0
@@ -23,16 +26,19 @@ Rectangle {
   signal pauseRequested
   signal playRequested
 
-  // 1. Change background to transparent
-  color: "transparent"
   focus: true
+  padding: 0
   z: 10
 
-  ColumnLayout {
+  background: Rectangle {
+    color: root.color
+  }
+
+  contentItem: ColumnLayout {
     id: mainLayout
 
-    anchors.fill: parent
     scale: root.contentScale
+    spacing: 0
 
     RowLayout {
       id: playerStateContainer
@@ -40,7 +46,7 @@ Rectangle {
       Layout.fillHeight: true
       Layout.fillWidth: true
       Layout.margins: 12
-      Layout.maximumWidth: parent.width
+      Layout.maximumWidth: root.width
       spacing: 12
 
       RoundedImage {
@@ -60,12 +66,8 @@ Rectangle {
         opacity: root.textOpacity
         spacing: 0
 
-        transform: Translate {
-          y: root.yOffset
-        }
-
         Text {
-          id: title
+          id: titleText
 
           Layout.fillWidth: true
           color: palette.text
@@ -74,7 +76,7 @@ Rectangle {
           text: root.title
         }
         ArtistsText {
-          id: artists
+          id: artistsText
 
           Layout.fillWidth: true
           artists: root.artists
@@ -106,24 +108,66 @@ Rectangle {
         }
       }
     }
+  }
+
+  swipe.left: Item {
+    clip: true
+    height: root.height
+    width: root.width * 0.2
+
     Rectangle {
-      id: progressInicator
+      anchors.left: parent.left
+      height: parent.height
+      width: Math.max(0, root.swipe.position * root.width)
+      color: palette.alternateBase
+    }
+  }
 
-      Layout.fillWidth: true
-      Layout.preferredHeight: 2
-      color: Qt.darker(palette.text, 2)
+  swipe.right: Item {
+    anchors.right: parent.right
+    clip: true
+    height: root.height
+    width: root.width * 0.2
 
-      // Use opacity instead of visible so the layout doesn't jump 2 pixels when sliding starts
-      opacity: root.progressIndicatorOpacity
-      // visible: opacity > 0
+    Rectangle {
+      anchors.right: parent.right
+      height: parent.height
+      width: Math.max(0, -root.swipe.position * root.width)
+      color: palette.alternateBase
+    }
+  }
 
-      Rectangle {
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.top: parent.top
-        color: palette.accent
-        width: root.duration > 0 ? (root.position / root.duration) * parent.width : 0
-      }
+  onClicked: {
+    console.log("Main content clicked");
+  }
+
+  swipe.onOpened: {
+    if (swipe.position > 0) {
+      Player.prev()
+    } else if (swipe.position < 0) {
+      Player.next()
+    }
+
+    swipe.close();
+  }
+
+  Rectangle {
+    id: progressInicator
+
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    color: Qt.darker(palette.text, 2)
+    height: 2
+    opacity: root.progressIndicatorOpacity
+    z: 15 // Ensure it stays on top of sliding layers
+
+    Rectangle {
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      anchors.top: parent.top
+      color: palette.accent
+      width: root.duration > 0 ? (root.position / root.duration) * parent.width : 0
     }
   }
 }

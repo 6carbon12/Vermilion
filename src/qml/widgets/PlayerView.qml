@@ -110,11 +110,8 @@ Item {
     title: root.track.title
     visible: opacity > 0
 
-    MouseArea {
-      anchors.fill: parent
-      enabled: root.progress === 0
-
-      onClicked: {
+    onClicked: {
+      if (root.progress === 0) {
         root.queueProgress = 0.0;
         root.currentHeight = root.expandedHeight;
       }
