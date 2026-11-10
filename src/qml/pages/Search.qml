@@ -12,21 +12,6 @@ BasePage {
   pageArgs: ({})
   pageUrl: Qt.resolvedUrl("Search.qml")
 
-  Connections {
-    id: ytConnection
-    enabled: searchPage.StackView.visible
-    function onSearchSuccess(model) {
-      rootContent.stack.pushItem(Qt.resolvedUrl("SearchResults.qml"), {
-        pageArgs: {
-          model: model,
-          searchQuery: searchBar.query
-        }
-      }, StackView.Immediate);
-      searchBar.query = ""
-    }
-
-    target: YT
-  }
   ColumnLayout {
     anchors.fill: parent
     spacing: 8
@@ -36,22 +21,28 @@ BasePage {
 
       Layout.fillWidth: true
       Layout.preferredHeight: 48
-      leftPadding: height
+      leftPadding: height * 0.9
 
       onAccepted: {
-        YT.requestSearch(searchBar.query);
+        rootContent.stack.pushItem(Qt.resolvedUrl("SearchResults.qml"), {
+          pageArgs: {
+            searchQuery: searchBar.query
+          }
+        }, StackView.Immediate);
+        searchBar.query = "";
       }
 
       IconButton {
         id: backButton
 
         anchors.left: parent.left
+        anchors.leftMargin: 12
         anchors.verticalCenter: parent.verticalCenter
         hasState: false
-        height: parent.height
-        width: parent.height
-        size: Qt.size(32, 32)
+        height: Design.iconSize.small
+        size: Qt.size(height, width)
         source: "qrc:/icons/left-arrow.svg"
+        width: Design.iconSize.small
 
         background: Rectangle {
           color: palette.alternateBase
@@ -70,9 +61,7 @@ BasePage {
       Layout.fillWidth: true
       Layout.preferredHeight: 100
       clip: true
-
       model: 16
-
       orientation: ListView.Horizontal
       spacing: 10
 
@@ -85,6 +74,7 @@ BasePage {
     }
     ListView {
       id: searchHistoryView
+
       Layout.fillHeight: true
       Layout.fillWidth: true
       clip: true
@@ -100,14 +90,18 @@ BasePage {
         TapHandler {
           onTapped: {
             searchBar.query = itm.query;
-            YT.requestSearch(itm.query);
+            rootContent.stack.pushItem(Qt.resolvedUrl("SearchResults.qml"), {
+              pageArgs: {
+                searchQuery: searchBar.query
+              }
+            }, StackView.Immediate);
           }
         }
         Text {
           anchors.left: parent.left
+          anchors.leftMargin: 8
           anchors.right: parent.right
           anchors.rightMargin: 16
-          anchors.leftMargin: 8
           anchors.verticalCenter: parent.verticalCenter
           color: "white"
           elide: Text.ElideRight

@@ -22,6 +22,7 @@ Item {
 
   clip: true
   height: currentHeight
+  visible: Player.playerState != PlayerState.Initialized
 
   Behavior on currentHeight {
     NumberAnimation {

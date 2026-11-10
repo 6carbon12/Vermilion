@@ -95,6 +95,7 @@ set(PLAIN_QML_FILES
   src/qml/components/RoundedImage.qml
   src/qml/components/SearchBar.qml
   src/qml/components/SongItem.qml
+  src/qml/components/SongItemSkeleton.qml
   src/qml/components/StandardSizes.qml
   src/qml/components/VmDropdown.qml
   src/qml/components/VmModal.qml

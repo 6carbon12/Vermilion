@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
+ import QtQuick.Controls
 import Vermilion
 import "../components"
 import "../widgets"
@@ -8,16 +9,24 @@ import "../widgets"
 BasePage {
   id: searchResults
 
+  property bool isLoading: true
+
   pageUrl: Qt.resolvedUrl("SearchResults.qml")
 
   Component.onCompleted: {
     searchBar.query = searchResults.pageArgs.searchQuery;
+    if (searchBar.query !== "") {
+      isLoading = true;
+      YT.requestSearch(searchBar.text);
+    }
   }
 
   Connections {
     function onSearchSuccess(model) {
       resultsView.model = model;
+      searchBar.focus = false
       searchResults.pageArgs.model = model;
+      searchResults.isLoading = false;
     }
 
     target: YT
@@ -31,9 +40,10 @@ BasePage {
 
       Layout.fillWidth: true
       Layout.preferredHeight: 48
-      leftPadding: height
+      leftPadding: height * 0.9
 
       onAccepted: {
+        searchResults.isLoading = true;
         YT.requestSearch(searchBar.text);
         searchResults.pageArgs.searchQuery = searchBar.text;
       }
@@ -42,12 +52,13 @@ BasePage {
         id: backButton
 
         anchors.left: parent.left
+        anchors.leftMargin: 12
         anchors.verticalCenter: parent.verticalCenter
         hasState: false
-        height: parent.height
-        size: Qt.size(32, 32)
+        height: Design.iconSize.small
+        size: Qt.size(height, width)
         source: "qrc:/icons/left-arrow.svg"
-        width: parent.height
+        width: Design.iconSize.small
 
         background: Rectangle {
           color: palette.alternateBase
@@ -55,18 +66,53 @@ BasePage {
         }
 
         onClicked: {
-          rootContent.stack.pop();
+          rootContent.stack.pop(StackView.Immediate)
+          rootContent.stack.currentItem.pageArgs.query = searchBar.text;
         }
       }
     }
-    SongListView {
-      id: resultsView
+    Item {
+      id: skeletonContainer
+
+      property real shimmerProgress: 0.0
 
       Layout.fillHeight: true
       Layout.fillWidth: true
       Layout.topMargin: 12
-      clip: true
-      model: searchResults.pageArgs.model
+
+      NumberAnimation {
+        duration: 1400
+        from: 0.0
+        loops: Animation.Infinite
+        property: "shimmerProgress"
+        running: searchResults.isLoading
+        target: skeletonContainer
+        to: 1.0
+      }
+      SongListView {
+        id: resultsView
+
+        anchors.fill: parent
+        clip: true
+        model: searchResults.pageArgs.model
+        visible: !searchResults.isLoading
+      }
+      ListView {
+        id: skeletonView
+
+        anchors.fill: parent
+        clip: true
+        interactive: false
+        model: Math.floor(3440 / 80)
+        spacing: resultsView.spacing
+        visible: searchResults.isLoading
+
+        delegate: SongItemSkeleton {
+          globalProgress: skeletonContainer.shimmerProgress
+          height: 64
+          width: parent.width
+        }
+      }
     }
   }
 }
