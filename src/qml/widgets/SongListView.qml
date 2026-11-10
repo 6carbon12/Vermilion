@@ -10,7 +10,8 @@ ListView {
   property bool fromPlaylist: false
   property Playlist pl
 
-  boundsMovement: Flickable.StopAtBounds
+  boundsBehavior: Flickable.StopAtBounds
+  flickableDirection: Flickable.VerticalFlick
   spacing: 16
 
   delegate: SongItem {
@@ -60,17 +61,35 @@ ListView {
       }
     }
 
+    onLeftSwipeActionTriggered: {
+      playlistAdditionModalOpener.start();
+    }
     onMainContentClicked: {
       Player.play(url);
     }
-
     onRightContentClicked: {
       contextMenu.close();
       contextMenu.track = songItem.track;
       contextMenu.open();
     }
+    onRightSwipeActionTriggered: {
+      console.log("RIGHT");
+    }
+
+    Timer {
+      id: playlistAdditionModalOpener
+
+      interval: 100
+
+      onTriggered: {
+        playlistAdditionModal.open();
+      }
+    }
   }
 
+  PlaylistAdditionModal {
+    id: playlistAdditionModal
+  }
   SongItemContextMenu {
     id: contextMenu
 
