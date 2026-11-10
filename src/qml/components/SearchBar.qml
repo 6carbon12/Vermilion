@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import Vermilion
 
 SearchField {
   id: searchBar
@@ -15,8 +16,11 @@ SearchField {
   }
   clearIndicator.indicator: IconButton {
     anchors.right: searchBar.right
-    anchors.rightMargin: 24
+    anchors.rightMargin: 12
     anchors.verticalCenter: parent.verticalCenter
+    height: Design.iconSize.small
+    width: Design.iconSize.small
+    size: Qt.size(height, width)
     hasState: false
     source: "qrc:/icons/cross.svg"
     visible: searchBar.text !== ""
@@ -27,12 +31,13 @@ SearchField {
     }
 
     onClicked: {
-      searchBar.query = ""
+      searchBar.query = "";
     }
   }
   contentItem: TextField {
     id: textInput
 
+    EnterKey.type: Qt.EnterKeySearch
     color: palette.text
     font.pixelSize: 14
     placeholderText: "Type to search"
@@ -43,12 +48,5 @@ SearchField {
       color: palette.alternateBase
       radius: parent.height / 2
     }
-
-    EnterKey.type: Qt.EnterKeySearch
-
-    onAccepted: {
-      searchBar.accepted();
-    }
   }
-
 }
