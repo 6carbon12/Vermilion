@@ -92,7 +92,6 @@ Popup {
 
           Layout.preferredHeight: 28
           Layout.preferredWidth: 28
-          // TODO: Add proper way to get to know if song is liked
           isActive: root.track && PlaylistsController.isLiked(root.track.id)
           source: "qrc:/icons/heart"
 
@@ -129,14 +128,14 @@ Popup {
       ColumnLayout {
         id: songControlsLayout
 
-        Layout.leftMargin: content.mediumSpacing
-        Layout.rightMargin: content.mediumSpacing
         spacing: content.mediumSpacing
 
         RowLayout {
           id: bigSongControls
 
+          Layout.leftMargin: content.mediumSpacing
           Layout.preferredHeight: 96
+          Layout.rightMargin: content.mediumSpacing
           spacing: content.mediumSpacing
 
           BigButton {
@@ -163,14 +162,13 @@ Popup {
         Column {
           id: smallSongControls
 
-          Layout.bottomMargin: content.mediumSpacing
-          spacing: content.largeSpacing
+          Layout.fillWidth: true
 
-          ContextMenuItem {
+          SmallMenuItem {
+            id: addToPlaylist
+
             icon: "qrc:/icons/add-to-playlist.svg"
-            iconSize: content.iconSize
-            spacing: content.mediumSpacing
-            text: "Add to library"
+            text: "Add to playlist"
 
             TapHandler {
               onSingleTapped: {
@@ -179,10 +177,10 @@ Popup {
               }
             }
           }
-          ContextMenuItem {
+          SmallMenuItem {
+            id: download
+
             icon: "qrc:/icons/download.svg"
-            iconSize: content.iconSize
-            spacing: content.mediumSpacing
             text: "Download"
 
             TapHandler {
@@ -191,11 +189,11 @@ Popup {
               }
             }
           }
-          ContextMenuItem {
+          SmallMenuItem {
+            id: openArtist
+
             icon: "qrc:/icons/info.svg"
-            iconSize: content.iconSize
-            spacing: content.mediumSpacing
-            text: "Open Artist"
+            text: "Open artist"
 
             TapHandler {
               onSingleTapped: {
@@ -203,11 +201,11 @@ Popup {
               }
             }
           }
-          ContextMenuItem {
-            color: "#FF8183"
+          SmallMenuItem {
+            id: removeFromPlaylist
+
             icon: "qrc:/icons/trash.svg"
-            iconSize: content.iconSize
-            spacing: content.mediumSpacing
+            iconTextColor: "#FF8183"
             text: "Remove"
             visible: root.fromPlaylist
 
@@ -244,5 +242,48 @@ Popup {
 
   PlaylistAdditionModal {
     id: plAddModal
+  }
+
+  component SmallMenuItem: Rectangle {
+    id: menuItem
+
+    property color clickedColor: Qt.lighter(palette.alternateBase, 1.25)
+    property color hoverColor: Qt.lighter(palette.alternateBase, 1.5)
+    property string icon
+    property color iconTextColor: palette.text
+    property string text
+
+    anchors.left: parent.left
+    anchors.right: parent.right
+    color: menuItemTapHandler.pressed ? menuItem.clickedColor : menuItemHoverHandler.hovered ? menuItem.hoverColor : "transparent"
+    height: _menuItem.implicitHeight + (content.mediumSpacing)
+    implicitHeight: _menuItem.implicitHeight
+    implicitWidth: _menuItem.implicitHeight
+    width: _menuItem.implicitWidth
+
+    Behavior on color {
+      ColorAnimation {
+        duration: 200
+      }
+    }
+
+    ContextMenuItem {
+      id: _menuItem
+
+      anchors.left: parent.left
+      anchors.leftMargin: content.mediumSpacing
+      anchors.verticalCenter: parent.verticalCenter
+      color: menuItem.iconTextColor
+      icon: menuItem.icon
+      iconSize: content.iconSize
+      spacing: content.mediumSpacing
+      text: menuItem.text
+    }
+    HoverHandler {
+      id: menuItemHoverHandler
+    }
+    TapHandler {
+      id: menuItemTapHandler
+    }
   }
 }

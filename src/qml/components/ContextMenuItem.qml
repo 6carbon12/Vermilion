@@ -25,9 +25,12 @@ RowLayout {
     Layout.preferredWidth: root.iconSize.width
   }
   Text {
-    Layout.alignment: Qt.AlignHCenter
     color: root.color
     font.pixelSize: Design.fontSize.base
     text: root.text
+  }
+  Item {
+    id: rightSpacer
+    Layout.fillWidth: true
   }
 }

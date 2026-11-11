@@ -46,6 +46,12 @@ Button {
         brightness: 1.0
         colorization: 1.0
         colorizationColor: iconButton.isActive ? iconButton.activeColor : iconButton.color
+
+        Behavior on colorizationColor {
+          ColorAnimation {
+            duration: 150
+          }
+        }
       }
 
       onStatusChanged: {
