@@ -85,6 +85,15 @@ public class Player {
     });
   }
 
+  public void stop() {
+    mainHandler.post(() -> {
+      if (getPlayer() != null) {
+        player.stop();
+        mainHandler.removeCallbacks(updateProgressAction);
+      }
+    });
+  }
+
   public void seekTo(long positionMs) {
     cachedPosition = positionMs;
     mainHandler.post(() -> {
@@ -108,6 +117,7 @@ public class Player {
 
   public long getDuration() {
     return cachedDuration;
+
   }
 
   public int getPlayerState() {

@@ -45,9 +45,10 @@ public class PlaybackService extends MediaSessionService {
   private CharSequence currentArtist = "Ready to play";
 
   // 0: INITALIZED
-  // 1: PLAYING
-  // 2: PAUSED
-  // 3: ERROR
+  // 1: BUFFERING
+  // 2: PLAYING
+  // 3: PAUSED
+  // 4: ERROR
   private int playerState = 0;
 
   public int getPlayerState() {
@@ -84,9 +85,9 @@ public class PlaybackService extends MediaSessionService {
       @Override
       public void onIsPlayingChanged(boolean isPlaying) {
         if (isPlaying) {
-          playerState = 1;
-        } else {
           playerState = 2;
+        } else {
+          playerState = 3;
         }
         playerStateChanged();
       }
@@ -117,14 +118,14 @@ public class PlaybackService extends MediaSessionService {
             Log.w("PlayerService", "Player is Idle. State undefined");
             break;
           case Player.STATE_BUFFERING:
-            Log.w("PlayerService", "Player is buffering. State undefined");
+            playerState = 1;
             break;
           case Player.STATE_READY:
             boolean playWhenReady = basePlayer.getPlayWhenReady();
             if (playWhenReady) {
-              playerState = 1;
-            } else {
               playerState = 2;
+            } else {
+              playerState = 3;
             }
             break;
         }

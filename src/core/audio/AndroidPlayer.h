@@ -14,6 +14,7 @@ public:
   void play(const QString &url, const Core::Track &track) override;
   void pause() override;
   void resume() override;
+  void stop() override;
   void seekTo(long positionMs) override;
   long getCurrentPosition() override;
   long getDuration() override;

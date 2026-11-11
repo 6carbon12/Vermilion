@@ -79,6 +79,15 @@ void AndroidPlayer::pause() {
   player.callMethod<void>("pause");
 }
 
+void AndroidPlayer::stop() {
+  if (!player.isValid()) {
+    qDebug() << "AndroidPlayer: Player object isn't valid.";
+    return;
+  }
+
+  player.callMethod<void>("stop");
+}
+
 Core::PlayerState::State AndroidPlayer::getPlayerState() {
   if (!player.isValid()) {
     qDebug() << "AndroidPlayer: Player object isn't valid.";
@@ -137,8 +146,10 @@ Core::PlayerState::State AndroidPlayer::getPlayerStateFromInt(int playerState) {
   case 0:
     return PlayerState::Initialized;
   case 1:
-    return PlayerState::Playing;
+    return PlayerState::Buffering;
   case 2:
+    return PlayerState::Playing;
+  case 3:
     return PlayerState::Paused;
   default:
     return PlayerState::Error;
