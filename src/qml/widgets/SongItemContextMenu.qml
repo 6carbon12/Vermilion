@@ -204,6 +204,8 @@ Popup {
           SmallMenuItem {
             id: removeFromPlaylist
 
+            clickedColor: Qt.alpha(iconTextColor, 0.2)
+            hoverColor: Qt.alpha(iconTextColor, 0.1)
             icon: "qrc:/icons/trash.svg"
             iconTextColor: "#FF8183"
             text: "Remove"

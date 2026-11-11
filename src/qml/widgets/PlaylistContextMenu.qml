@@ -39,6 +39,8 @@ Popup {
   Overlay.modal: Rectangle {
     color: Qt.alpha(palette.window, 0.5)
   }
+  background: Item {
+  }
   contentItem: Rectangle {
     id: content
 
@@ -47,16 +49,14 @@ Popup {
     property int mediumSpacing: 24
     property int smallSpacing: 12
 
-    anchors.bottom: parent.bottom
-    anchors.left: parent.left
-    anchors.right: parent.right
     color: palette.window
     height: contentLayout.implicitHeight
 
     ColumnLayout {
       id: contentLayout
 
-      anchors.fill: parent
+      anchors.left: parent.left
+      anchors.right: parent.right
       spacing: content.mediumSpacing
 
       RowLayout {
@@ -113,14 +113,14 @@ Popup {
       ColumnLayout {
         id: playlistControlsLayout
 
-        Layout.leftMargin: content.mediumSpacing
-        Layout.rightMargin: content.mediumSpacing
         spacing: content.mediumSpacing
 
         RowLayout {
           id: bigPlaylistControls
 
-          Layout.preferredHeight: 128
+          Layout.leftMargin: content.mediumSpacing
+          Layout.preferredHeight: 96
+          Layout.rightMargin: content.mediumSpacing
           spacing: content.mediumSpacing
 
           BigButton {
@@ -147,13 +147,12 @@ Popup {
         Column {
           id: smallPlaylistControls
 
-          Layout.bottomMargin: content.mediumSpacing
-          spacing: content.largeSpacing
+          Layout.fillWidth: true
 
-          ContextMenuItem {
+          SmallMenuItem {
+            id: shufflePlay
+
             icon: "qrc:/icons/shuffle.svg"
-            iconSize: content.iconSize
-            spacing: content.mediumSpacing
             text: "Shuffle play"
 
             TapHandler {
@@ -162,10 +161,10 @@ Popup {
               }
             }
           }
-          ContextMenuItem {
+          SmallMenuItem {
+            id: editName
+
             icon: "qrc:/icons/note-pencil.svg"
-            iconSize: content.iconSize
-            spacing: content.mediumSpacing
             text: "Edit name"
 
             TapHandler {
@@ -174,10 +173,10 @@ Popup {
               }
             }
           }
-          ContextMenuItem {
+          SmallMenuItem {
+            id: changeCover
+
             icon: "qrc:/icons/image.svg"
-            iconSize: content.iconSize
-            spacing: content.mediumSpacing
             text: "Change cover"
 
             TapHandler {
@@ -186,10 +185,10 @@ Popup {
               }
             }
           }
-          ContextMenuItem {
+          SmallMenuItem {
+            id: info
+
             icon: "qrc:/icons/info.svg"
-            iconSize: content.iconSize
-            spacing: content.mediumSpacing
             text: "Info"
 
             TapHandler {
@@ -198,11 +197,13 @@ Popup {
               }
             }
           }
-          ContextMenuItem {
-            color: "#FF8183"
+          SmallMenuItem {
+            id: removeFromPlaylist
+
+            clickedColor: Qt.alpha(iconTextColor, 0.2)
+            hoverColor: Qt.alpha(iconTextColor, 0.1)
             icon: "qrc:/icons/trash.svg"
-            iconSize: content.iconSize
-            spacing: content.mediumSpacing
+            iconTextColor: "#FF8183"
             text: "Remove from library"
 
             TapHandler {
@@ -213,6 +214,25 @@ Popup {
           }
         }
       }
+    }
+  }
+  enter: Transition {
+    NumberAnimation {
+      duration: 150
+      easing.type: Easing.OutCubic
+      from: root.height
+      property: "y"
+      target: content
+      to: 0
+    }
+  }
+  exit: Transition {
+    NumberAnimation {
+      duration: 150
+      easing.type: Easing.InCubic
+      property: "y"
+      target: content
+      to: root.height
     }
   }
 
@@ -325,6 +345,49 @@ Popup {
 
     onAccepted: {
       PlaylistsController.updatePlaylistArt(root.playlist.id, selectedFile);
+    }
+  }
+
+  component SmallMenuItem: Rectangle {
+    id: menuItem
+
+    property color clickedColor: Qt.lighter(palette.alternateBase, 1.25)
+    property color hoverColor: Qt.lighter(palette.alternateBase, 1.5)
+    property string icon
+    property color iconTextColor: palette.text
+    property string text
+
+    anchors.left: parent.left
+    anchors.right: parent.right
+    color: menuItemTapHandler.pressed ? menuItem.clickedColor : menuItemHoverHandler.hovered ? menuItem.hoverColor : "transparent"
+    height: _menuItem.implicitHeight + (content.largeSpacing)
+    implicitHeight: _menuItem.implicitHeight
+    implicitWidth: _menuItem.implicitHeight
+    width: _menuItem.implicitWidth
+
+    Behavior on color {
+      ColorAnimation {
+        duration: 200
+      }
+    }
+
+    ContextMenuItem {
+      id: _menuItem
+
+      anchors.left: parent.left
+      anchors.leftMargin: content.mediumSpacing
+      anchors.verticalCenter: parent.verticalCenter
+      color: menuItem.iconTextColor
+      icon: menuItem.icon
+      iconSize: content.iconSize
+      spacing: content.mediumSpacing
+      text: menuItem.text
+    }
+    HoverHandler {
+      id: menuItemHoverHandler
+    }
+    TapHandler {
+      id: menuItemTapHandler
     }
   }
 }
