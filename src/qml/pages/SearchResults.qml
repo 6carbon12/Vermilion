@@ -105,16 +105,19 @@ BasePage {
         id: skeletonView
 
         anchors.fill: parent
+        anchors.topMargin: 8
+        anchors.leftMargin: 12
+        anchors.rightMargin: 12
         clip: true
         interactive: false
         model: Math.floor(3440 / 80)
-        spacing: resultsView.spacing
+        spacing: 16
         visible: searchResults.isLoading
 
         delegate: SongItemSkeleton {
           globalProgress: skeletonContainer.shimmerProgress
           height: 64
-          width: parent.width
+          width: parent ? parent.width : 512
         }
       }
     }
