@@ -15,6 +15,7 @@ public:
   void play(const QString &url, const Core::Track &track) override;
   void pause() override;
   void resume() override;
+  void stop() override;
   void seekTo(long positionMs) override;
   long getCurrentPosition() override;
   long getDuration() override;
@@ -23,7 +24,7 @@ public:
   // For DBus
   void next();
   void prev();
-  Core::Track& getCurrentTrack();
+  Core::Track &getCurrentTrack();
   Q_SIGNAL void trackChanged();
   Q_SIGNAL void seeked();
 
@@ -33,7 +34,7 @@ private:
   long position;
   long duration;
   Core::Track currentTrack;
-  MprisController* mprisController;
+  MprisController *mprisController;
   bool isReady{false};
 };
 } // namespace Core

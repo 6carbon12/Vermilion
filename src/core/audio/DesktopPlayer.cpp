@@ -8,6 +8,8 @@
 #include <mpv/client.h>
 #include <qfuture.h>
 #include <QDBusConnection>
+#include <qloggingcategory.h>
+#include <qtmetamacros.h>
 
 namespace Core {
 DesktopPlayer::DesktopPlayer() {
@@ -24,6 +26,7 @@ DesktopPlayer::DesktopPlayer() {
 
   mpv_observe_property(mpvHandle, 0, "pause", MPV_FORMAT_FLAG);
   mpv_observe_property(mpvHandle, 0, "time-pos/full", MPV_FORMAT_DOUBLE);
+  mpv_observe_property(mpvHandle, 0, "paused-for-cache", MPV_FORMAT_FLAG);
   QFuture<void> future = QtConcurrent::run([this](mpv_handle *handle) { handleMpvState(handle); }, mpvHandle);
 }
 
@@ -35,13 +38,10 @@ void DesktopPlayer::handleMpvState(mpv_handle *handle) {
     }
 
     switch (event->event_id) {
-    case MPV_EVENT_START_FILE:
-      state = PlayerState::Initialized;
-      break;
-
     case MPV_EVENT_FILE_LOADED:
       isReady = true;
       state = PlayerState::Playing;
+      Q_EMIT playerStateChanged();
       break;
 
     case MPV_EVENT_END_FILE: {
@@ -49,6 +49,7 @@ void DesktopPlayer::handleMpvState(mpv_handle *handle) {
       if (end->reason == MPV_END_FILE_REASON_ERROR) {
         state = PlayerState::Error;
         isReady = false;
+        Q_EMIT playerStateChanged();
       } else if (end->reason == MPV_END_FILE_REASON_EOF) {
         Q_EMIT requestNext();
       }
@@ -64,10 +65,19 @@ void DesktopPlayer::handleMpvState(mpv_handle *handle) {
         } else {
           state = PlayerState::Playing;
         }
+        Q_EMIT playerStateChanged();
       } else if (strcmp(prop->name, "time-pos/full") == 0 && prop->format == MPV_FORMAT_DOUBLE) {
         double d_position = *static_cast<double *>(prop->data);
         position = std::lround((d_position) * 1000);
         Q_EMIT playerPositionChanged();
+      } else if (strcmp(prop->name, "paused-for-cache") == 0 && prop->format == MPV_FORMAT_FLAG) {
+        int is_paused_for_cache = *(int *)prop->data;
+        if (is_paused_for_cache) {
+          state = PlayerState::Buffering;
+        } else {
+          state = PlayerState::Playing;
+        }
+        Q_EMIT playerStateChanged();
       }
       break;
     }
@@ -75,8 +85,6 @@ void DesktopPlayer::handleMpvState(mpv_handle *handle) {
     default:
       break;
     }
-
-    Q_EMIT playerStateChanged();
   }
 }
 
@@ -106,6 +114,11 @@ Core::Track& DesktopPlayer::getCurrentTrack() {
 void DesktopPlayer::pause() { mpv_set_property_string(mpvHandle, "pause", "yes"); }
 
 void DesktopPlayer::resume() { mpv_set_property_string(mpvHandle, "pause", "no"); }
+
+void DesktopPlayer::stop() {
+  const char *cmd[] = {"stop", NULL};
+  mpv_command(mpvHandle, cmd);
+}
 
 Core::PlayerState::State DesktopPlayer::getPlayerState() { return state; };
 
