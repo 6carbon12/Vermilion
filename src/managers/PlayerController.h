@@ -29,7 +29,7 @@ public:
   static PlayerController *instance();
   static PlayerController *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
-  Q_INVOKABLE void play(const QString &url);
+  Q_INVOKABLE void play(const Core::Track &track);
   Q_INVOKABLE void playTrackFromPlaylist(const Core::Track& track, const Core::Playlist& pl);
   Q_INVOKABLE void playPlaylist(const Core::Playlist& pl);
   Q_INVOKABLE void pause();
@@ -53,7 +53,7 @@ Q_SIGNALS:
 
   void requestPlayTrackFromPlaylist(const Core::Track &track, const Core::Playlist &pl);
   void requestPlayPlaylist(const Core::Playlist &pl);
-  void requestPlay(const QString &url);
+  void requestPlay(const Core::Track &track);
   void requestPause();
   void requestResume();
   void requestNext();

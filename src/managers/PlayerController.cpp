@@ -67,7 +67,7 @@ PlayerController *PlayerController::create(QQmlEngine *qmlEngine, QJSEngine *jsE
 
 Core::Track PlayerController::getCurrentTrack() { return worker->getCurrentTrack(); }
 
-void PlayerController::play(const QString &url) { Q_EMIT requestPlay(url); }
+void PlayerController::play(const Core::Track &track) { Q_EMIT requestPlay(track); }
 void PlayerController::pause() { Q_EMIT requestPause(); }
 void PlayerController::resume() { Q_EMIT requestResume(); }
 void PlayerController::next() { Q_EMIT requestNext(); }
