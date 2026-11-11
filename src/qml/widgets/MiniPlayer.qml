@@ -16,8 +16,7 @@ SwipeDelegate {
   property real iconOpacity: 1
   property real imageOpacity: 1
   property bool isBuffering: Player.playerState === PlayerState.Buffering
-  // property bool isBuffering: true
-  property bool isPlaying
+  property bool isPlaying: Player.playerState === PlayerState.Playing
   property color loadingColor: Qt.lighter(palette.alternateBase, 2)
   property int position
   property bool progressIndicatiorVisible: true
@@ -25,9 +24,6 @@ SwipeDelegate {
   property real textOpacity: 1
   property string title
   property real yOffset: 0
-
-  signal pauseRequested
-  signal playRequested
 
   focus: true
   padding: 0
@@ -129,9 +125,9 @@ SwipeDelegate {
 
         onClicked: {
           if (root.isPlaying) {
-            root.pauseRequested();
+            Player.pause();
           } else {
-            root.playRequested();
+            Player.resume();
           }
         }
       }
