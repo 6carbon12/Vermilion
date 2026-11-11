@@ -11,6 +11,7 @@
 #include <QVariantMap>
 #include <pybind11/embed.h>
 #include <qlogging.h>
+#include <qnamespace.h>
 #include <qobject.h>
 #include <qtmetamacros.h>
 #include <string>
@@ -135,85 +136,163 @@ void YtWorker::search(const QString &query, int maxResults) {
 }
 
 void YtWorker::extractUrl(const QString &url) {
-  using namespace pybind11::literals;
-  py::gil_scoped_acquire acquire;
+  m_pendingExtractionUrl = url;
 
-  py::dict ydlOpts = getGeneralYdlOpts();
-  py::object ydl = YoutubeDL(ydlOpts);
-  py::object info = ydl.attr("extract_info")(url.toStdString(), "download"_a = false);
-
-  if (info.contains("url") && !info["url"].is_none()) {
-    QString audioURL = QString::fromStdString(info["url"].cast<std::string>());
-
-    QMap<QByteArray, QByteArray> headersMap;
-    if (info.contains("http_headers")) {
-      py::dict headers = info["http_headers"].cast<py::dict>();
-      for (auto item : headers) {
-        QByteArray key = QByteArray::fromStdString(item.first.cast<std::string>());
-        QByteArray value = QByteArray::fromStdString(item.second.cast<std::string>());
-        headersMap.insert(key, value);
-      }
-    }
-
-    Q_EMIT extractSuccess(audioURL, headersMap);
-    qCDebug(YtWorker_l) << "Extraction completed.";
-  } else {
-    Q_EMIT extractFailed("`url` not found in the info object.");
-    qCWarning(YtWorker_l) << "Extraction failed, url was not found in the object.";
+  if (!m_isExtracting) {
+    m_isExtracting = true;
+    QMetaObject::invokeMethod(this, "extractUrlImpl", Qt::QueuedConnection);
   }
 }
 
 void YtWorker::getRelatedTracks(const QString &url) {
-  using namespace pybind11::literals;
-  py::gil_scoped_acquire acquire;
-  QList<Core::Track> relatedTracks;
-  QRegularExpression regex("v=([a-zA-Z0-9_-]{11})");
+  m_pendingRelatedTracksUrl = url;
 
-  QRegularExpressionMatch match = regex.match(url);
-  QString videoId{};
-  if (match.hasMatch()) {
-    videoId = match.captured(1);
-    if (videoId.length() != 11) {
-      Q_EMIT getRelatedTracksFailed("Invalid Regex match.");
-      return;
-    }
-  } else {
-    Q_EMIT getRelatedTracksFailed("Invalid URL.");
+  if (!m_isGettingRelatedTracks) {
+    m_isGettingRelatedTracks = true;
+    QMetaObject::invokeMethod(this, "getRelatedTracksImpl", Qt::QueuedConnection);
+  }
+}
+
+void YtWorker::extractUrlImpl() {
+  if (m_pendingExtractionUrl.isEmpty()) {
+    m_isExtracting = false;
     return;
   }
 
-  std::string videoIdStd = videoId.toStdString();
-  try {
-    auto result = PyHelper::loadScript(":/python/yt_helpers.py");
+  QString urlToProcess = m_pendingExtractionUrl;
+  m_pendingExtractionUrl.clear();
 
-    if (!result) {
-      const PyHelper::Error &err = result.error();
-      qCCritical(YtWorker_l) << "Failed to load Python script!";
-      qCCritical(YtWorker_l) << "Reason code:" << static_cast<int>(err.reason);
-      qCCritical(YtWorker_l) << "Details:" << err.debugContext;
+  QString audioURL;
+  QMap<QByteArray, QByteArray> headersMap;
+  bool success = false;
+  QString errorString;
 
-      Q_EMIT getRelatedTracksFailed(err.debugContext);
+  // GIL scope.
+  {
+    using namespace pybind11::literals;
+    py::gil_scoped_acquire acquire;
+
+    try {
+      py::dict ydlOpts = getGeneralYdlOpts();
+      py::object ydl = YoutubeDL(ydlOpts);
+      py::object info = ydl.attr("extract_info")(urlToProcess.toStdString(), "download"_a = false);
+
+      if (info.contains("url") && !info["url"].is_none()) {
+        audioURL = QString::fromStdString(info["url"].cast<std::string>());
+
+        if (info.contains("http_headers")) {
+          py::dict headers = info["http_headers"].cast<py::dict>();
+          for (auto item : headers) {
+            headersMap.insert(QByteArray::fromStdString(item.first.cast<std::string>()),
+                              QByteArray::fromStdString(item.second.cast<std::string>()));
+          }
+        }
+        success = true;
+      } else {
+        errorString = "'url' not found in the info object.";
+      }
+    } catch (const std::exception &e) {
+      errorString = QString::fromStdString(e.what());
     }
-    py::object scope = py::module_::import("__main__").attr("__dict__");
-    py::object getWatchPlaylistWithExplicit = scope["get_watch_playlist_normalized"];
+  }
 
-    py::object watchPlaylist = getWatchPlaylistWithExplicit(YTMusic, videoIdStd);
+  // Force the thread to process any extractUrl() calls that were
+  // queued by the UI thread while Python was blocking this thread.
+  QCoreApplication::processEvents();
 
-    py::list tracks = watchPlaylist["tracks"].cast<py::list>();
-    for (py::handle track : tracks) {
-      py::dict trackDict = track.cast<py::dict>();
-      Core::Track resultData = getTrackFromDict(trackDict);
-      relatedTracks.append(resultData);
+  // Check the url only AFTER the requests have been processed.
+  if (m_pendingExtractionUrl.isEmpty()) {
+    if (success) {
+      Q_EMIT extractSuccess(audioURL, headersMap);
+      qCDebug(YtWorker_l) << "Extraction completed.";
+    } else {
+      Q_EMIT extractFailed(errorString);
+      qCWarning(YtWorker_l) << "Extraction failed:" << errorString;
+    }
+  } else {
+    qCDebug(YtWorker_l) << "Extraction superseded by a newer request. Discarding result.";
+  }
+
+  if (!m_pendingExtractionUrl.isEmpty()) {
+    qCDebug(YtWorker_l) << "Extraction superseded by a newer request. Discarding result.";
+    QMetaObject::invokeMethod(this, "extractUrlImpl", Qt::QueuedConnection);
+  } else {
+    m_isExtracting = false;
+  }
+}
+
+void YtWorker::getRelatedTracksImpl() {
+  if (m_pendingRelatedTracksUrl.isEmpty()) {
+    m_isGettingRelatedTracks = false;
+    return;
+  }
+
+  QString urlToProcess = m_pendingRelatedTracksUrl;
+  m_pendingRelatedTracksUrl.clear();
+
+  QRegularExpression regex(QStringLiteral("v=([a-zA-Z0-9_-]{11})"));
+  QRegularExpressionMatch match = regex.match(urlToProcess);
+
+  if (!match.hasMatch() || match.captured(1).length() != 11) {
+    // Process events here just in case a new request was fired while we were verifying regex
+    QCoreApplication::processEvents();
+    if (m_pendingRelatedTracksUrl.isEmpty()) {
+      Q_EMIT getRelatedTracksFailed("Invalid YouTube URL or Video ID.");
+    }
+  } else {
+    QString videoId = match.captured(1);
+    std::string videoIdStd = videoId.toStdString();
+
+    QList<Core::Track> relatedTracks;
+    bool success = false;
+    QString errorString;
+
+    // GIL scope.
+    {
+      py::gil_scoped_acquire acquire;
+      try {
+        auto result = PyHelper::loadScript(":/python/yt_helpers.py");
+
+        if (!result) {
+          errorString = result.error().debugContext;
+        } else {
+          py::object scope = py::module_::import("__main__").attr("__dict__");
+          py::object getWatchPlaylistWithExplicit = scope["get_watch_playlist_normalized"];
+          py::object watchPlaylist = getWatchPlaylistWithExplicit(YTMusic, videoIdStd);
+
+          py::list tracks = watchPlaylist["tracks"].cast<py::list>();
+          for (py::handle track : tracks) {
+            relatedTracks.append(getTrackFromDict(track.cast<py::dict>()));
+          }
+          success = true;
+        }
+      } catch (const std::exception &e) {
+        errorString = QString::fromStdString(e.what());
+      }
     }
 
-    qCDebug(YtWorker_l) << "Related tracks fetched successfully.";
-    Q_EMIT getRelatedTracksSuccess(relatedTracks);
-  } catch (const py::error_already_set &e) {
-    qCDebug(YtWorker_l) << "Related tracks failed to get\n" << e.what();
-    Q_EMIT getRelatedTracksFailed(QString::fromStdString(e.what()));
-  } catch (const std::exception &e) {
-    qCDebug(YtWorker_l) << "Related tracks failed to get\n" << e.what();
-    Q_EMIT getRelatedTracksFailed(QString::fromStdString(e.what()));
+    // Force the thread to process any getRelatedTracks() calls that were
+    // queued by the UI thread while Python was blocking this thread.
+    QCoreApplication::processEvents();
+
+    if (m_pendingRelatedTracksUrl.isEmpty()) {
+      if (success) {
+        qCDebug(YtWorker_l) << "Related tracks fetched successfully.";
+        Q_EMIT getRelatedTracksSuccess(relatedTracks);
+      } else {
+        qCCritical(YtWorker_l) << "Failed to fetch related tracks:" << errorString;
+        Q_EMIT getRelatedTracksFailed(errorString);
+      }
+    } else {
+      qCDebug(YtWorker_l) << "Related tracks superseded by a newer request. Discarding result.";
+    }
+  }
+
+  if (!m_pendingRelatedTracksUrl.isEmpty()) {
+    qCDebug(YtWorker_l) << "Related tracks superseded by a newer request. Discarding result.";
+    QMetaObject::invokeMethod(this, "getRelatedTracksImpl", Qt::QueuedConnection);
+  } else {
+    m_isGettingRelatedTracks = false;
   }
 }
 
@@ -236,19 +315,19 @@ Core::Track YtWorker::getTrackFromDict(py::object dict) {
       qCWarning(YtWorker_l) << "Thumbnails empty";
     }
   } else {
-    qCWarning(YtWorker_l) << "Unable to get member: " << "thumbnails" << ". From a result of ytmusicapi";
+    qCWarning(YtWorker_l) << "Unable to get member 'thumbnails' from a result of ytmusicapi";
   }
 
   if (dict.contains("isExplicit") && !dict["isExplicit"].is_none()) {
     track.isExplict = dict["isExplicit"].cast<bool>();
   } else {
-    qCWarning(YtWorker_l) << "Unable to get member: " << "isExplicit" << ". From a result of ytmusicapi";
+    qCWarning(YtWorker_l) << "Unable to get member 'isExplict' from a result of ytmusicapi";
   }
 
   if (dict.contains("duration_seconds") && !dict["duration_seconds"].is_none()) {
     track.duration = dict["duration_seconds"].cast<long>() * 1000;
   } else {
-    qCWarning(YtWorker_l) << "Unable to get member: " << "duration_seconds" << ". From a result of ytmusicapi";
+    qCWarning(YtWorker_l) << "Unable to get member 'duration' from a result of ytmusicapi";
   }
 
   if (dict.contains("artists") && !dict["artists"].is_none()) {
@@ -266,7 +345,7 @@ Core::Track YtWorker::getTrackFromDict(py::object dict) {
       qCWarning(YtWorker_l) << "artists array empty";
     }
   } else {
-    qCWarning(YtWorker_l) << "Unable to get member: " << "artists" << ". From a result of ytmusicapi";
+    qCWarning(YtWorker_l) << "Unable to get member 'artists' from a result of ytmusicapi";
   }
   return track;
 }
@@ -275,7 +354,7 @@ QString YtWorker::getStrMember(py::object dict, const char *member) {
   if (dict.contains(member) && !dict[member].is_none()) {
     return QString::fromStdString(dict[member].cast<std::string>());
   } else {
-    qCWarning(YtWorker_l) << "Unable to get member:" << member << ". From a result of ytmusicapi";
+    qCWarning(YtWorker_l) << "Unable to get member" << member << "from a result of ytmusicapi";
     return "";
   }
 }

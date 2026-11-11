@@ -49,7 +49,6 @@ public Q_SLOTS:
   /// @see `searchFailed()`
   void search(const QString &query, int maxResults = 5);
 
-
   /// @brief Gets a list of tracks related to given track.
   /// @param url YouTube video URL of the track.
   ///
@@ -86,6 +85,10 @@ Q_SIGNALS:
   void getRelatedTracksFailed(const QString &error);
 
 private:
+  std::atomic<bool> m_isExtracting;
+  std::atomic<bool> m_isGettingRelatedTracks;
+  QString m_pendingExtractionUrl;
+  QString m_pendingRelatedTracksUrl;
   /// @brief Helper function to get track data from a python dictionary.
   /// @param dict Python dictionary.
   Core::Track getTrackFromDict(py::object dict);
@@ -94,4 +97,7 @@ private:
   /// @param dict Python dictionary.
   /// @returns Value of `member` in `obj`. Returns empty string if `member` is not found.
   QString getStrMember(py::object obj, const char* member);
+
+  Q_INVOKABLE void extractUrlImpl();
+  Q_INVOKABLE void getRelatedTracksImpl();
 };
