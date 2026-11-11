@@ -9,39 +9,61 @@ Rectangle {
   id: navBar
 
   property int currentIndex: 0
+  property var navItems: [
+    {
+      icon: "qrc:/icons/home",
+      target: Qt.resolvedUrl("../pages/Home.qml"),
+      text: "Home"
+    },
+    {
+      icon: "qrc:/icons/search",
+      target: Qt.resolvedUrl("../pages/Search.qml"),
+      text: "Search"
+    },
+    {
+      icon: "qrc:/icons/library",
+      target: Qt.resolvedUrl("../pages/Library.qml"),
+      text: "Library"
+    },
+    {
+      icon: "qrc:/icons/setting",
+      target: Qt.resolvedUrl("../pages/Settings.qml"),
+      text: "Settings"
+    }
+  ]
+  property int transitionTime: 250
 
   Layout.fillHeight: true
   Layout.fillWidth: true
   clip: true
-  color: "#1A1A1A"
+  color: palette.alternateBase
 
+  Rectangle {
+    id: slidingIndicator
+
+    property real segmentWidth: navBar.width / navBar.navItems.length
+
+    color: "#9F9FFF"
+    height: Design.iconSize.base + 8
+    opacity: 0.1
+    radius: height / 2
+    width: Design.iconSize.base * 2.5
+    x: (navBar.currentIndex * segmentWidth) + ((segmentWidth - width) / 2)
+    y: 6
+
+    Behavior on x {
+      NumberAnimation {
+        duration: navBar.transitionTime
+        easing.type: Easing.OutCubic
+      }
+    }
+  }
   RowLayout {
     anchors.fill: navBar
     spacing: 0
 
     Repeater {
-      model: [
-        {
-          icon: "qrc:/icons/home",
-          target: Qt.resolvedUrl("../pages/Home.qml"),
-          text: "Home"
-        },
-        {
-          icon: "qrc:/icons/search",
-          target: Qt.resolvedUrl("../pages/Search.qml"),
-          text: "Search"
-        },
-        {
-          icon: "qrc:/icons/library",
-          target: Qt.resolvedUrl("../pages/Library.qml"),
-          text: "Library"
-        },
-        {
-          icon: "qrc:/icons/setting",
-          target: Qt.resolvedUrl("../pages/Settings.qml"),
-          text: "Settings"
-        }
-      ]
+      model: navBar.navItems
 
       Rectangle {
         id: iconTextContainer
@@ -53,7 +75,7 @@ Rectangle {
         Layout.fillWidth: true
         Layout.preferredWidth: 1
         Layout.topMargin: 4
-        color: "#1A1A1A"
+        color: "transparent"
 
         ColumnLayout {
           id: iconTextLayout
@@ -65,18 +87,12 @@ Rectangle {
             id: icon
 
             Layout.fillWidth: true
-            Layout.preferredHeight: 48
+            Layout.preferredHeight: Design.iconSize.base
             Layout.preferredWidth: 1
-            source: iconTextContainer.modelData.icon
             isActive: navBar.currentIndex === iconTextContainer.index
+            source: iconTextContainer.modelData.icon
 
-            background: Rectangle {
-              anchors.centerIn: icon
-              color: icon.isActive ? "#9F9FFF" : "transparent"
-              height: icon.height - 4
-              opacity: 0.1
-              radius: height / 2
-              width: Math.max(0, Math.min(icon.width - 32, 48 * 2))
+            background: Item {
             }
 
             onClicked: {
@@ -92,6 +108,12 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             text: iconTextContainer.modelData.text
             verticalAlignment: Text.AlignTop
+
+            Behavior on color {
+              ColorAnimation {
+                duration: navBar.transitionTime
+              }
+            }
           }
         }
       }
