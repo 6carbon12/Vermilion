@@ -41,6 +41,9 @@ public:
   /// @brief Resumes the track.
   virtual void resume() = 0;
 
+  /// @brief stop playback.
+  virtual void stop() = 0;
+
   /// @param positionMs Position to seek to in milliseconds.
   virtual void seekTo(long positionMs) = 0;
 
