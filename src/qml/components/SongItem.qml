@@ -29,15 +29,32 @@ SwipeDelegate {
   signal rightContentClicked
   signal rightSwipeActionTriggered
 
-  padding: 0
+  bottomPadding: 8
+  leftPadding: 16
+  rightPadding: 16
+  topPadding: 8
 
   background: Rectangle {
-    color: palette.window
+    color: (root.hovered) ? Qt.lighter(palette.alternateBase, 1.5) : palette.window
+
+    Behavior on color {
+      ColorAnimation {
+        duration: 150
+        easing.type: Easing.InOutQuad
+      }
+    }
   }
   contentItem: RowLayout {
     id: trackLayout
+    scale: root.pressed ? 0.95 : 1
 
     spacing: 16
+    Behavior on scale {
+      NumberAnimation {
+        duration: 150
+        easing.type: Easing.InOutQuad
+      }
+    }
 
     Rectangle {
       Layout.fillWidth: true
@@ -97,8 +114,8 @@ SwipeDelegate {
       id: rightContent
 
       Layout.alignment: Qt.AlignVCenter
-      Layout.preferredHeight: 48
-      Layout.preferredWidth: 40
+      Layout.preferredHeight: Design.iconSize.small + 12
+      Layout.preferredWidth: Design.iconSize.small + 12
       sourceComponent: root.rightContent
 
       MouseArea {
@@ -112,7 +129,7 @@ SwipeDelegate {
     }
   }
   swipe.left: Rectangle {
-    anchors.left: parent.left
+    anchors.left: parent ? parent.left : undefined;
     clip: true
     color: "dodgerblue"
     height: root.height
@@ -137,7 +154,7 @@ SwipeDelegate {
     }
   }
   swipe.right: Rectangle {
-    anchors.right: parent.right
+    anchors.right: parent ? parent.right : undefined;
     clip: true
     color: "dodgerblue"
     height: root.height

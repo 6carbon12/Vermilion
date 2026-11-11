@@ -10,6 +10,7 @@ BasePage {
   id: searchResults
 
   property bool isLoading: true
+  padding: 0
 
   pageUrl: Qt.resolvedUrl("SearchResults.qml")
 
@@ -41,6 +42,9 @@ BasePage {
       Layout.fillWidth: true
       Layout.preferredHeight: 48
       leftPadding: height * 0.9
+      Layout.leftMargin: 8
+      Layout.rightMargin: 8
+      Layout.topMargin: 8
 
       onAccepted: {
         searchResults.isLoading = true;

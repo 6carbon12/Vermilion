@@ -12,7 +12,6 @@ ListView {
 
   boundsBehavior: Flickable.StopAtBounds
   flickableDirection: Flickable.VerticalFlick
-  spacing: 16
 
   delegate: SongItem {
     id: songItem
@@ -21,10 +20,12 @@ ListView {
     required property Track track
     required property string url
 
-    height: 64
+    height: 64 + (songItem.topPadding * 2)
     width: tracksList.width
+    hoverEnabled: !contextMenu.opened
 
     rightContent: IconButton {
+      id: songItemRightButton
       hasState: false
       source: "qrc:/icons/three-dot-vertical.svg"
 

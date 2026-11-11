@@ -158,8 +158,6 @@ BasePage {
       id: mainLayout
 
       anchors.fill: parent
-      anchors.leftMargin: 16
-      anchors.rightMargin: 16
       anchors.topMargin: flickable.topPadding
       spacing: 32
       width: parent.width
@@ -291,6 +289,8 @@ BasePage {
         PlaylistSortByDropdown {
           anchors.left: parent.left
           anchors.right: parent.right
+          anchors.leftMargin: 16
+          anchors.rightMargin: 16
           height: 48
           pt: root.pt
           spacing: 16
