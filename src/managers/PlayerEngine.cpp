@@ -11,13 +11,13 @@ Q_LOGGING_CATEGORY(PlayerEngine_l, "PlayerEngine")
 PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
   player = Core::Player::create();
   YT = YtController::instance()->getCore();
-  // TODO: Find better way to have consistent id for special playlists.
+
   currentPlaylist.id = "current";
   currentPlaylist.name = "Current Mix";
   currentPlaylist.type = Core::PlaylistType::Current;
 
-  connect(player.get(), &Core::Player::requestNext, this, [this]() { next(); });
-  connect(player.get(), &Core::Player::requestPrev, this, [this]() { prev(); });
+  connect(player.get(), &Core::Player::requestNext, this, &PlayerEngine::next);
+  connect(player.get(), &Core::Player::requestPrev, this, &PlayerEngine::prev);
   connect(player.get(), &Core::Player::playerStateChanged, this,
           [this]() { Q_EMIT playerStateChanged(player->getPlayerState()); });
   connect(player.get(), &Core::Player::playerPositionChanged, this,
@@ -25,144 +25,167 @@ PlayerEngine::PlayerEngine(QObject *parent) : QObject(parent) {
 
   connect(YT, &YtEngine::extractionSuccess, this, [this](const QString &extractedUrl) {
     std::lock_guard<std::mutex> lock(queueMutex);
-
-    if (waitingForRelatedTracks) {
-      pendingExtractionUrl = extractedUrl;
-      return;
-    }
-
     processExtraction(extractedUrl);
   });
 
-  connect(YT, &YtEngine::extractionFailed, this,
-          [this](const QString &error) { Q_EMIT errorOccurred("Extraction failed: " + error); });
+  connect(YT, &YtEngine::extractionFailed, this, [this](const QString &error) {
+    Q_EMIT playerStateChanged(PlayerState::Initialized);
+    Q_EMIT errorOccurred("Extraction failed: " + error);
+  });
 
   connect(YT, &YtEngine::getRelatedTracksSuccess, this, &PlayerEngine::handleRelatedTracks);
-  connect(YT, &YtEngine::getRelatedTracksFailed, this, [this](const QString &error) {
-    waitingForRelatedTracks = false;
-    Q_EMIT errorOccurred(error);
-  });
+  connect(YT, &YtEngine::getRelatedTracksFailed, this,
+          [this](const QString &error) { Q_EMIT errorOccurred("Failed to load related tracks: " + error); });
 }
 
-void PlayerEngine::play(const QString &url) {
-  std::lock_guard<std::mutex> lock(queueMutex);
-  currentTrackIndex = 0;
-  tracks.clear();
+void PlayerEngine::play(const Core::Track &track) {
+  player->stop();
+  Q_EMIT playerStateChanged(PlayerState::Buffering);
 
-  waitingForRelatedTracks = true;
-  pendingExtractionUrl.clear();
-
-  YT->getRelatedTracks(url);
-  YT->requestExtraction(url);
-}
-
-void PlayerEngine::playFromPlaylist(const Core::Track track, const Core::Playlist playlist) {
-  updateCurrentPlaylist(plctl->getTracksListFromPlaylist(playlist.id));
-  int idx = tracks.indexOf(track);
-  if (idx >= 0) {
-    currentTrackIndex = idx;
+  {
+    std::lock_guard<std::mutex> lock(queueMutex);
+    tracks.clear();
+    tracks.append(track);
+    currentTrackIndex = 0;
   }
+
+  Q_EMIT currentTrackChanged();
+
+  YT->requestExtraction(track.url);
+  YT->getRelatedTracks(track.url);
+}
+
+void PlayerEngine::playFromPlaylist(const Core::Track &track, const Core::Playlist &playlist) {
+  player->stop();
+  Q_EMIT playerStateChanged(PlayerState::Buffering);
+
+  updateCurrentPlaylist(plctl->getTracksListFromPlaylist(playlist.id));
+
+  std::lock_guard<std::mutex> lock(queueMutex);
+
+  int idx = tracks.indexOf(track);
+  currentTrackIndex = (idx >= 0) ? idx : 0;
+
   YT->requestExtraction(tracks[currentTrackIndex].url);
 }
 
-void PlayerEngine::playFromPlaylist(const Core::Playlist playlist) {
-  waitingForRelatedTracks = false;
+void PlayerEngine::playFromPlaylist(const Core::Playlist &playlist) {
+  player->stop();
+  Q_EMIT playerStateChanged(PlayerState::Buffering);
+
   QList<Core::Track> newTracks = plctl->getTracksListFromPlaylist(playlist.id);
   if (newTracks.isEmpty()) {
+    Q_EMIT playerStateChanged(PlayerState::Initialized);
     return;
   }
-  updateCurrentPlaylist(plctl->getTracksListFromPlaylist(playlist.id));
+
+  updateCurrentPlaylist(newTracks);
+
+  std::lock_guard<std::mutex> lock(queueMutex);
+  currentTrackIndex = 0;
+
   YT->requestExtraction(tracks[currentTrackIndex].url);
 }
 
 void PlayerEngine::pause() {
-  if (player) {
+  if (player)
     player->pause();
-  }
 }
 
 void PlayerEngine::resume() {
-  if (player) {
+  if (player)
     player->resume();
-  }
 }
 
 void PlayerEngine::next() {
+  player->stop();
   std::lock_guard<std::mutex> lock(queueMutex);
   if (currentTrackIndex >= tracks.length() - 1) {
     Q_EMIT errorOccurred("Cannot go next, reached end of tracks.");
     return;
   }
+
+  Q_EMIT playerStateChanged(PlayerState::Buffering);
   currentTrackIndex++;
   YT->requestExtraction(tracks[currentTrackIndex].url);
 }
 
 void PlayerEngine::prev() {
+  player->stop();
   std::lock_guard<std::mutex> lock(queueMutex);
   if (currentTrackIndex <= 0) {
     Q_EMIT errorOccurred("Cannot go to previous track.");
     return;
   }
+
+  Q_EMIT playerStateChanged(PlayerState::Buffering);
   currentTrackIndex--;
   YT->requestExtraction(tracks[currentTrackIndex].url);
 }
 
 void PlayerEngine::seekTo(long positionMs) {
-  if (player) {
+  if (player)
     player->seekTo(positionMs);
-  }
 }
 
 void PlayerEngine::handleRelatedTracks(const QList<Core::Track> &relatedTracks) {
+  QString currentId;
+  {
+    std::lock_guard<std::mutex> lock(queueMutex);
+    if (!tracks.isEmpty() && currentTrackIndex >= 0 && currentTrackIndex < tracks.length()) {
+      currentId = tracks[currentTrackIndex].id;
+    }
+  }
+
   updateCurrentPlaylist(relatedTracks);
-  waitingForRelatedTracks = false;
-  if (!pendingExtractionUrl.isEmpty()) {
-    processExtraction(pendingExtractionUrl);
-    pendingExtractionUrl.clear();
+
+  {
+    std::lock_guard<std::mutex> lock(queueMutex);
+    currentTrackIndex = 0; // Fallback
+    for (int i = 0; i < tracks.size(); ++i) {
+      if (tracks[i].id == currentId) {
+        currentTrackIndex = i;
+        break;
+      }
+    }
   }
 }
 
 void PlayerEngine::updateCurrentPlaylist(const QList<Core::Track> &relatedTracks) {
-  std::lock_guard<std::mutex> lock(queueMutex);
-  currentTrackIndex = 0;
-
-  // Prevent the controller from flooding QML with UI update signals
   plctl->blockSignals(true);
-
   plctl->deletePlaylist(currentPlaylist.id);
   plctl->createPlaylist(currentPlaylist);
   plctl->addToPlaylist(relatedTracks, currentPlaylist.id);
-
-  // Re-enable signals now that the database operations are complete
   plctl->blockSignals(false);
 
-  tracks.clear();
-  tracks = plctl->getTracksListFromPlaylist(currentPlaylist.id);
+  {
+    std::lock_guard<std::mutex> lock(queueMutex);
+    tracks = plctl->getTracksListFromPlaylist(currentPlaylist.id);
+  }
 
-  // Manually send the updates.
   Q_EMIT currentPlaylistChanged();
   Q_EMIT plctl->playlistUpdated(currentPlaylist.id);
   Q_EMIT plctl->tracksUpdated(currentPlaylist.id);
 }
 
 void PlayerEngine::processExtraction(const QString &extractedUrl) {
-  if (!player) {
+  if (!player)
     return;
-  }
 
-  // Safety bound check to prevent crashes if tracks are somehow empty
   if (tracks.isEmpty() || currentTrackIndex < 0 || currentTrackIndex >= tracks.length()) {
+    Q_EMIT playerStateChanged(PlayerState::Initialized);
     Q_EMIT errorOccurred("Queue error: No track information available.");
     return;
   }
 
-  Core::Track currentTrack = tracks[currentTrackIndex];
-  player->play(extractedUrl, currentTrack);
+  player->play(extractedUrl, tracks[currentTrackIndex]);
   Q_EMIT currentTrackChanged();
 }
 
 Core::Track PlayerEngine::getCurrentTrack() {
-  if (!tracks.isEmpty()) {
+  std::lock_guard<std::mutex> lock(queueMutex);
+
+  if (!tracks.isEmpty() && currentTrackIndex >= 0 && currentTrackIndex < tracks.length()) {
     return tracks[currentTrackIndex];
   }
 

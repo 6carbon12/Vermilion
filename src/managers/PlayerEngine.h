@@ -22,7 +22,7 @@ public:
 public Q_SLOTS:
   /// @brief Plays the given url.
   /// @param url YouTube URL of song to prepare.
-  void play(const QString &url);
+  void play(const Core::Track &track);
 
   // TODO: Report empty/invalid playlists somehow.
 
@@ -32,13 +32,13 @@ public Q_SLOTS:
   ///
   /// If `track` is not found in `playlist`, first song from playlist is played.
   /// If `playlist` doesn't exit, nothing happens.
-  void playFromPlaylist(const Core::Track track, const Core::Playlist playlist);
+  void playFromPlaylist(const Core::Track &track, const Core::Playlist &playlist);
 
   /// @brief Starts playing the given playlist.
   /// @param playlist Playlist object of the playlist to be played.
   ///
   /// If `playlist` doesn't exit, nothing happens.
-  void playFromPlaylist(const Core::Playlist playlist);
+  void playFromPlaylist(const Core::Playlist &playlist);
 
   /// @brief Resumes playback.
   void resume();
