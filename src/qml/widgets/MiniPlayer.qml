@@ -15,7 +15,10 @@ SwipeDelegate {
   property int duration
   property real iconOpacity: 1
   property real imageOpacity: 1
+  property bool isBuffering: Player.playerState === PlayerState.Buffering
+  // property bool isBuffering: true
   property bool isPlaying
+  property color loadingColor: Qt.lighter(palette.alternateBase, 2)
   property int position
   property bool progressIndicatiorVisible: true
   property real progressIndicatorOpacity: 1
@@ -33,7 +36,6 @@ SwipeDelegate {
   background: Rectangle {
     color: root.color
   }
-
   contentItem: ColumnLayout {
     id: mainLayout
 
@@ -59,6 +61,13 @@ SwipeDelegate {
         cornerRadius: 8
         opacity: root.imageOpacity
         source: root.artUrl
+
+        Rectangle {
+          anchors.fill: parent
+          color: root.loadingColor
+          radius: parent.cornerRadius / 2
+          visible: root.isBuffering
+        }
       }
       ColumnLayout {
         Layout.fillWidth: true
@@ -73,15 +82,33 @@ SwipeDelegate {
           color: palette.text
           elide: Text.ElideRight
           font.pixelSize: Design.fontSize.base
-          text: root.title
+          text: root.isBuffering ? "" : root.title
+
+          Rectangle {
+            anchors.fill: parent
+            anchors.bottomMargin: 2
+            anchors.topMargin: 2
+            color: root.loadingColor
+            visible: root.isBuffering
+            width: 196
+          }
         }
         ArtistsText {
           id: artistsText
 
           Layout.fillWidth: true
-          artists: root.artists
+          artists: root.isBuffering ? null : root.artists
           fontSize: Design.fontSize.small
           textColor: Qt.darker(palette.text, 2)
+
+          Rectangle {
+            anchors.fill: parent
+            anchors.bottomMargin: 2
+            anchors.topMargin: 2
+            color: root.loadingColor
+            visible: root.isBuffering
+            width: 196 * 2
+          }
         }
       }
       IconButton {
@@ -94,6 +121,7 @@ SwipeDelegate {
         opacity: root.iconOpacity
         size: Qt.size(Design.iconSize.small, Design.iconSize.small)
         source: root.isPlaying ? "qrc:/icons/pause.svg" : "qrc:/icons/play.svg"
+        color: root.isBuffering ? root.loadingColor : "white"
 
         transform: Translate {
           y: root.yOffset
@@ -109,7 +137,6 @@ SwipeDelegate {
       }
     }
   }
-
   swipe.left: Item {
     clip: true
     height: root.height
@@ -117,12 +144,11 @@ SwipeDelegate {
 
     Rectangle {
       anchors.left: parent.left
+      color: palette.alternateBase
       height: parent.height
       width: Math.max(0, root.swipe.position * root.width)
-      color: palette.alternateBase
     }
   }
-
   swipe.right: Item {
     anchors.right: parent.right
     clip: true
@@ -131,21 +157,20 @@ SwipeDelegate {
 
     Rectangle {
       anchors.right: parent.right
+      color: palette.alternateBase
       height: parent.height
       width: Math.max(0, -root.swipe.position * root.width)
-      color: palette.alternateBase
     }
   }
 
   onClicked: {
     console.log("Main content clicked");
   }
-
   swipe.onOpened: {
     if (swipe.position > 0) {
-      Player.prev()
+      Player.prev();
     } else if (swipe.position < 0) {
-      Player.next()
+      Player.next();
     }
 
     swipe.close();
@@ -160,7 +185,7 @@ SwipeDelegate {
     color: Qt.darker(palette.text, 2)
     height: 2
     opacity: root.progressIndicatorOpacity
-    z: 15 // Ensure it stays on top of sliding layers
+    z: 15
 
     Rectangle {
       anchors.bottom: parent.bottom

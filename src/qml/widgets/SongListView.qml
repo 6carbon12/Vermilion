@@ -66,7 +66,7 @@ ListView {
       playlistAdditionModalOpener.start();
     }
     onMainContentClicked: {
-      Player.play(url);
+      Player.play(songItem.track);
     }
     onRightContentClicked: {
       contextMenu.openForTrack(songItem.track)
