@@ -69,9 +69,7 @@ ListView {
       Player.play(url);
     }
     onRightContentClicked: {
-      contextMenu.close();
-      contextMenu.track = songItem.track;
-      contextMenu.open();
+      contextMenu.openForTrack(songItem.track)
     }
     onRightSwipeActionTriggered: {
       console.log("RIGHT");

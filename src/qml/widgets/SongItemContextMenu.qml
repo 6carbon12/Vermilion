@@ -15,7 +15,7 @@ Popup {
 
   function openForTrack(newTrack) {
     track = newTrack;
-    open();
+    root.open();
   }
 
   height: contentLayout.implicitHeight
@@ -29,6 +29,8 @@ Popup {
   Overlay.modal: Rectangle {
     color: Qt.alpha(palette.window, 0.5)
   }
+  background: Item {
+  }
   contentItem: Rectangle {
     id: content
 
@@ -36,16 +38,14 @@ Popup {
     property int largeSpacing: 30
     property int mediumSpacing: 24
 
-    anchors.bottom: parent.bottom
-    anchors.left: parent.left
-    anchors.right: parent.right
     color: palette.window
     height: contentLayout.implicitHeight
 
     ColumnLayout {
       id: contentLayout
 
-      anchors.fill: parent
+      anchors.left: parent.left
+      anchors.right: parent.right
       spacing: content.mediumSpacing
 
       RowLayout {
@@ -175,7 +175,7 @@ Popup {
             TapHandler {
               onSingleTapped: {
                 plAddModal.close();
-                plAddModal.openForTrack(root.track)
+                plAddModal.openForTrack(root.track);
               }
             }
           }
@@ -220,6 +220,25 @@ Popup {
           }
         }
       }
+    }
+  }
+  enter: Transition {
+    NumberAnimation {
+      duration: 150
+      easing.type: Easing.OutCubic
+      from: root.height
+      property: "y"
+      target: content
+      to: 0
+    }
+  }
+  exit: Transition {
+    NumberAnimation {
+      duration: 150
+      easing.type: Easing.InCubic
+      property: "y"
+      target: content
+      to: root.height
     }
   }
 
