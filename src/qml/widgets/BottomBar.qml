@@ -54,7 +54,6 @@ Rectangle {
     Behavior on x {
       NumberAnimation {
         duration: navBar.transitionTime
-        easing.type: Easing.OutCubic
       }
     }
   }

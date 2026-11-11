@@ -118,12 +118,20 @@ Item {
       Layout.maximumWidth: 1920
       Layout.row: 0
 
-      StackLayout {
+      SwipeView {
         id: mainContentLayout
 
         anchors.fill: parent
         clip: true
         currentIndex: rootContent.activeTabIndex
+        interactive: false
+
+        Component.onCompleted: {
+          let list = contentItem as ListView;
+
+          list.highlightMoveDuration = 250;
+          list.highlightMoveVelocity = -1;
+        }
 
         Repeater {
           id: stackRepeater
