@@ -90,8 +90,8 @@ Popup {
         IconButton {
           id: likeButton
 
-          Layout.preferredHeight: 28
-          Layout.preferredWidth: 28
+          Layout.preferredHeight: Design.iconSize.base * 2
+          Layout.preferredWidth: Design.iconSize.base * 2
           isActive: root.track && PlaylistsController.isLiked(root.track.id)
           source: "qrc:/icons/heart"
 
